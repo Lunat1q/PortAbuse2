@@ -1,0 +1,42 @@
+﻿<controls:MetroWindow x:Class="PortAbuse2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="600" Width="400" MinWidth="400" MinHeight="500">
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <GradientStop Color="#FF83919F" Offset="0"/>
+                <GradientStop Color="White" Offset="1"/>
+                <GradientStop Color="White" Offset="0.3"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Margin="0,0,0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="110"/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="RefreshButton" Content="Refresh" Grid.Column="1" Margin="5,0" VerticalAlignment="Center" Click="RefreshButton_Click"/>
+                <ComboBox Grid.Column="0" x:Name="AppListComboBox" Margin="5,0" VerticalAlignment="Center" ItemTemplate="{DynamicResource AppTemplate}"/>
+            </Grid>
+            <Grid Margin="0,5,0,0" Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <ComboBox x:Name="InterfaceBox" Grid.Column="1" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="0" Margin="0,0,5,0" TextWrapping="Wrap" Text="Interface" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</controls:MetroWindow>
+

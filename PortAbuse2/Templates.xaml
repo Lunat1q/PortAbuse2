@@ -1,0 +1,17 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:applications="clr-namespace:PortAbuse2.Applications">
+    <DataTemplate x:Key="AppTemplate" DataType="applications:AppEntry">
+        <Grid Height="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Image Source="{Binding Icon}"  Grid.ColumnSpan="1" HorizontalAlignment="Stretch" Height="Auto" VerticalAlignment="Stretch" Width="Auto"/>
+            <TextBlock Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,0" TextWrapping="Wrap" Text="{Binding Name, FallbackValue='???'}" VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="2" HorizontalAlignment="Stretch" Margin="5,0" TextWrapping="Wrap" Text="{Binding TitleString}" VerticalAlignment="Center"/>
+        </Grid>
+    </DataTemplate>
+
+</ResourceDictionary>
