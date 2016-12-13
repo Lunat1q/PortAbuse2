@@ -6,8 +6,8 @@
     <Application.Resources>
         <ResourceDictionary >
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Styling.xaml"/>
-                <ResourceDictionary Source="Templates.xaml"/>
+                <ResourceDictionary Source="Styling/Styling.xaml"/>
+                <ResourceDictionary Source="Styling/Templates.xaml"/>
                 
                 <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
