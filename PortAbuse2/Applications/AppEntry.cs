@@ -1,4 +1,5 @@
-﻿using System.Windows.Media;
+﻿using System.Collections.Generic;
+using System.Windows.Media;
 using PortAbuse2.Common;
 using PortAbuse2.Core.Port;
 
