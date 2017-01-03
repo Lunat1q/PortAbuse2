@@ -41,9 +41,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Admin.cs" />
+    <Compile Include="Common\ExThread.cs" />
+    <Compile Include="Common\PaNotified.cs" />
+    <Compile Include="Geo\DnsHost.cs" />
     <Compile Include="Geo\GeoQueue.cs" />
+    <Compile Include="Geo\GeoWorker.cs" />
     <Compile Include="Ip\IpEntry.cs" />
     <Compile Include="Ip\IpInterface.cs" />
+    <Compile Include="Parser\Package.cs" />
     <Compile Include="Port\Port.cs" />
     <Compile Include="Port\PortReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -56,6 +61,9 @@
     <Compile Include="Proto\Udp\Udp.cs" />
     <Compile Include="Proto\Udp\UdpEntry.cs" />
     <Compile Include="Proto\Udp\UdpHeader.cs" />
+    <Compile Include="Result\GeoData.cs" />
+    <Compile Include="Result\ResultObject.cs" />
+    <Compile Include="WindowsFirewall\Block.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

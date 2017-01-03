@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using PortAbuse2.Core.Proto.TCP;
 
 namespace PortAbuse2.Core.Proto.Udp
 {

@@ -1,5 +1,6 @@
 ﻿using System.Windows.Media;
 using PortAbuse2.Common;
+using PortAbuse2.Core.Port;
 
 namespace PortAbuse2.Applications
 {
@@ -12,7 +13,9 @@ namespace PortAbuse2.Applications
 
         public string TitleString => string.IsNullOrEmpty(Title) ? "" : $"[{Title}]";
 
-        private ImageSource _icon = null;
+        public Port[] AppPort { get; set; }
+
+        private ImageSource _icon;
 
         public ImageSource Icon
         {
@@ -21,6 +24,11 @@ namespace PortAbuse2.Applications
                 return _icon ?? Images.LoadImageSourceFromResource("empty.png");
             }
             set { _icon = value; }
+        }
+
+        public AppEntry()
+        {
+            AppPort = new Port[0];
         }
     }
 }

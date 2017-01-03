@@ -20,16 +20,17 @@ namespace PortAbuse2.Applications
 
             foreach (var item in procOrder)
             {
-                var openedPorts = portList.Count(mc => mc.ProcessName == item.ProcessName);
+                var openedPorts = portList.Where(mc => mc.ProcessName == item.ProcessName).ToArray();
                 try
                 {
-                    if (openedPorts > 0 || showAll)
+                    if (openedPorts.Any() || showAll)
                         list.Add(new AppEntry
                         {
                             InstancePid = item.Id,
                             Name = item.ProcessName,
                             Title = item.MainWindowTitle,
-                            FullName = item.MainModule.FileName
+                            FullName = item.MainModule.FileName,
+                            AppPort = openedPorts
                         });
                 }
                 catch (Exception ex)

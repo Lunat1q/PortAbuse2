@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 
-namespace PortAbuse2.Core.Proto.TCP
+namespace PortAbuse2.Core.Proto.Udp
 {
     public class UdpEntry
     {

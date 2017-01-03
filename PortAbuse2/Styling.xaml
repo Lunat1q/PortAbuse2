@@ -1,5 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:PortAbuse2">
-    
+                    xmlns:common="clr-namespace:PortAbuse2.Common">
+    <common:CountryImageConverter x:Key="CountryFlagConverter" />
+    <SolidColorBrush x:Key="PaLightGreen" Color="#FFE4FFEF"/>
+    <SolidColorBrush x:Key="PaLightRed" Color="#FFFFE4E4"/>
+
 </ResourceDictionary>

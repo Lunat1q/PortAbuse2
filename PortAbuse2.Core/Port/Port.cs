@@ -5,9 +5,8 @@
     // ===============================================
     public class Port
     {
-        public string Name => $"{ProcessName} ({Protocol} port {PortNumber})";
         public string PortNumber { get; set; }
-        public string ProcessName { get; set; }
         public string Protocol { get; set; }
+        public string ProcessName { get; set; }
     }
 }
