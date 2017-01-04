@@ -129,9 +129,9 @@ namespace PortAbuse2.Core.Geo
                             var locCountry = geoData.Element("country")?.Value;
                             var locCity = geoData.Element("city")?.Value;
                             var zip = geoData.Element("zip")?.Value;
-                            //var isp = geoData.Element("isp")?.Value;
+                            var isp = geoData.Element("isp")?.Value;
                             var countryCode = geoData.Element("countryCode")?.Value.ToLower();
-
+                            loc.Isp = isp;
                             loc.CountryCode = countryCode;
                             loc.City = locCity == "" ? "[Неизвестно]" : locCity;
                             loc.Country = locCountry == "" ? "[Неизвестно]" : locCountry;

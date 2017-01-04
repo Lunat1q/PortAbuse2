@@ -43,11 +43,13 @@
     <Compile Include="Common\Admin.cs" />
     <Compile Include="Common\ExThread.cs" />
     <Compile Include="Common\PaNotified.cs" />
+    <Compile Include="Files\FileAccess.cs" />
     <Compile Include="Geo\DnsHost.cs" />
     <Compile Include="Geo\GeoQueue.cs" />
     <Compile Include="Geo\GeoWorker.cs" />
     <Compile Include="Ip\IpEntry.cs" />
     <Compile Include="Ip\IpInterface.cs" />
+    <Compile Include="Parser\Compressor.cs" />
     <Compile Include="Parser\Package.cs" />
     <Compile Include="Port\Port.cs" />
     <Compile Include="Port\PortReader.cs" />

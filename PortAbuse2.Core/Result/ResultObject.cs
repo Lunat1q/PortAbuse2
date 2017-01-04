@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 using PortAbuse2.Core.Common;
 
 namespace PortAbuse2.Core.Result
@@ -16,7 +11,39 @@ namespace PortAbuse2.Core.Result
         public string SourceIp => SourceAddress.ToString();
         public string DestIp => DestinationAddress.ToString();
 
-        public string ShowIp => !Reverse ? SourceIp : DestIp;
+        public int PackagesReceived
+        {
+            get { return _packagesReceived; }
+            set
+            {
+                _packagesReceived = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string ShowIp => From ? DestIp : SourceIp;
+
+        public string ExtraInfo
+        {
+            get { return _extraInfo; }
+            set
+            {
+                HaveExtraInfo = !string.IsNullOrEmpty(value);
+                _extraInfo = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool HaveExtraInfo
+        {
+            get { return _haveExtraInfo; }
+            set
+            {
+                _haveExtraInfo = value;
+                OnPropertyChanged(); 
+                
+            }
+        }
 
         private string _hostname;
         public string Hostname
@@ -43,22 +70,26 @@ namespace PortAbuse2.Core.Result
             }
         }
 
-        private bool _reverse;
+        private bool _from;
 
-        public bool Reverse
+        public bool From
         {
             get
             {
-                return _reverse;
+                return _from;
             }
             set
             {
-                _reverse = value;
+                _from = value;
                 OnPropertyChanged();
             }
         }
 
         private bool _blocked;
+        private int _packagesReceived;
+        private string _extraInfo;
+        private bool _haveExtraInfo;
+
         public bool Blocked
         {
             get

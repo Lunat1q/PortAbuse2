@@ -4,5 +4,8 @@
     <common:CountryImageConverter x:Key="CountryFlagConverter" />
     <SolidColorBrush x:Key="PaLightGreen" Color="#FFE4FFEF"/>
     <SolidColorBrush x:Key="PaLightRed" Color="#FFFFE4E4"/>
+    <SolidColorBrush x:Key="BlockColor" Color="#FFFF5E5E"/>
+    <SolidColorBrush x:Key="Block30Color" Color="#FF96DEFF"/>
+    <SolidColorBrush x:Key="UnblockColor" Color="#FF5EFF99"/>
 
 </ResourceDictionary>

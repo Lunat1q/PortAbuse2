@@ -8,6 +8,14 @@ namespace PortAbuse2.Core.Result
         private string _city;
         private string _index;
         private string _countryCode;
+        private string _isp;
+
+
+        public string Isp
+        {
+            get { return _isp; }
+            set { _isp = value; OnPropertyChanged(); }
+        }
 
         public string Country
         {
@@ -49,7 +57,7 @@ namespace PortAbuse2.Core.Result
             }
         }
 
-        public string Result => $"{Index} - {Country} - {City}";
+        public string Result => $"{(string.IsNullOrEmpty(Index)?"" : $"[{Index}]")}{(string.IsNullOrEmpty(Country)? "" : $" - {Country}")}{(string.IsNullOrEmpty(City)?"":$" - {City}")}{(string.IsNullOrEmpty(Isp) ? "" : $" [{Isp}]")}";
 
         public void Merge(GeoData geo)
         {
@@ -57,6 +65,7 @@ namespace PortAbuse2.Core.Result
             CountryCode = geo.CountryCode;
             Country = geo.Country;
             Index = geo.Index;
+            Isp = geo.Isp;
             OnPropertyChangedByName("Result");
         }
     }

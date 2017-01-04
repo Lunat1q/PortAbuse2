@@ -1,7 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:applications="clr-namespace:PortAbuse2.Applications"
-                    xmlns:result="clr-namespace:PortAbuse2.Core.Result;assembly=PortAbuse2.Core">
+                    xmlns:result="clr-namespace:PortAbuse2.Core.Result;assembly=PortAbuse2.Core"
+                    x:Class="PortAbuse2.Styling.Templates">
     <DataTemplate x:Key="AppTemplate" DataType="applications:AppEntry">
         <Grid Height="20">
             <Grid.ColumnDefinitions>
@@ -15,18 +16,46 @@
         </Grid>
     </DataTemplate>
     <DataTemplate x:Key="ResultTemplate" DataType="result:ResultObject">
-        <Grid Height="Auto" Width="Auto">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="30"/>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-            </Grid.ColumnDefinitions>
-            <Image Source="{Binding Geo.CountryCode, Converter={StaticResource CountryFlagConverter}}"  Grid.Column="0" HorizontalAlignment="Stretch" Height="24" VerticalAlignment="Stretch" Width="24"/>
-            <TextBlock HorizontalAlignment="Left" Margin="5,0" TextWrapping="Wrap" Text="{Binding ShowIp, FallbackValue='100.100.100.100'}" VerticalAlignment="Center" Grid.Column="1"/>
-            <TextBlock HorizontalAlignment="Left" Margin="5,0" TextWrapping="Wrap" Text="{Binding Hostname, FallbackValue='NoHost'}" VerticalAlignment="Center" Grid.Column="2"/>
-            <TextBlock HorizontalAlignment="Left" Margin="5,0" TextWrapping="Wrap" Text="{Binding Geo.Result, FallbackValue='Nowhere'}" VerticalAlignment="Center" Grid.Column="3"/>
+        <Grid>
+            <Rectangle x:Name="ResultBg"></Rectangle>
+            <Grid Height="Auto" Width="Auto">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="Auto" MinWidth="30"/>
+                    <ColumnDefinition MinWidth="100" Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Image Source="{Binding Geo.CountryCode, Converter={StaticResource CountryFlagConverter}}"  Grid.Column="0" HorizontalAlignment="Left" Height="24" VerticalAlignment="Stretch" Width="24" Margin="3,0"/>
+                <TextBlock HorizontalAlignment="Left" Margin="5,2" TextWrapping="Wrap" Text="{Binding ShowIp, FallbackValue='100.100.100.100'}" VerticalAlignment="Center"
+                       Grid.Row="0" Grid.Column="1"/>
+                <TextBlock HorizontalAlignment="Center" Margin="5,2" TextWrapping="Wrap" Text="{Binding PackagesReceived, FallbackValue='0'}" VerticalAlignment="Center"
+                       Grid.Row="0" Grid.Column="2"/>
+                <TextBlock HorizontalAlignment="Left" Margin="5,2" TextWrapping="Wrap" Text="{Binding Hostname, FallbackValue='NoHost'}" VerticalAlignment="Center"
+                       Grid.Row="0" Grid.Column="3"/>
+                <TextBlock HorizontalAlignment="Left" Margin="5,2" TextWrapping="Wrap" Text="{Binding Geo.Result, FallbackValue='Nowhere'}" VerticalAlignment="Center"
+                       Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4"/>
+                <Button Content="Block" Grid.Row="0" Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center" Width="65" Margin="5,2" Background="{DynamicResource BlockColor}" Click="Block_Click"/>
+                <Button x:Name="ButtonBlocked30" Content="Block 30s" Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center" Width="65" Margin="5,2" Background="{DynamicResource Block30Color}" Grid.Row="1"
+                    Click="Block30Sec_Click"/>
+                <TextBlock x:Name="ExtraInfoBox" HorizontalAlignment="Center" Margin="5,2" TextWrapping="Wrap" Text="{Binding ExtraInfo, FallbackValue='NoInfo'}" VerticalAlignment="Center"
+                       Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="5" Visibility="Collapsed"/>
+            </Grid>
         </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding Blocked}" Value="True">
+                <Setter Property="IsEnabled" TargetName="ButtonBlocked30" Value="False"/>
+                <Setter Property="Fill" TargetName="ResultBg" Value="{StaticResource PaLightRed}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding HaveExtraInfo}" Value="True">
+                <Setter Property="Visibility" TargetName="ExtraInfoBox" Value="Visible"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
     </DataTemplate>
 
 </ResourceDictionary>

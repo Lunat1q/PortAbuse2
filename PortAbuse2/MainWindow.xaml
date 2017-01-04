@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="600" MinWidth="400" MinHeight="500" Closing="MetroWindow_Closing">
+        Title="MainWindow" Height="600" Width="600" MinWidth="500" MinHeight="500" Closing="MetroWindow_Closing">
     <Grid>
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -36,7 +36,7 @@
                 <ComboBox x:Name="InterfaceBox" Grid.Column="1" Margin="5,0,0,0" VerticalAlignment="Center"/>
                 <TextBlock Grid.Column="0" Margin="0,0,5,0" TextWrapping="Wrap" Text="Interface" VerticalAlignment="Center" HorizontalAlignment="Center"/>
             </Grid>
-            <ListBox x:Name="ResultBox" Margin="5,0,0,5" Grid.Row="1" ItemTemplate="{DynamicResource ResultTemplate}"/>
+            <ListBox x:Name="ResultBox" Margin="5,0,0,5" Grid.Row="1" ItemTemplate="{DynamicResource ResultTemplate}" HorizontalContentAlignment="Stretch"/>
             <Button x:Name="SwitchButton" Content="Start" HorizontalAlignment="Left" Margin="0,4,0,3" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="SwitchButton_Click" Background="{DynamicResource PaLightGreen}"/>
         </Grid>
     </Grid>

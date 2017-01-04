@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,16 +25,28 @@ namespace PortAbuse2.Applications
                 try
                 {
                     if (openedPorts.Any() || showAll)
+                    {
+                        var fullName = "";
+                        try
+                        {
+                            fullName = item.MainModule.FileName;
+                        }
+                        catch (Win32Exception)
+                        {
+                            //ignore
+                        }
+
                         list.Add(new AppEntry
                         {
                             InstancePid = item.Id,
                             Name = item.ProcessName,
                             Title = item.MainWindowTitle,
-                            FullName = item.MainModule.FileName,
-                            AppPort = openedPorts
+                            AppPort = openedPorts,
+                            FullName = fullName
                         });
+                    }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //ignore
                 }

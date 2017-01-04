@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortAbuse2", "PortAbuse2\Po
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortAbuse2.Core", "PortAbuse2.Core\PortAbuse2.Core.csproj", "{6AADCAD8-1D3E-41EF-934E-AEC5DA231057}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackagesLexer", "..\WFPackageParser\PackagesLexer.csproj", "{7CD63A71-5BE0-4974-9728-432B8F93B4EB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{6AADCAD8-1D3E-41EF-934E-AEC5DA231057}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6AADCAD8-1D3E-41EF-934E-AEC5DA231057}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6AADCAD8-1D3E-41EF-934E-AEC5DA231057}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7CD63A71-5BE0-4974-9728-432B8F93B4EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7CD63A71-5BE0-4974-9728-432B8F93B4EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7CD63A71-5BE0-4974-9728-432B8F93B4EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7CD63A71-5BE0-4974-9728-432B8F93B4EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

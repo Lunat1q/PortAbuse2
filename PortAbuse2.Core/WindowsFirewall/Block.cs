@@ -13,22 +13,22 @@ namespace PortAbuse2.Core.WindowsFirewall
     {
         public static bool ShutAll = false;
         private static readonly List<ExThread> TdList = new List<ExThread>();
-        public static void Do30SecBlock(ResultObject resultObject, bool onlyOut = false, bool onlyIn = false)
+        public static void DoInSecBlock(ResultObject resultObject, int sec = 30, bool onlyOut = false, bool onlyIn = false)
         {
             if (resultObject.ShowIp != "")
             {
                 DoBlock(resultObject, onlyOut, onlyIn);
-                var td = new Thread(() => UnBlockIn30(resultObject)) {Name = "UnBlock30"};
+                var td = new Thread(() => UnBlockInSeconds(resultObject, sec)) {Name = "UnBlock30"};
                 td.Start();
-                TdList.Add(new ExThread(td, DateTime.Now, 30));
+                TdList.Add(new ExThread(td, DateTime.Now, sec));
             }
         }
-        public static void UnBlockIn30(ResultObject resultObject)
+        public static void UnBlockInSeconds(ResultObject resultObject, int sec)
         {
             var i = 0;
-            while (i < 30 && !ShutAll)
+            while (i < sec * 2 && !ShutAll)
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
                 i++;
             }
             DoUnBlock(resultObject);

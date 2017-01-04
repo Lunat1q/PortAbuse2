@@ -20,7 +20,7 @@ namespace PortAbuse2.Core.Geo
             }
             catch (Exception)
             {
-                hostName = obj.ShowIp.Replace('.', '-') + ".NoHostName";
+                hostName = obj.ShowIp.Replace('.', '-') + ".NoHost";
             }
             obj.Hostname = hostName;
         }

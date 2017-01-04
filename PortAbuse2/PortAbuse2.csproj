@@ -81,11 +81,12 @@
     <Compile Include="Common\Admin.cs" />
     <Compile Include="Common\Converters.cs" />
     <Compile Include="Common\Images.cs" />
+    <Compile Include="Listener\Receiver.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Styling\Styling.xaml">
+    <Page Include="Styling\Styles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -93,6 +94,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Compile Include="Styling\Templates.xaml.cs">
+      <DependentUpon>Templates.xaml</DependentUpon>
+      <Generator>MSBuild:Compile</Generator>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
