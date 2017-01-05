@@ -21,6 +21,16 @@ namespace PortAbuse2.Core.Result
             }
         }
 
+        public bool Hidden
+        {
+            get { return _hidden; }
+            set
+            {
+                _hidden = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string ShowIp => From ? DestIp : SourceIp;
 
         public string ExtraInfo
@@ -58,6 +68,8 @@ namespace PortAbuse2.Core.Result
             }
         }
 
+        public AppEntry Application { get; set; }
+
         private GeoData _geo;
 
         public GeoData Geo
@@ -89,6 +101,7 @@ namespace PortAbuse2.Core.Result
         private int _packagesReceived;
         private string _extraInfo;
         private bool _haveExtraInfo;
+        private bool _hidden;
 
         public bool Blocked
         {

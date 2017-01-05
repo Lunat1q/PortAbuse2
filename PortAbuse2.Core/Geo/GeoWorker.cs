@@ -94,9 +94,9 @@ namespace PortAbuse2.Core.Geo
                         if (zip == "-") zip = "";
                         var countryCode = geoData?.Element("country_code")?.Value.ToLower();
                         loc.CountryCode = countryCode;
-                        loc.City = locCity == "" ? "[Неизвестно]" : locCity;
-                        loc.Country = locCountry == "" ? "[Неизвестно]" : locCountry;
-                        loc.Index = (zip == "" ? "" : "[" + zip + "] ");
+                        loc.City = locCity == "" ? "Unknown" : locCity;
+                        loc.Country = locCountry == "" ? "Unknown" : locCountry;
+                        loc.Index = zip == "" ? "" : zip;
                     }
                 }
             }
@@ -133,9 +133,9 @@ namespace PortAbuse2.Core.Geo
                             var countryCode = geoData.Element("countryCode")?.Value.ToLower();
                             loc.Isp = isp;
                             loc.CountryCode = countryCode;
-                            loc.City = locCity == "" ? "[Неизвестно]" : locCity;
-                            loc.Country = locCountry == "" ? "[Неизвестно]" : locCountry;
-                            loc.Index = (zip == "" ? "" : "[" + zip + "] ");
+                            loc.City = locCity == "" ? "Unknown" : locCity;
+                            loc.Country = locCountry == "" ? "Unknown" : locCountry;
+                            loc.Index = zip == "" ? "" : zip;
                         }
                        
                     }
@@ -170,9 +170,9 @@ namespace PortAbuse2.Core.Geo
                         var zip = geoData?.Element("ZipCode")?.Value;
                         var countryCode = geoData?.Element("CountryCode")?.Value.ToLower();
                         loc.CountryCode = countryCode;
-                        loc.City = locCity == "" ? "[Неизвестно]" : locCity;
-                        loc.Country = locCountry == "" ? "[Неизвестно]" : locCountry;
-                        loc.Index = (zip == "" ? "" : "[" + zip + "] ");
+                        loc.City = locCity == "" ? "Unknown" : locCity;
+                        loc.Country = locCountry == "" ? "Unknown" : locCountry;
+                        loc.Index = zip == "" ? "" : zip;
                     }
                 }
             }

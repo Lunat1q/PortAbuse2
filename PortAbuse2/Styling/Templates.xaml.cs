@@ -1,7 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using System.Runtime.Remoting;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
 
@@ -9,7 +12,7 @@ namespace PortAbuse2.Styling
 {
     public partial class Templates
     {
-        private void Block_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void Block_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
             var obj = btn?.DataContext as ResultObject;
@@ -30,12 +33,73 @@ namespace PortAbuse2.Styling
             }
         }
 
-        private void Block30Sec_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void Block30Sec_Click(object sender, RoutedEventArgs e)
         {
-            var btn = sender as Button;
+            BlockFromControl(sender, 30);
+        }
+
+        private static void BlockFromControl(object sender, int sec)
+        {
+            var btn = sender as Control;
             var obj = btn?.DataContext as ResultObject;
             if (obj == null) return;
-            Block.DoInSecBlock(obj);
+            Block.DoInSecBlock(obj, sec);
+        }
+
+        private void HideThisIpMenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var mi = sender as MenuItem;
+            var listBox = (mi?.Parent as ContextMenu)?.Tag as ListBox;
+            if (listBox?.SelectedIndex == -1) return;
+            var selectedItems = GetMultipleSelectedItem<ResultObject>(listBox);
+            if (selectedItems == null) return;
+            foreach (var ro in selectedItems)
+            {
+                if (ro.Application != null)
+                {
+                    IpHider.Add(ro.Application.Name, ro.ShowIp);
+                    ro.Application.HiddenCount++;
+                }
+                ro.Hidden = true;
+            }
+        }
+
+        private static List<T> GetMultipleSelectedItem<T>(ListBox listBox)
+        {
+            var resultList = new List<T>();
+            if (listBox == null) return resultList;
+            resultList.AddRange(from object selectedItem in listBox.SelectedItems select (T) selectedItem);
+            return resultList;
+        }
+
+        private void BlockFor5sMenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            BlockFromControl(sender, 5);
+        }
+
+        private void BlockFor10sMenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            BlockFromControl(sender, 10);
+        }
+
+        private void BlockFor15sMenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            BlockFromControl(sender, 15);
+        }
+
+        private void BlockFor30sMenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            BlockFromControl(sender, 30);
+        }
+
+        private void BlockFor60sMenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            BlockFromControl(sender, 60);
+        }
+
+        private void BlockFor120sMenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            BlockFromControl(sender, 120);
         }
     }
 }

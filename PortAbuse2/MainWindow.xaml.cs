@@ -1,15 +1,19 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using MahApps.Metro.Controls;
 using PortAbuse2.Applications;
-using PortAbuse2.Common;
+using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Ip;
+using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
 using PortAbuse2.Listener;
+using Admin = PortAbuse2.Common.Admin;
 
 namespace PortAbuse2
 {
@@ -18,7 +22,7 @@ namespace PortAbuse2
     /// </summary>
     public partial class MainWindow
     {
-        private readonly ObservableCollection<AppEntry> _allAppWithPorts = new ObservableCollection<AppEntry>();
+        private readonly ObservableCollection<AppIconEntry> _allAppWithPorts = new ObservableCollection<AppIconEntry>();
         private readonly Receiver _receiver;
         
         public MainWindow()
@@ -28,6 +32,8 @@ namespace PortAbuse2
 
             Admin.CheckAdmin();
 
+            IpHider.Load();
+
             LoadInterfaces();
 
             AppListComboBox.ItemsSource = _allAppWithPorts;
@@ -35,6 +41,30 @@ namespace PortAbuse2
             ResultBox.ItemsSource = _receiver.ResultObjects;
 
             Task.Run(RefreshLoadProceses);
+            //FillDummyData();
+        }
+
+        private void FillDummyData()
+        {
+            _receiver.ResultObjects.Add(new ResultObject
+            {
+                SourceAddress = new IPAddress(new byte[]{100,100,100,100}),
+                DestinationAddress = new IPAddress(new byte[] { 100, 100, 100, 100 }),
+                Hostname = "Test1"
+            });
+
+            _receiver.ResultObjects.Add(new ResultObject
+            {
+                SourceAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
+                DestinationAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
+                Hostname = "Test1"
+            });
+            _receiver.ResultObjects.Add(new ResultObject
+            {
+                SourceAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
+                DestinationAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
+                Hostname = "Test1"
+            });
         }
 
         private async Task RefreshLoadProceses()
@@ -73,6 +103,16 @@ namespace PortAbuse2
         private void SwitchButton_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
+
+            if (_receiver.SelectedAppEntry == null)
+            {
+                var wfApp = _allAppWithPorts.FirstOrDefault(x => x.Name.ToLower().Contains("warframe"));
+                if (wfApp != null)
+                {
+                    AppListComboBox.SelectedItem = wfApp;
+                }
+            }
+
             if (btn == null || _receiver.SelectedAppEntry == null) return;
             if (!_receiver.ContinueCapturing)
             {
@@ -95,15 +135,23 @@ namespace PortAbuse2
         
         private async void MetroWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            IpHider.Save();
             await Block.Wait();
         }
 
         private void AppListComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var cb = sender as ComboBox;
-            var app = cb?.SelectedItem as AppEntry;
+            var app = cb?.SelectedItem as AppIconEntry;
             if (app == null) return;
             _receiver.SelectedAppEntry = app;
+        }
+
+        private void BlockNewSwitch_Click(object sender, RoutedEventArgs e)
+        {
+            var tgl = sender as ToggleSwitch;
+            if (tgl?.IsChecked != null)
+                _receiver.BlockNew = (bool)tgl.IsChecked;
         }
     }
 }

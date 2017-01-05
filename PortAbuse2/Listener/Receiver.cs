@@ -3,9 +3,12 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using PortAbuse2.Applications;
+using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Files;
 using PortAbuse2.Core.Geo;
 using PortAbuse2.Core.Parser;
@@ -21,11 +24,10 @@ namespace PortAbuse2.Listener
         public ObservableCollection<ResultObject> ResultObjects = new ObservableCollection<ResultObject>();
         private byte[] _byteData = new byte[65536];
         public bool ContinueCapturing; //A flag to check if packets are to be captured or not
-        public AppEntry SelectedAppEntry;
+        public AppIconEntry SelectedAppEntry;
         public string InterfaceLocalIp;
         public Socket MainSocket; //The socket which captures all incoming packets
         private readonly Window _window;
-
         private readonly string _logFolder = "raw";
 
         public bool BlockNew = false;
@@ -58,8 +60,8 @@ namespace PortAbuse2.Listener
                 SocketOptionName.HeaderIncluded, //Set the include the header
                 true); //option to true
 
-            byte[] byTrue = { 1, 0, 0, 0 };
-            byte[] byOut = { 1, 0, 0, 0 }; //Capture outgoing packets
+            byte[] byTrue = {1, 0, 0, 0};
+            byte[] byOut = {1, 0, 0, 0}; //Capture outgoing packets
             //Socket.IOControl is analogous to the WSAIoctl method of Winsock 2
             try
             {
@@ -112,22 +114,39 @@ namespace PortAbuse2.Listener
             var port = Package.GetPorts(ipHeader);
 
             var portsMatch =
-                SelectedAppEntry.AppPort.Any(x => port != null && port.Any(v => v.Item2 == x.PortNumber && x.Protocol == v.Item1));
+                SelectedAppEntry.AppPort.Any(
+                    x => port != null && port.Any(v => v.Item2 == x.PortNumber && x.Protocol == v.Item1));
             if (!portsMatch) return;
 
             var fromMe = ipHeader.SourceAddress.ToString() == InterfaceLocalIp;
             var existedDetection = (fromMe
-                ? ResultObjects.Where(x => Equals(x.SourceAddress, ipHeader.DestinationAddress) || Equals(x.DestinationAddress, ipHeader.DestinationAddress))
-                : ResultObjects.Where(x => Equals(x.DestinationAddress, ipHeader.SourceAddress) || Equals(x.SourceAddress, ipHeader.SourceAddress))).FirstOrDefault();
+                ? ResultObjects.Where(
+                    x =>
+                        Equals(x.SourceAddress, ipHeader.DestinationAddress) ||
+                        Equals(x.DestinationAddress, ipHeader.DestinationAddress))
+                : ResultObjects.Where(
+                    x =>
+                        Equals(x.DestinationAddress, ipHeader.SourceAddress) ||
+                        Equals(x.SourceAddress, ipHeader.SourceAddress))).FirstOrDefault();
 
-            var msg = System.Text.Encoding.Default.GetString(ipHeader.Data.Take(ipHeader.MessageLength).ToArray());
+            var msgBytes = ipHeader.Data.Take(ipHeader.MessageLength).ToArray();
+            var msg = Encoding.Default.GetString(msgBytes);
+
+            Encoding iso = Encoding.GetEncoding("ISO-8859-1");
+            //byte[] isoBytes = Encoding.Convert(anscii, iso, msgBytes);
+            string isoMsg = iso.GetString(msgBytes);
+            string isoMsgUtf8 = Encoding.UTF8.GetString(msgBytes);
             //Thread safe adding of the nodes
             if (existedDetection != null)
             {
                 if (ipHeader.MessageLength > 43)
                 {
-                    if (_debug)
-                        FileAccess.AppendFile(_logFolder, $"{existedDetection.ShowIp}.dump", $"str:{msg}\r\nbyte:{BitConverter.ToString(ipHeader.Data.Take(ipHeader.MessageLength).ToArray())}\r\n---\r\n");
+                    //if (_debug)
+                    //    FileAccess.AppendFile(_logFolder, $"{existedDetection.ShowIp}.dump",
+                    //        $"str:{msg}\r\n" +
+                    //        $"isoStr:{isoMsg}\r\n" +
+                    //        $"utfStr:{isoMsgUtf8}\r\n" +
+                    //        $"byte:{BitConverter.ToString(ipHeader.Data.Take(ipHeader.MessageLength).ToArray())}\r\n---\r\n");
                     existedDetection.PackagesReceived++;
                 }
                 return;
@@ -137,10 +156,16 @@ namespace PortAbuse2.Listener
                 SourceAddress = ipHeader.SourceAddress,
                 DestinationAddress = ipHeader.DestinationAddress,
                 From = fromMe,
-                PackagesReceived = 1
+                PackagesReceived = 1,
+                Application = SelectedAppEntry
             };
-            if (_debug)
-                FileAccess.AppendFile(_logFolder, $"{ro.ShowIp}.dump", $"str:{msg}\r\nbyte:{BitConverter.ToString(ipHeader.Data.Take(ipHeader.MessageLength).ToArray())}\r\n---\r\n");
+            ro.Hidden = IpHider.Check(SelectedAppEntry.Name, ro.ShowIp);
+            //if (_debug)
+            //    FileAccess.AppendFile(_logFolder, $"{ro.ShowIp}.dump",
+            //        $"str:{msg}\r\n" +
+            //        $"isoStr:{isoMsg}\r\n" +
+            //        $"utfStr:{isoMsgUtf8}\r\n" +
+            //        $"byte:{BitConverter.ToString(ipHeader.Data.Take(ipHeader.MessageLength).ToArray())}\r\n---\r\n");
 
             if (ResultObjects.Any(x => x.ShowIp == ro.ShowIp))
                 return;

@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.2-beta1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -42,13 +46,16 @@
   <ItemGroup>
     <Compile Include="Common\Admin.cs" />
     <Compile Include="Common\ExThread.cs" />
+    <Compile Include="Common\IpHider.cs" />
     <Compile Include="Common\PaNotified.cs" />
+    <Compile Include="Common\Serializer\Json.cs" />
     <Compile Include="Files\FileAccess.cs" />
     <Compile Include="Geo\DnsHost.cs" />
     <Compile Include="Geo\GeoQueue.cs" />
     <Compile Include="Geo\GeoWorker.cs" />
     <Compile Include="Ip\IpEntry.cs" />
     <Compile Include="Ip\IpInterface.cs" />
+    <Compile Include="Common\AppEntry.cs" />
     <Compile Include="Parser\Compressor.cs" />
     <Compile Include="Parser\Package.cs" />
     <Compile Include="Port\Port.cs" />
@@ -66,6 +73,9 @@
     <Compile Include="Result\GeoData.cs" />
     <Compile Include="Result\ResultObject.cs" />
     <Compile Include="WindowsFirewall\Block.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

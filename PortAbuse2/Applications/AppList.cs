@@ -5,15 +5,16 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Port;
 
 namespace PortAbuse2.Applications
 {
     internal class AppList
     {
-        internal static async Task<ObservableCollection<AppEntry>> GetRunningApplications(bool showAll = false)
+        internal static async Task<ObservableCollection<AppIconEntry>> GetRunningApplications(bool showAll = false)
         {
-            var list = new ObservableCollection<AppEntry>();
+            var list = new ObservableCollection<AppIconEntry>();
 
             var myProcess = Process.GetProcesses();
             IEnumerable<Process> procOrder = myProcess.OrderBy(proc => proc.ProcessName);
@@ -36,13 +37,14 @@ namespace PortAbuse2.Applications
                             //ignore
                         }
 
-                        list.Add(new AppEntry
+                        list.Add(new AppIconEntry
                         {
                             InstancePid = item.Id,
                             Name = item.ProcessName,
                             Title = item.MainWindowTitle,
                             AppPort = openedPorts,
-                            FullName = fullName
+                            FullName = fullName,
+                            HiddenCount = IpHider.CountHidden(item.ProcessName)
                         });
                     }
                 }
