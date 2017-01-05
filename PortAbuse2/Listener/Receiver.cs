@@ -38,8 +38,6 @@ namespace PortAbuse2.Listener
 #if DEBUG
             _debug = true;
 #endif
-            Task.Run(HideOldTask);
-            Task.Run(CleanupDupes);
         }
 
         public void HideOld()
@@ -89,13 +87,16 @@ namespace PortAbuse2.Listener
                     var nowMinusShift = DateTime.UtcNow.ToUnixTime() - OldTimeLimitSeconds*1000;
                     foreach (var ro in ResultObjects)
                     {
-                        if (ro.LastReceivedTime < nowMinusShift)
+                        if (ro != null)
                         {
-                            ro.Old = true;
-                        }
-                        else if (ro.Old)
-                        {
-                            ro.Old = false;
+                            if (ro.LastReceivedTime < nowMinusShift && !ro.Old)
+                            {
+                                ro.Old = true;
+                            }
+                            else if (ro.Old && ro.LastReceivedTime > nowMinusShift)
+                            {
+                                ro.Old = false;
+                            }
                         }
                     }
                 }
@@ -110,6 +111,9 @@ namespace PortAbuse2.Listener
 
         public void StartListener(string ipInterface)
         {
+            Task.Run(HideOldTask);
+            Task.Run(CleanupDupes);
+
             InterfaceLocalIp = ipInterface;
             var ipe = new IPEndPoint(IPAddress.Parse(ipInterface), 0);
 

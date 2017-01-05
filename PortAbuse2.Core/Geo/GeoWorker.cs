@@ -31,8 +31,11 @@ namespace PortAbuse2.Core.Geo
             {
                 if (_geoRequests >= 10) continue;
                 var gq = GeoQ.Dequeue();
-                GetGeoData(gq.Object, gq.GeoBase);
-                _geoRequests++;
+                if (gq != null)
+                {
+                    GetGeoData(gq.Object, gq.GeoBase);
+                    _geoRequests++;
+                }
                 await Task.Delay(100);
             }
             _geoRunning = false;
