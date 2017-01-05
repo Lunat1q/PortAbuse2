@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using PortAbuse2.Applications;
 using PortAbuse2.Core.Common;
-using PortAbuse2.Core.Files;
 using PortAbuse2.Core.Geo;
 using PortAbuse2.Core.Parser;
 using PortAbuse2.Core.Proto;
@@ -83,7 +82,7 @@ namespace PortAbuse2.Listener
             {
                 var nReceived = MainSocket.EndReceive(ar);
                 if (nReceived > 65536) nReceived = 65536;
-                ParseData(_byteData, nReceived);
+                Task.Run(() => ParseData(_byteData, nReceived));
 
                 if (!ContinueCapturing) return;
                 _byteData = new byte[65536];
@@ -102,7 +101,7 @@ namespace PortAbuse2.Listener
             }
         }
 
-        private void ParseData(byte[] receivedByteData, int nReceived)
+        private async Task ParseData(byte[] receivedByteData, int nReceived)
         {
             //Since all protocol packets are encapsulated in the IP datagram
             //so we start by parsing the IP header and see what protocol data
@@ -170,7 +169,7 @@ namespace PortAbuse2.Listener
             if (ResultObjects.Any(x => x.ShowIp == ro.ShowIp))
                 return;
 
-            _window.Dispatcher.BeginInvoke(new ThreadStart(delegate { ResultObjects.Add(ro); }));
+            await _window.Dispatcher.BeginInvoke(new ThreadStart(delegate { ResultObjects.Add(ro); }));
             GeoWorker.InsertGeoDataQueue(ro);
             DnsHost.FillIpHost(ro);
             if (BlockNew)
