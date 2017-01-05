@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,6 +19,7 @@ namespace PortAbuse2.Listener
     internal class Receiver
     {
         private readonly bool _debug;
+        private bool _hideOld = false;
         public ObservableCollection<ResultObject> ResultObjects = new ObservableCollection<ResultObject>();
         private byte[] _byteData = new byte[65536];
         public bool ContinueCapturing; //A flag to check if packets are to be captured or not
@@ -28,6 +28,7 @@ namespace PortAbuse2.Listener
         public Socket MainSocket; //The socket which captures all incoming packets
         private readonly Window _window;
         private readonly string _logFolder = "raw";
+        public int OldTimeLimitSeconds = 120;
 
         public bool BlockNew = false;
 
@@ -37,6 +38,69 @@ namespace PortAbuse2.Listener
 #if DEBUG
             _debug = true;
 #endif
+            Task.Run(HideOldTask);
+            Task.Run(CleanupDupes);
+        }
+
+        public void HideOld()
+        {
+            _hideOld = true;
+        }
+
+        public void ShowOld()
+        {
+            _hideOld = false;
+            Task.Delay(200);
+            foreach (var ro in ResultObjects)
+            {
+                ro.Old = false;
+            }
+        }
+
+        private async Task CleanupDupes() //TODO: Test if it needed at all
+        {
+            while (ContinueCapturing)
+            {
+                var dupes = ResultObjects.GroupBy(x => x.ShowIp).Where(x => x.Count() > 1);
+                foreach (var dupe in dupes)
+                {
+                    if (dupe.Count() <= 1) continue;
+
+                    var main = dupe.FirstOrDefault();
+
+                    if (main == null) continue;
+
+                    foreach (var second in dupe.Where(x=>x != main))
+                    {
+                        main.PackagesReceived += second.PackagesReceived;
+                        ResultObjects.Remove(second);
+                    }
+                }
+                await Task.Delay(5000);
+            }
+        }
+
+        private async Task HideOldTask()
+        {
+            while (ContinueCapturing)
+            {
+                if (_hideOld)
+                {
+                    var nowMinusShift = DateTime.UtcNow.ToUnixTime() - OldTimeLimitSeconds*1000;
+                    foreach (var ro in ResultObjects)
+                    {
+                        if (ro.LastReceivedTime < nowMinusShift)
+                        {
+                            ro.Old = true;
+                        }
+                        else if (ro.Old)
+                        {
+                            ro.Old = false;
+                        }
+                    }
+                }
+                await Task.Delay(1000);
+            }
         }
 
         public void Clear()
@@ -128,13 +192,13 @@ namespace PortAbuse2.Listener
                         Equals(x.DestinationAddress, ipHeader.SourceAddress) ||
                         Equals(x.SourceAddress, ipHeader.SourceAddress))).FirstOrDefault();
 
-            var msgBytes = ipHeader.Data.Take(ipHeader.MessageLength).ToArray();
-            var msg = Encoding.Default.GetString(msgBytes);
+            //var msgBytes = ipHeader.Data.Take(ipHeader.MessageLength).ToArray();
+            //var msg = Encoding.Default.GetString(msgBytes);
 
-            Encoding iso = Encoding.GetEncoding("ISO-8859-1");
+            //Encoding iso = Encoding.GetEncoding("ISO-8859-1");
             //byte[] isoBytes = Encoding.Convert(anscii, iso, msgBytes);
-            string isoMsg = iso.GetString(msgBytes);
-            string isoMsgUtf8 = Encoding.UTF8.GetString(msgBytes);
+            //string isoMsg = iso.GetString(msgBytes);
+            //string isoMsgUtf8 = Encoding.UTF8.GetString(msgBytes);
             //Thread safe adding of the nodes
             if (existedDetection != null)
             {
@@ -169,7 +233,11 @@ namespace PortAbuse2.Listener
             if (ResultObjects.Any(x => x.ShowIp == ro.ShowIp))
                 return;
 
-            await _window.Dispatcher.BeginInvoke(new ThreadStart(delegate { ResultObjects.Add(ro); }));
+            await _window.Dispatcher.BeginInvoke(new ThreadStart(delegate
+            {
+                if (ResultObjects.All(x => x.ShowIp != ro.ShowIp))
+                    ResultObjects.Add(ro);
+            }));
             GeoWorker.InsertGeoDataQueue(ro);
             DnsHost.FillIpHost(ro);
             if (BlockNew)

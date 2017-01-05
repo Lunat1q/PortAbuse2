@@ -19,6 +19,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid Margin="0,0,0,5">
                 <Grid.ColumnDefinitions>
@@ -28,7 +29,7 @@
                 <Button x:Name="RefreshButton" Content="Refresh" Grid.Column="1" Margin="5,0,0,0" VerticalAlignment="Center" Click="RefreshButton_Click"/>
                 <ComboBox Grid.Column="0" x:Name="AppListComboBox" Margin="5,0" VerticalAlignment="Center" ItemTemplate="{DynamicResource AppTemplate}" SelectionChanged="AppListComboBox_SelectionChanged"/>
             </Grid>
-            <Grid Margin="105,4,157,5" Grid.Row="2" VerticalAlignment="Center">
+            <Grid Margin="105,4,80,5" Grid.Row="2" VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition/>
@@ -38,8 +39,20 @@
             </Grid>
             <ListBox x:Name="ResultBox" Margin="5,0,0,5" Grid.Row="1" ItemTemplate="{DynamicResource ResultTemplate}" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource HiddenContainer}"/>
             <Button x:Name="SwitchButton" Content="Start" HorizontalAlignment="Left" Margin="0" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="SwitchButton_Click" Background="{DynamicResource PaLightGreen}"/>
-            <controls:ToggleSwitch x:Name="BlockNewSwitch" HorizontalAlignment="Right" Margin="0" Grid.Row="2" OnLabel="New Blocked" OffLabel="Block New" VerticalAlignment="Center" Width="152" Click="BlockNewSwitch_Click" FontSize="14" FontFamily="Segoe UI"/>
+            <Button x:Name="button" Content="Options" HorizontalAlignment="Right" Margin="457,4,0,0" Grid.Row="2" VerticalAlignment="Top" Click="button_Click" Width="75"/>
         </Grid>
+        <controls:Flyout x:Name="ExtraOptions" Header="Options" Position="Right" Margin="10,10,0,10" 
+                             VerticalAlignment="Top" Theme="Light" IsOpen="False">
+            <Grid Margin="10,0,10,10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <controls:ToggleSwitch x:Name="BlockNewSwitch" Margin="0" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Click="BlockNewSwitch_Click" Header="Block all new connections?"/>
+                <controls:ToggleSwitch x:Name="HideOldRecords" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Click="HideOldRecords_OnClickSwitch_Click" Header="Hide old connections (older than 2 minutes)?" Margin="0" Grid.Row="1"/>
+            </Grid>
+        </controls:Flyout>
     </Grid>
 </controls:MetroWindow>
 

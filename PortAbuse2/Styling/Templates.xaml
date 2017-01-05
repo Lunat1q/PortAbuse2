@@ -46,7 +46,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="30"/>
                     <ColumnDefinition Width="100"/>
-                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -54,7 +54,7 @@
                 <Image Source="{Binding Geo.CountryCode, Converter={StaticResource CountryFlagConverter}}"  Grid.Column="0" HorizontalAlignment="Left" Height="24" VerticalAlignment="Stretch" Width="24" Margin="3,0"/>
                 <TextBlock HorizontalAlignment="Left" Margin="5,2" TextWrapping="Wrap" Text="{Binding ShowIp, FallbackValue='100.100.100.100'}" VerticalAlignment="Center"
                        Grid.Row="0" Grid.Column="1"/>
-                <TextBlock HorizontalAlignment="Center" Margin="5,2" TextWrapping="Wrap" Text="{Binding PackagesReceived, FallbackValue='0'}" VerticalAlignment="Center"
+                <TextBlock HorizontalAlignment="Center" Margin="5,2" TextWrapping="Wrap" Text="{Binding PackagesReceived, FallbackValue='0', StringFormat=RxTx: {0}}" VerticalAlignment="Center"
                        Grid.Row="0" Grid.Column="2"/>
                 <TextBlock HorizontalAlignment="Left" Margin="5,2" TextWrapping="Wrap" Text="{Binding Hostname, FallbackValue='NoHost'}" VerticalAlignment="Center"
                        Grid.Row="0" Grid.Column="3"/>
@@ -114,6 +114,9 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger Binding="{Binding (result:ResultObject.Hidden)}" Value="True">
+                <Setter Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding (result:ResultObject.Old)}" Value="True">
                 <Setter Property="Visibility" Value="Collapsed"/>
             </DataTrigger>
         </Style.Triggers>

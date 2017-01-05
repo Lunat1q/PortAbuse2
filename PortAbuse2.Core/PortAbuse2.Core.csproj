@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Admin.cs" />
+    <Compile Include="Common\DateTimeExtensions.cs" />
     <Compile Include="Common\ExThread.cs" />
     <Compile Include="Common\IpHider.cs" />
     <Compile Include="Common\PaNotified.cs" />

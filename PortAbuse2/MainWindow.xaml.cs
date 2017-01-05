@@ -153,5 +153,21 @@ namespace PortAbuse2
             if (tgl?.IsChecked != null)
                 _receiver.BlockNew = (bool)tgl.IsChecked;
         }
+
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            ExtraOptions.IsOpen = !ExtraOptions.IsOpen;
+        }
+
+        private void HideOldRecords_OnClickSwitch_Click(object sender, RoutedEventArgs e)
+        {
+            var tgl = sender as ToggleSwitch;
+            if (tgl?.IsChecked == null) return;
+
+            if ((bool) tgl.IsChecked)
+                _receiver.HideOld();
+            else
+                _receiver.ShowOld();
+        }
     }
 }

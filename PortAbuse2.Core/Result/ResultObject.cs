@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using PortAbuse2.Core.Common;
 
 namespace PortAbuse2.Core.Result
@@ -17,6 +18,17 @@ namespace PortAbuse2.Core.Result
             set
             {
                 _packagesReceived = value;
+                LastReceivedTime = DateTime.UtcNow.ToUnixTime();
+                OnPropertyChanged();
+            }
+        }
+
+        public bool Old
+        {
+            get { return _old; }
+            set
+            {
+                _old = value;
                 OnPropertyChanged();
             }
         }
@@ -30,6 +42,8 @@ namespace PortAbuse2.Core.Result
                 OnPropertyChanged();
             }
         }
+
+        public long LastReceivedTime { get; set; }
 
         public string ShowIp => From ? DestIp : SourceIp;
 
@@ -102,6 +116,7 @@ namespace PortAbuse2.Core.Result
         private string _extraInfo;
         private bool _haveExtraInfo;
         private bool _hidden;
+        private bool _old;
 
         public bool Blocked
         {
@@ -114,6 +129,11 @@ namespace PortAbuse2.Core.Result
                 _blocked = value;
                 OnPropertyChanged();
             }
+        }
+
+        public ResultObject()
+        {
+            LastReceivedTime = DateTime.UtcNow.ToUnixTime();
         }
     }
 }
