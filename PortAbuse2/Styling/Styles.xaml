@@ -3,6 +3,8 @@
                     xmlns:common="clr-namespace:PortAbuse2.Common">
     <common:CountryImageConverter x:Key="CountryFlagConverter" />
     <common:VisibilityConverter  x:Key="VisibilityConverter" />
+    <common:HugeNumbersConverter  x:Key="HugeNumbersConverter" />
+    <common:ByteSizeConverter  x:Key="ByteSizeConverter" />
     <SolidColorBrush x:Key="PaLightGreen" Color="#FFE4FFEF"/>
     <SolidColorBrush x:Key="PaLightRed" Color="#FFFFE4E4"/>
     <SolidColorBrush x:Key="BlockColor" Color="#FFFF5E5E"/>

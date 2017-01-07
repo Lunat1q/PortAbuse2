@@ -43,14 +43,26 @@
         </Grid>
         <controls:Flyout x:Name="ExtraOptions" Header="Options" Position="Right" Margin="10,10,0,10" 
                              VerticalAlignment="Top" Theme="Light" IsOpen="False">
-            <Grid Margin="10,0,10,10">
+            <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="1*"/>
+                    <RowDefinition Height="30"/>
                 </Grid.RowDefinitions>
-                <controls:ToggleSwitch x:Name="BlockNewSwitch" Margin="0" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Click="BlockNewSwitch_Click" Header="Block all new connections?"/>
-                <controls:ToggleSwitch x:Name="HideOldRecords" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Click="HideOldRecords_OnClickSwitch_Click" Header="Hide old connections (older than 2 minutes)?" Margin="0" Grid.Row="1"/>
+                <Grid Margin="10,0,10,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <controls:ToggleSwitch x:Name="BlockNewSwitch" Margin="0" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Click="BlockNewSwitch_Click" Header="Block all new connections?"/>
+                    <controls:ToggleSwitch x:Name="HideOldRecords" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Click="HideOldRecords_OnClickSwitch_Click" Header="Hide old connections (older than 2 minutes)?" Margin="0" Grid.Row="1"/>
+                    <controls:ToggleSwitch x:Name="MinimizeHostnames" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Click="MinimizeHostnames_OnClickSwitch_Click" Header="Minimize Hostnames (strip numbers and useless chars from it)?" Margin="0" Grid.Row="2"/>
+                    <controls:ToggleSwitch x:Name="HideSmallPackets" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Click="HideSmallPackets_OnClickSwitch_Click" Header="Skip small packets in counter (smaller than 32 bytes)?" Margin="0" Grid.Row="3"/>
+                </Grid>
+                <TextBlock x:Name="VersionNumberBlock" HorizontalAlignment="Right" Margin="10,0" Grid.Row="2" TextWrapping="Wrap" Text="0.0.0.0" VerticalAlignment="Center" Foreground="#FF787878" FontStyle="Italic"/>
             </Grid>
         </controls:Flyout>
     </Grid>

@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -27,7 +28,9 @@ namespace PortAbuse2
         
         public MainWindow()
         {
-            _receiver = new Receiver(this);
+            _receiver = new Receiver(this, Properties.Settings.Default.MinimizeHostname,
+                Properties.Settings.Default.HideOldConnections,
+                Properties.Settings.Default.HideSmallPackets);
             InitializeComponent();
 
             Admin.CheckAdmin();
@@ -41,7 +44,21 @@ namespace PortAbuse2
             ResultBox.ItemsSource = _receiver.ResultObjects;
 
             Task.Run(RefreshLoadProceses);
-            //FillDummyData();
+
+            LoadSettings();
+
+#if DEBUG
+            FillDummyData();
+#endif
+        }
+
+        private void LoadSettings()
+        {
+            MinimizeHostnames.IsChecked = Properties.Settings.Default.MinimizeHostname;
+            HideOldRecords.IsChecked = Properties.Settings.Default.HideOldConnections;
+            HideSmallPackets.IsChecked = Properties.Settings.Default.HideSmallPackets;
+
+            VersionNumberBlock.Text = $"v{Assembly.GetExecutingAssembly().GetName().Version}";
         }
 
         private void FillDummyData()
@@ -50,20 +67,30 @@ namespace PortAbuse2
             {
                 SourceAddress = new IPAddress(new byte[]{100,100,100,100}),
                 DestinationAddress = new IPAddress(new byte[] { 100, 100, 100, 100 }),
-                Hostname = "Test1"
+                Hostname = "Test1",
+                PackagesReceived = 662
             });
 
             _receiver.ResultObjects.Add(new ResultObject
             {
                 SourceAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
                 DestinationAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
-                Hostname = "Test1"
+                Hostname = "Test1",
+                PackagesReceived = 32567
             });
             _receiver.ResultObjects.Add(new ResultObject
             {
-                SourceAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
-                DestinationAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
-                Hostname = "Test1"
+                SourceAddress = new IPAddress(new byte[] { 102, 100, 100, 100 }),
+                DestinationAddress = new IPAddress(new byte[] { 102, 100, 100, 100 }),
+                Hostname = "Test1",
+                PackagesReceived = 1000000000
+            });
+            _receiver.ResultObjects.Add(new ResultObject
+            {
+                SourceAddress = new IPAddress(new byte[] { 103, 100, 100, 100 }),
+                DestinationAddress = new IPAddress(new byte[] { 103, 100, 100, 100 }),
+                Hostname = "Test1",
+                PackagesReceived = 3756412
             });
         }
 
@@ -164,10 +191,38 @@ namespace PortAbuse2
             var tgl = sender as ToggleSwitch;
             if (tgl?.IsChecked == null) return;
 
+            Properties.Settings.Default.HideOldConnections = (bool)tgl.IsChecked;
+            Properties.Settings.Default.Save();
+
             if ((bool) tgl.IsChecked)
                 _receiver.HideOld();
             else
                 _receiver.ShowOld();
+        }
+
+        private void MinimizeHostnames_OnClickSwitch_Click(object sender, RoutedEventArgs e)
+        {
+            var tgl = sender as ToggleSwitch;
+            if (tgl?.IsChecked == null) return;
+
+            Properties.Settings.Default.MinimizeHostname = (bool) tgl.IsChecked;
+            Properties.Settings.Default.Save();
+
+            if ((bool)tgl.IsChecked)
+                _receiver.MinimizeHostnames();
+            else
+                _receiver.UnminimizeHostnames();
+        }
+
+        private void HideSmallPackets_OnClickSwitch_Click(object sender, RoutedEventArgs e)
+        {
+            var tgl = sender as ToggleSwitch;
+            if (tgl?.IsChecked == null) return;
+
+            Properties.Settings.Default.HideSmallPackets = (bool)tgl.IsChecked;
+            Properties.Settings.Default.Save();
+
+            _receiver.HideSmallPackets = (bool) tgl.IsChecked;
         }
     }
 }

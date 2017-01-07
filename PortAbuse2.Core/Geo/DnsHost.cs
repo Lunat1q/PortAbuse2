@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Net;
+using System.Text.RegularExpressions;
 using PortAbuse2.Core.Result;
 
 namespace PortAbuse2.Core.Geo
 {
     public static class DnsHost
     {
-        public static async void FillIpHost(ResultObject obj)
+        public static async void FillIpHost(ResultObject obj, bool minimize)
         {
             var ip = IPAddress.Parse(obj.ShowIp);
             string hostName;
@@ -18,7 +19,15 @@ namespace PortAbuse2.Core.Geo
             {
                 hostName = obj.ShowIp.Replace('.', '-') + ".NoHost";
             }
-            obj.Hostname = hostName;
+            obj.DetectedHostname = hostName;
+            obj.Hostname = !minimize ? hostName : MinimizeHostname(hostName);
+        }
+
+        public static string MinimizeHostname(string hostName)
+        {
+            if (hostName != null && hostName.Length > 35)
+                hostName = Regex.Replace(hostName, @"[\d-]", string.Empty) + "*";
+            return hostName;
         }
     }
 }

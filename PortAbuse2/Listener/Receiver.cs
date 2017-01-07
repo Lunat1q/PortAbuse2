@@ -19,7 +19,7 @@ namespace PortAbuse2.Listener
     internal class Receiver
     {
         private readonly bool _debug;
-        private bool _hideOld = false;
+        private bool _hideOld;
         public ObservableCollection<ResultObject> ResultObjects = new ObservableCollection<ResultObject>();
         private byte[] _byteData = new byte[65536];
         public bool ContinueCapturing; //A flag to check if packets are to be captured or not
@@ -29,12 +29,17 @@ namespace PortAbuse2.Listener
         private readonly Window _window;
         private readonly string _logFolder = "raw";
         public int OldTimeLimitSeconds = 120;
+        public bool _minimizeHostname;
 
         public bool BlockNew = false;
+        public bool HideSmallPackets;
 
-        public Receiver(Window window)
+        public Receiver(Window window, bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false)
         {
             _window = window;
+            _minimizeHostname = minimizeHostname;
+            _hideOld = hideOld;
+            HideSmallPackets = hideSmall;
 #if DEBUG
             _debug = true;
 #endif
@@ -52,6 +57,26 @@ namespace PortAbuse2.Listener
             foreach (var ro in ResultObjects)
             {
                 ro.Old = false;
+            }
+        }
+
+        public void MinimizeHostnames()
+        {
+            _minimizeHostname = true;
+            Task.Delay(200);
+            foreach (var ro in ResultObjects)
+            {
+                ro.Hostname = DnsHost.MinimizeHostname(ro.DetectedHostname);
+            }
+        }
+
+        public void UnminimizeHostnames()
+        {
+            _minimizeHostname = false;
+            Task.Delay(200);
+            foreach (var ro in ResultObjects)
+            {
+                ro.Hostname = ro.DetectedHostname;
             }
         }
 
@@ -206,7 +231,8 @@ namespace PortAbuse2.Listener
             //Thread safe adding of the nodes
             if (existedDetection != null)
             {
-                if (ipHeader.MessageLength > 43)
+                existedDetection.DataTransfered += ipHeader.MessageLength;
+                if (ipHeader.MessageLength > 32 || !HideSmallPackets)
                 {
                     //if (_debug)
                     //    FileAccess.AppendFile(_logFolder, $"{existedDetection.ShowIp}.dump",
@@ -224,7 +250,8 @@ namespace PortAbuse2.Listener
                 DestinationAddress = ipHeader.DestinationAddress,
                 From = fromMe,
                 PackagesReceived = 1,
-                Application = SelectedAppEntry
+                Application = SelectedAppEntry,
+                DataTransfered = ipHeader.MessageLength
             };
             ro.Hidden = IpHider.Check(SelectedAppEntry.Name, ro.ShowIp);
             //if (_debug)
@@ -243,7 +270,7 @@ namespace PortAbuse2.Listener
                     ResultObjects.Add(ro);
             }));
             GeoWorker.InsertGeoDataQueue(ro);
-            DnsHost.FillIpHost(ro);
+            DnsHost.FillIpHost(ro, _minimizeHostname);
             if (BlockNew)
             {
                 Block.DoInSecBlock(ro);

@@ -8,6 +8,15 @@ namespace PortAbuse2.Core.Result
     {
         public IPAddress SourceAddress;
         public IPAddress DestinationAddress;
+        private bool _blocked;
+        private int _packagesReceived;
+        private string _extraInfo;
+        private bool _haveExtraInfo;
+        private bool _hidden;
+        private bool _old;
+        private long _dataTransfered;
+        private GeoData _geo;
+        private bool _from;
 
         public string SourceIp => SourceAddress.ToString();
         public string DestIp => DestinationAddress.ToString();
@@ -19,6 +28,16 @@ namespace PortAbuse2.Core.Result
             {
                 _packagesReceived = value;
                 LastReceivedTime = DateTime.UtcNow.ToUnixTime();
+                OnPropertyChanged();
+            }
+        }
+
+        public long DataTransfered
+        {
+            get { return _dataTransfered; }
+            set
+            {
+                _dataTransfered = value;
                 OnPropertyChanged();
             }
         }
@@ -70,11 +89,14 @@ namespace PortAbuse2.Core.Result
         }
 
         private string _hostname;
+        public string DetectedHostname { get; set; }
+
         public string Hostname
         {
             get
             {
-                return _hostname; }
+                return _hostname;
+            }
             set
             {
                 _hostname = value;
@@ -83,8 +105,6 @@ namespace PortAbuse2.Core.Result
         }
 
         public AppEntry Application { get; set; }
-
-        private GeoData _geo;
 
         public GeoData Geo
         {
@@ -96,7 +116,7 @@ namespace PortAbuse2.Core.Result
             }
         }
 
-        private bool _from;
+      
 
         public bool From
         {
@@ -110,13 +130,6 @@ namespace PortAbuse2.Core.Result
                 OnPropertyChanged();
             }
         }
-
-        private bool _blocked;
-        private int _packagesReceived;
-        private string _extraInfo;
-        private bool _haveExtraInfo;
-        private bool _hidden;
-        private bool _old;
 
         public bool Blocked
         {

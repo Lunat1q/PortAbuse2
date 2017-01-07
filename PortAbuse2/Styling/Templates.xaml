@@ -54,8 +54,6 @@
                 <Image Source="{Binding Geo.CountryCode, Converter={StaticResource CountryFlagConverter}}"  Grid.Column="0" HorizontalAlignment="Left" Height="24" VerticalAlignment="Stretch" Width="24" Margin="3,0"/>
                 <TextBlock HorizontalAlignment="Left" Margin="5,2" TextWrapping="Wrap" Text="{Binding ShowIp, FallbackValue='100.100.100.100'}" VerticalAlignment="Center"
                        Grid.Row="0" Grid.Column="1"/>
-                <TextBlock HorizontalAlignment="Center" Margin="5,2" TextWrapping="Wrap" Text="{Binding PackagesReceived, FallbackValue='0', StringFormat=RxTx: {0}}" VerticalAlignment="Center"
-                       Grid.Row="0" Grid.Column="2"/>
                 <TextBlock HorizontalAlignment="Left" Margin="5,2" TextWrapping="Wrap" Text="{Binding Hostname, FallbackValue='NoHost'}" VerticalAlignment="Center"
                        Grid.Row="0" Grid.Column="3"/>
                 <TextBlock HorizontalAlignment="Left" Margin="5,2" TextWrapping="Wrap" Text="{Binding Geo.Result, FallbackValue='Nowhere'}" VerticalAlignment="Center"
@@ -69,11 +67,21 @@
                         <RowDefinition/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <Button Content="B" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Width="45" Margin="2,0" Background="{DynamicResource BlockColor}" Click="Block_Click"/>
-                    <Button x:Name="ButtonBlocked30" Content="B 30s" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Width="45" Margin="2,0" Background="{DynamicResource Block30Color}"
+                    <Button Content="B" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Width="40" Margin="2,0" Background="{DynamicResource BlockColor}" Click="Block_Click"/>
+                    <Button x:Name="ButtonBlocked30" Content="B 30s" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Width="40" Margin="2,0" Background="{DynamicResource Block30Color}"
                     Click="Block30Sec_Click"/>
                     <TextBlock x:Name="ExtraInfoBox" HorizontalAlignment="Center" Margin="5,2" TextWrapping="Wrap" Text="{Binding ExtraInfo, FallbackValue='NoInfo'}" VerticalAlignment="Center"
                        Grid.Row="1" Grid.Column="0" Visibility="Collapsed" Grid.ColumnSpan="2" FontSize="9" FontStyle="Italic"/>
+                </Grid>
+                <Grid Grid.Column="2" MinWidth="50" HorizontalAlignment="Stretch" Height="Auto" Margin="2,0" Grid.Row="0" Grid.RowSpan="1" VerticalAlignment="Stretch" Width="Auto">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock HorizontalAlignment="Center" Margin="0,1" TextWrapping="Wrap" Text="{Binding PackagesReceived, Converter={StaticResource HugeNumbersConverter}, FallbackValue=0, StringFormat=RxTx: \{0\}}" VerticalAlignment="Center"
+                       Grid.Row="0" Grid.Column="0" FontSize="7"/>
+                    <TextBlock HorizontalAlignment="Center" Margin="0,1" TextWrapping="Wrap" Text="{Binding DataTransfered, Converter={StaticResource ByteSizeConverter}, FallbackValue=0, StringFormat=Size: \{0\}}" VerticalAlignment="Center"
+                        Grid.Row="1" Grid.Column="0" FontSize="7"/>
                 </Grid>
             </Grid>
         </Grid>
