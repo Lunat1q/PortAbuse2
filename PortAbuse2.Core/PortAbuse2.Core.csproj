@@ -44,6 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationExtensions\IApplicationExtension.cs" />
+    <Compile Include="ApplicationExtensions\WarframeApp.cs" />
     <Compile Include="Common\Admin.cs" />
     <Compile Include="Common\DateTimeExtensions.cs" />
     <Compile Include="Common\ExThread.cs" />
@@ -57,6 +59,7 @@
     <Compile Include="Ip\IpEntry.cs" />
     <Compile Include="Ip\IpInterface.cs" />
     <Compile Include="Common\AppEntry.cs" />
+    <Compile Include="Listener\CoreReceiver.cs" />
     <Compile Include="Parser\Compressor.cs" />
     <Compile Include="Parser\Package.cs" />
     <Compile Include="Port\Port.cs" />

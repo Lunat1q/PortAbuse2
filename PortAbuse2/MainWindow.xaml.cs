@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using MahApps.Metro.Controls;
 using PortAbuse2.Applications;
+using PortAbuse2.Common;
 using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Ip;
 using PortAbuse2.Core.Result;
@@ -25,12 +26,15 @@ namespace PortAbuse2
     {
         private readonly ObservableCollection<AppIconEntry> _allAppWithPorts = new ObservableCollection<AppIconEntry>();
         private readonly Receiver _receiver;
+        private readonly ExtensionControl _extensionControl;
         
         public MainWindow()
         {
             _receiver = new Receiver(this, Properties.Settings.Default.MinimizeHostname,
                 Properties.Settings.Default.HideOldConnections,
                 Properties.Settings.Default.HideSmallPackets);
+
+            _extensionControl = new ExtensionControl(_receiver);
             InitializeComponent();
 
             Admin.CheckAdmin();
@@ -163,6 +167,7 @@ namespace PortAbuse2
         private async void MetroWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             IpHider.Save();
+            _extensionControl.Stop();
             await Block.Wait();
         }
 
@@ -172,6 +177,7 @@ namespace PortAbuse2
             var app = cb?.SelectedItem as AppIconEntry;
             if (app == null) return;
             _receiver.SelectedAppEntry = app;
+            _extensionControl.AppSelected(app.Name);
         }
 
         private void BlockNewSwitch_Click(object sender, RoutedEventArgs e)

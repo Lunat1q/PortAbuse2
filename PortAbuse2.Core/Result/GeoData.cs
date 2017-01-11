@@ -57,7 +57,7 @@ namespace PortAbuse2.Core.Result
             }
         }
 
-        public string Result => $"{(string.IsNullOrEmpty(Index)?"" : $"[{Index}]")}{(string.IsNullOrEmpty(Country)? "" : $" - {Country}")}{(string.IsNullOrEmpty(City)?"":$" - {City}")}{(string.IsNullOrEmpty(Isp) ? "" : $" [{Isp}]")}";
+        public string Result => $"{(string.IsNullOrEmpty(Index)?"" : $"[{Index}] - ")}{(string.IsNullOrEmpty(Country)? "" : $"{Country}")}{(string.IsNullOrEmpty(City)?"":$" - {City}")}{(string.IsNullOrEmpty(Isp) ? "" : $" [{Isp}]")}";
 
         public void Merge(GeoData geo)
         {

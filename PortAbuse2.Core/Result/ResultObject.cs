@@ -64,6 +64,8 @@ namespace PortAbuse2.Core.Result
 
         public long LastReceivedTime { get; set; }
 
+        public long DetectionStamp { get; set; }
+
         public string ShowIp => From ? DestIp : SourceIp;
 
         public string ExtraInfo
@@ -147,6 +149,7 @@ namespace PortAbuse2.Core.Result
         public ResultObject()
         {
             LastReceivedTime = DateTime.UtcNow.ToUnixTime();
+            DetectionStamp = LastReceivedTime;
         }
     }
 }

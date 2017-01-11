@@ -83,6 +83,7 @@
     <Compile Include="Applications\AppList.cs" />
     <Compile Include="Common\Admin.cs" />
     <Compile Include="Common\Converters.cs" />
+    <Compile Include="Common\ExtensionControl.cs" />
     <Compile Include="Common\Images.cs" />
     <Compile Include="Listener\Receiver.cs" />
     <Compile Include="MainWindow.xaml.cs">
