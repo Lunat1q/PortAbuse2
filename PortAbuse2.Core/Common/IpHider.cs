@@ -34,6 +34,14 @@ namespace PortAbuse2.Core.Common
             if (!HiddenIps[appName].Contains(ip))
                 HiddenIps[appName].Add(ip);
         }
+
+        public static void Remove(string appName, string ip)
+        {
+            if (!HiddenIps.ContainsKey(appName)) return;
+            if (HiddenIps[appName].Contains(ip))
+                HiddenIps[appName].Remove(ip);
+        }
+
         public static bool Check(string appName, string ip)
         {
             return HiddenIps.ContainsKey(appName) && HiddenIps[appName].Contains(ip);

@@ -14,6 +14,7 @@ using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Ip;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
+using PortAbuse2.KeyCapture;
 using PortAbuse2.Listener;
 using Admin = PortAbuse2.Common.Admin;
 
@@ -27,7 +28,8 @@ namespace PortAbuse2
         private readonly ObservableCollection<AppIconEntry> _allAppWithPorts = new ObservableCollection<AppIconEntry>();
         private readonly Receiver _receiver;
         private readonly ExtensionControl _extensionControl;
-        
+        private readonly KeyEventsHandling _keyEventsHandling;
+
         public MainWindow()
         {
             _receiver = new Receiver(this, Properties.Settings.Default.MinimizeHostname,
@@ -50,6 +52,8 @@ namespace PortAbuse2
             Task.Run(RefreshLoadProceses);
 
             LoadSettings();
+
+            _keyEventsHandling = new KeyEventsHandling();
 
 #if DEBUG
             FillDummyData();
@@ -168,6 +172,7 @@ namespace PortAbuse2
         {
             IpHider.Save();
             _extensionControl.Stop();
+            _keyEventsHandling.Stop();
             await Block.Wait();
         }
 
@@ -211,7 +216,7 @@ namespace PortAbuse2
             var tgl = sender as ToggleSwitch;
             if (tgl?.IsChecked == null) return;
 
-            Properties.Settings.Default.MinimizeHostname = (bool) tgl.IsChecked;
+            Properties.Settings.Default.MinimizeHostname = (bool)tgl.IsChecked;
             Properties.Settings.Default.Save();
 
             if ((bool)tgl.IsChecked)
@@ -229,6 +234,17 @@ namespace PortAbuse2
             Properties.Settings.Default.Save();
 
             _receiver.HideSmallPackets = (bool) tgl.IsChecked;
+        }
+
+        private void ShowAllHiddenIps_OnClick(object sender, RoutedEventArgs e)
+        {
+            var tgl = sender as ToggleSwitch;
+            if (tgl?.IsChecked == null) return;
+
+            if ((bool)tgl.IsChecked)
+                _receiver.SetForceShowHiddenIps();
+            else
+                _receiver.SetForceShowHiddenIps(false);
         }
     }
 }

@@ -33,6 +33,7 @@ namespace PortAbuse2.Core.Listener
 
         public bool BlockNew = false;
         public bool HideSmallPackets;
+        private bool _forceShowHiddenIps;
 
         public CoreReceiver(bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false)
         {
@@ -66,6 +67,16 @@ namespace PortAbuse2.Core.Listener
             foreach (var ro in ResultObjects)
             {
                 ro.Hostname = DnsHost.MinimizeHostname(ro.DetectedHostname);
+            }
+        }
+
+        public void SetForceShowHiddenIps(bool forceShow = true)
+        {
+            _forceShowHiddenIps = forceShow;
+            Task.Delay(200);
+            foreach (var ro in ResultObjects)
+            {
+                ro.ForceShow = _forceShowHiddenIps;
             }
         }
 
@@ -251,7 +262,8 @@ namespace PortAbuse2.Core.Listener
                 From = fromMe,
                 PackagesReceived = 1,
                 Application = SelectedAppEntry,
-                DataTransfered = ipHeader.MessageLength
+                DataTransfered = ipHeader.MessageLength,
+                ForceShow = _forceShowHiddenIps
             };
             ro.Hidden = IpHider.Check(SelectedAppEntry.Name, ro.ShowIp);
             //if (_debug)

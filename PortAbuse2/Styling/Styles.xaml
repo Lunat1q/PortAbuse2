@@ -10,5 +10,6 @@
     <SolidColorBrush x:Key="BlockColor" Color="#FFFF5E5E"/>
     <SolidColorBrush x:Key="Block30Color" Color="#FF96DEFF"/>
     <SolidColorBrush x:Key="UnblockColor" Color="#FF5EFF99"/>
+    <SolidColorBrush x:Key="HiddenRowColor" Color="#FF5D002E"/>
 
 </ResourceDictionary>

@@ -85,6 +85,9 @@
     <Compile Include="Common\Converters.cs" />
     <Compile Include="Common\ExtensionControl.cs" />
     <Compile Include="Common\Images.cs" />
+    <Compile Include="KeyCapture\KeyEventsHandling.cs" />
+    <Compile Include="KeyCapture\KeyListener.cs" />
+    <Compile Include="KeyCapture\WindowHandler.cs" />
     <Compile Include="Listener\Receiver.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -132,6 +135,10 @@
     <EmbeddedResource Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\GlobalHook\GlobalHook.csproj">
+      <Project>{b4230040-275d-45d5-9811-0c1841fa6033}</Project>
+      <Name>GlobalHook</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PortAbuse2.Core\PortAbuse2.Core.csproj">
       <Project>{6aadcad8-1d3e-41ef-934e-aec5da231057}</Project>
       <Name>PortAbuse2.Core</Name>

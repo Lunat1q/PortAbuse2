@@ -21,6 +21,22 @@ namespace PortAbuse2.Core.Result
         public string SourceIp => SourceAddress.ToString();
         public string DestIp => DestinationAddress.ToString();
 
+
+        public bool ForceShow
+        {
+            get { return _forceShow; }
+            set
+            {
+                _forceShow = value;
+                OnPropertyChanged();
+                OnPropertyChanged("Hidden");
+                OnPropertyChanged("ForseShown");
+                OnPropertyChanged("HiddenProp");
+            }
+        }
+
+        public bool ForseShown => _forceShow && _hidden;
+
         public int PackagesReceived
         {
             get { return _packagesReceived; }
@@ -52,6 +68,18 @@ namespace PortAbuse2.Core.Result
             }
         }
 
+        public bool HiddenProp
+        {
+            get { return _hidden && !_forceShow; }
+            set
+            {
+                _hidden = value;
+                OnPropertyChanged();
+                OnPropertyChanged("Hidden");
+                OnPropertyChanged("ForseShown");
+            }
+        }
+
         public bool Hidden
         {
             get { return _hidden; }
@@ -59,6 +87,8 @@ namespace PortAbuse2.Core.Result
             {
                 _hidden = value;
                 OnPropertyChanged();
+                OnPropertyChanged("HiddenProp");
+                OnPropertyChanged("ForseShown");
             }
         }
 
@@ -91,6 +121,7 @@ namespace PortAbuse2.Core.Result
         }
 
         private string _hostname;
+        private bool _forceShow;
         public string DetectedHostname { get; set; }
 
         public string Hostname
@@ -144,6 +175,11 @@ namespace PortAbuse2.Core.Result
                 _blocked = value;
                 OnPropertyChanged();
             }
+        }
+
+        public override string ToString()
+        {
+            return ShowIp;
         }
 
         public ResultObject()

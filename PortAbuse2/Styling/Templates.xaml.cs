@@ -20,13 +20,13 @@ namespace PortAbuse2.Styling
             if (!obj.Blocked)
             {
                 Block.DoBlock(obj);
-                btn.Content = "UnBlock";
+                btn.Content = "UnB";
                 var unblockColor = btn.FindResource("UnblockColor") as SolidColorBrush;
                 btn.Background = unblockColor;
             }
             else
             {
-                btn.Content = "Block";
+                btn.Content = "B";
                 Block.DoUnBlock(obj);
                 var blockColor = btn.FindResource("BlockColor") as SolidColorBrush;
                 btn.Background = blockColor;
@@ -57,10 +57,18 @@ namespace PortAbuse2.Styling
             {
                 if (ro.Application != null)
                 {
-                    IpHider.Add(ro.Application.Name, ro.ShowIp);
-                    ro.Application.HiddenCount++;
+                    if (!ro.Hidden)
+                    {
+                        IpHider.Add(ro.Application.Name, ro.ShowIp);
+                        ro.Application.HiddenCount = IpHider.CountHidden(ro.Application.Name);
+                    }
+                    else
+                    {
+                        IpHider.Remove(ro.Application.Name, ro.ShowIp);
+                        ro.Application.HiddenCount = IpHider.CountHidden(ro.Application.Name);
+                    }
                 }
-                ro.Hidden = true;
+                ro.Hidden = !ro.Hidden;
             }
         }
 

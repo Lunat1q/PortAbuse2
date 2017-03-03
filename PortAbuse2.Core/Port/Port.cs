@@ -8,5 +8,7 @@
         public string PortNumber { get; set; }
         public string Protocol { get; set; }
         public string ProcessName { get; set; }
+
+        public override string ToString() => $"{ProcessName} : {Protocol} : {PortNumber}";
     }
 }
