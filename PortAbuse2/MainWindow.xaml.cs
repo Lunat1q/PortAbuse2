@@ -1,15 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using MahApps.Metro.Controls;
 using PortAbuse2.Applications;
 using PortAbuse2.Common;
+using PortAbuse2.Controls;
 using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Ip;
 using PortAbuse2.Core.Result;
@@ -26,18 +25,21 @@ namespace PortAbuse2
     public partial class MainWindow
     {
         private readonly ObservableCollection<AppIconEntry> _allAppWithPorts = new ObservableCollection<AppIconEntry>();
-        private readonly Receiver _receiver;
+        internal readonly Receiver Receiver;
         private readonly ExtensionControl _extensionControl;
         private readonly KeyEventsHandling _keyEventsHandling;
 
         public MainWindow()
         {
-            _receiver = new Receiver(this, Properties.Settings.Default.MinimizeHostname,
+            Receiver = new Receiver(this, Properties.Settings.Default.MinimizeHostname,
                 Properties.Settings.Default.HideOldConnections,
                 Properties.Settings.Default.HideSmallPackets);
 
-            _extensionControl = new ExtensionControl(_receiver);
+            _extensionControl = new ExtensionControl(Receiver);
             InitializeComponent();
+
+            //"hacky" fix of designer glitch
+            FlyOutGrid.Visibility = Visibility.Visible;
 
             Admin.CheckAdmin();
 
@@ -47,11 +49,11 @@ namespace PortAbuse2
 
             AppListComboBox.ItemsSource = _allAppWithPorts;
 
-            ResultBox.ItemsSource = _receiver.ResultObjects;
+            ResultBox.ItemsSource = Receiver.ResultObjects;
 
             Task.Run(RefreshLoadProceses);
 
-            LoadSettings();
+            SettingPage.SetMainWindow(this);
 
             _keyEventsHandling = new KeyEventsHandling();
 
@@ -60,18 +62,9 @@ namespace PortAbuse2
 #endif
         }
 
-        private void LoadSettings()
-        {
-            MinimizeHostnames.IsChecked = Properties.Settings.Default.MinimizeHostname;
-            HideOldRecords.IsChecked = Properties.Settings.Default.HideOldConnections;
-            HideSmallPackets.IsChecked = Properties.Settings.Default.HideSmallPackets;
-
-            VersionNumberBlock.Text = $"v{Assembly.GetExecutingAssembly().GetName().Version}";
-        }
-
         private void FillDummyData()
         {
-            _receiver.ResultObjects.Add(new ResultObject
+            Receiver.ResultObjects.Add(new ResultObject
             {
                 SourceAddress = new IPAddress(new byte[]{100,100,100,100}),
                 DestinationAddress = new IPAddress(new byte[] { 100, 100, 100, 100 }),
@@ -79,21 +72,21 @@ namespace PortAbuse2
                 PackagesReceived = 662
             });
 
-            _receiver.ResultObjects.Add(new ResultObject
+            Receiver.ResultObjects.Add(new ResultObject
             {
                 SourceAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
                 DestinationAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
                 Hostname = "Test1",
                 PackagesReceived = 32567
             });
-            _receiver.ResultObjects.Add(new ResultObject
+            Receiver.ResultObjects.Add(new ResultObject
             {
                 SourceAddress = new IPAddress(new byte[] { 102, 100, 100, 100 }),
                 DestinationAddress = new IPAddress(new byte[] { 102, 100, 100, 100 }),
                 Hostname = "Test1",
                 PackagesReceived = 1000000000
             });
-            _receiver.ResultObjects.Add(new ResultObject
+            Receiver.ResultObjects.Add(new ResultObject
             {
                 SourceAddress = new IPAddress(new byte[] { 103, 100, 100, 100 }),
                 DestinationAddress = new IPAddress(new byte[] { 103, 100, 100, 100 }),
@@ -118,6 +111,11 @@ namespace PortAbuse2
             }
         }
 
+        public void RemapBlockButtons(int amount)
+        {
+            BlockTimeContainer.CurrentBlockTime = amount;
+        }
+
         private void LoadInterfaces()
         {
             var interfaces = IpInterface.GetIpInterfaces();
@@ -139,7 +137,7 @@ namespace PortAbuse2
         {
             var btn = sender as Button;
 
-            if (_receiver.SelectedAppEntry == null)
+            if (Receiver.SelectedAppEntry == null)
             {
                 var wfApp = _allAppWithPorts.FirstOrDefault(x => x.Name.ToLower().Contains("warframe"));
                 if (wfApp != null)
@@ -148,20 +146,20 @@ namespace PortAbuse2
                 }
             }
 
-            if (btn == null || _receiver.SelectedAppEntry == null) return;
-            if (!_receiver.ContinueCapturing)
+            if (btn == null || Receiver.SelectedAppEntry == null) return;
+            if (!Receiver.ContinueCapturing)
             {
-                _receiver.Clear();
-                _receiver.ContinueCapturing = true;
+                Receiver.Clear();
+                Receiver.ContinueCapturing = true;
                 btn.Content = "Stop";
-                _receiver.StartListener(InterfaceBox.SelectedItem.ToString());
+                Receiver.StartListener(InterfaceBox.SelectedItem.ToString());
                 var red = FindResource("PaLightRed") as SolidColorBrush;
                 btn.Background = red;
             }
             else
             {
                 btn.Content = "Start";
-                _receiver.ContinueCapturing = false;
+                Receiver.ContinueCapturing = false;
                 var green = FindResource("PaLightGreen") as SolidColorBrush;
                 btn.Background = green;
             }
@@ -181,70 +179,15 @@ namespace PortAbuse2
             var cb = sender as ComboBox;
             var app = cb?.SelectedItem as AppIconEntry;
             if (app == null) return;
-            _receiver.SelectedAppEntry = app;
+            Receiver.SelectedAppEntry = app;
             _extensionControl.AppSelected(app.Name);
         }
 
-        private void BlockNewSwitch_Click(object sender, RoutedEventArgs e)
-        {
-            var tgl = sender as ToggleSwitch;
-            if (tgl?.IsChecked != null)
-                _receiver.BlockNew = (bool)tgl.IsChecked;
-        }
+
 
         private void button_Click(object sender, RoutedEventArgs e)
         {
             ExtraOptions.IsOpen = !ExtraOptions.IsOpen;
-        }
-
-        private void HideOldRecords_OnClickSwitch_Click(object sender, RoutedEventArgs e)
-        {
-            var tgl = sender as ToggleSwitch;
-            if (tgl?.IsChecked == null) return;
-
-            Properties.Settings.Default.HideOldConnections = (bool)tgl.IsChecked;
-            Properties.Settings.Default.Save();
-
-            if ((bool) tgl.IsChecked)
-                _receiver.HideOld();
-            else
-                _receiver.ShowOld();
-        }
-
-        private void MinimizeHostnames_OnClickSwitch_Click(object sender, RoutedEventArgs e)
-        {
-            var tgl = sender as ToggleSwitch;
-            if (tgl?.IsChecked == null) return;
-
-            Properties.Settings.Default.MinimizeHostname = (bool)tgl.IsChecked;
-            Properties.Settings.Default.Save();
-
-            if ((bool)tgl.IsChecked)
-                _receiver.MinimizeHostnames();
-            else
-                _receiver.UnminimizeHostnames();
-        }
-
-        private void HideSmallPackets_OnClickSwitch_Click(object sender, RoutedEventArgs e)
-        {
-            var tgl = sender as ToggleSwitch;
-            if (tgl?.IsChecked == null) return;
-
-            Properties.Settings.Default.HideSmallPackets = (bool)tgl.IsChecked;
-            Properties.Settings.Default.Save();
-
-            _receiver.HideSmallPackets = (bool) tgl.IsChecked;
-        }
-
-        private void ShowAllHiddenIps_OnClick(object sender, RoutedEventArgs e)
-        {
-            var tgl = sender as ToggleSwitch;
-            if (tgl?.IsChecked == null) return;
-
-            if ((bool)tgl.IsChecked)
-                _receiver.SetForceShowHiddenIps();
-            else
-                _receiver.SetForceShowHiddenIps(false);
         }
     }
 }

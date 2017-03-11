@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Geo;
@@ -25,9 +25,20 @@ namespace PortAbuse2.Core.Listener
         public AppEntry SelectedAppEntry;
         public string InterfaceLocalIp;
         public Socket MainSocket; //The socket which captures all incoming packets
-        private readonly string _logFolder = "raw";
+        //private readonly string _logFolder = "raw";
         public int OldTimeLimitSeconds = 120;
-        public bool _minimizeHostname;
+        public bool MinimizeHostname;
+
+        public delegate void MessageDetectedEventHandler(
+            IPAddress ipDest,
+            IPAddress ipSource,
+            byte[] data,
+            bool direction,
+            ResultObject resultObject,
+            IEnumerable<Tuple<string, string>> protocol
+        );
+
+        public event MessageDetectedEventHandler Received;
 
         public Func<ResultObject, bool> InvokedAdd { get; set; }
 
@@ -37,7 +48,7 @@ namespace PortAbuse2.Core.Listener
 
         public CoreReceiver(bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false)
         {
-            _minimizeHostname = minimizeHostname;
+            MinimizeHostname = minimizeHostname;
             _hideOld = hideOld;
             HideSmallPackets = hideSmall;
 #if DEBUG
@@ -62,7 +73,7 @@ namespace PortAbuse2.Core.Listener
 
         public void MinimizeHostnames()
         {
-            _minimizeHostname = true;
+            MinimizeHostname = true;
             Task.Delay(200);
             foreach (var ro in ResultObjects)
             {
@@ -82,7 +93,7 @@ namespace PortAbuse2.Core.Listener
 
         public void UnminimizeHostnames()
         {
-            _minimizeHostname = false;
+            MinimizeHostname = false;
             Task.Delay(200);
             foreach (var ro in ResultObjects)
             {
@@ -90,7 +101,7 @@ namespace PortAbuse2.Core.Listener
             }
         }
 
-        private async Task CleanupDupes() //TODO: Test if it needed at all
+        private async Task CleanupDupes() //TODO: Test if its needed at all
         {
             while (ContinueCapturing)
             {
@@ -180,6 +191,14 @@ namespace PortAbuse2.Core.Listener
             MainSocket.BeginReceive(_byteData, 0, _byteData.Length, SocketFlags.None, OnReceive, null);
         }
 
+        public void SendToUdp(IPAddress ip, byte[] data, int port)
+        {
+            var remoteEndPoint = new IPEndPoint(ip, port);
+            var server = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.Udp);
+            server.Connect(remoteEndPoint);
+            server.SendTo(data, data.Length, SocketFlags.None, remoteEndPoint);
+        }
+
         private void OnReceive(IAsyncResult ar)
         {
             try
@@ -231,26 +250,21 @@ namespace PortAbuse2.Core.Listener
                     x =>
                         Equals(x.DestinationAddress, ipHeader.SourceAddress) ||
                         Equals(x.SourceAddress, ipHeader.SourceAddress))).FirstOrDefault();
-
-            //var msgBytes = ipHeader.Data.Take(ipHeader.MessageLength).ToArray();
-            //var msg = Encoding.Default.GetString(msgBytes);
-
-            //Encoding iso = Encoding.GetEncoding("ISO-8859-1");
-            //byte[] isoBytes = Encoding.Convert(anscii, iso, msgBytes);
-            //string isoMsg = iso.GetString(msgBytes);
-            //string isoMsgUtf8 = Encoding.UTF8.GetString(msgBytes);
-            //Thread safe adding of the nodes
+            
             if (existedDetection != null)
             {
+                Received?.Invoke(
+                    ipHeader.DestinationAddress,
+                    ipHeader.SourceAddress,
+                    ipHeader.Data.Take(ipHeader.MessageLength).ToArray(),
+                    fromMe,
+                    existedDetection,
+                    port
+                );
+
                 existedDetection.DataTransfered += ipHeader.MessageLength;
                 if (ipHeader.MessageLength > 32 || !HideSmallPackets)
                 {
-                    //if (_debug)
-                    //    FileAccess.AppendFile(_logFolder, $"{existedDetection.ShowIp}.dump",
-                    //        $"str:{msg}\r\n" +
-                    //        $"isoStr:{isoMsg}\r\n" +
-                    //        $"utfStr:{isoMsgUtf8}\r\n" +
-                    //        $"byte:{BitConverter.ToString(ipHeader.Data.Take(ipHeader.MessageLength).ToArray())}\r\n---\r\n");
                     existedDetection.PackagesReceived++;
                 }
                 return;
@@ -266,12 +280,6 @@ namespace PortAbuse2.Core.Listener
                 ForceShow = _forceShowHiddenIps
             };
             ro.Hidden = IpHider.Check(SelectedAppEntry.Name, ro.ShowIp);
-            //if (_debug)
-            //    FileAccess.AppendFile(_logFolder, $"{ro.ShowIp}.dump",
-            //        $"str:{msg}\r\n" +
-            //        $"isoStr:{isoMsg}\r\n" +
-            //        $"utfStr:{isoMsgUtf8}\r\n" +
-            //        $"byte:{BitConverter.ToString(ipHeader.Data.Take(ipHeader.MessageLength).ToArray())}\r\n---\r\n");
 
             if (ResultObjects.Any(x => x.ShowIp == ro.ShowIp))
                 return;
@@ -287,7 +295,7 @@ namespace PortAbuse2.Core.Listener
                     ResultObjects.Add(ro);
             }
             GeoWorker.InsertGeoDataQueue(ro);
-            DnsHost.FillIpHost(ro, _minimizeHostname);
+            DnsHost.FillIpHost(ro, MinimizeHostname);
             if (BlockNew)
             {
                 Block.DoInSecBlock(ro);

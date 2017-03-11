@@ -58,5 +58,17 @@ namespace PortAbuse2.Properties {
                 this["HideSmallPackets"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("30")]
+        public int BlockSeconds {
+            get {
+                return ((int)(this["BlockSeconds"]));
+            }
+            set {
+                this["BlockSeconds"] = value;
+            }
+        }
     }
 }

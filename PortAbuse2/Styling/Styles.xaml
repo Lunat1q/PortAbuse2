@@ -11,5 +11,6 @@
     <SolidColorBrush x:Key="Block30Color" Color="#FF96DEFF"/>
     <SolidColorBrush x:Key="UnblockColor" Color="#FF5EFF99"/>
     <SolidColorBrush x:Key="HiddenRowColor" Color="#FF5D002E"/>
+    <common:ShowBlockTime x:Key="ShowBlockTime" />
 
 </ResourceDictionary>

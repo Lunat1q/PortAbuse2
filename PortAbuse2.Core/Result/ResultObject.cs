@@ -177,6 +177,18 @@ namespace PortAbuse2.Core.Result
             }
         }
 
+        public bool ReverseEnabled
+        {
+            get { return _reverseEnabled; }
+            set
+            {
+                _reverseEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _reverseEnabled;
+
         public override string ToString()
         {
             return ShowIp;

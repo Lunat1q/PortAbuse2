@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using PortAbuse2.Controls;
 using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
@@ -35,14 +36,13 @@ namespace PortAbuse2.Styling
 
         private void Block30Sec_Click(object sender, RoutedEventArgs e)
         {
-            BlockFromControl(sender, 30);
+            BlockFromControl(sender, BlockTimeContainer.CurrentBlockTime);
         }
 
         private static void BlockFromControl(object sender, int sec)
         {
-            var btn = sender as Control;
-            var obj = btn?.DataContext as ResultObject;
-            if (obj == null) return;
+            ResultObject obj;
+            if (GetResultObject(sender, out obj)) return;
             Block.DoInSecBlock(obj, sec);
         }
 
@@ -108,6 +108,21 @@ namespace PortAbuse2.Styling
         private void BlockFor120sMenuItem_OnClick(object sender, RoutedEventArgs e)
         {
             BlockFromControl(sender, 120);
+        }
+
+        private void MirrorTraficItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            ResultObject obj;
+            if (GetResultObject(sender, out obj)) return;
+            obj.ReverseEnabled = !obj.ReverseEnabled;
+        }
+
+        private static bool GetResultObject(object sender, out ResultObject obj)
+        {
+            var btn = sender as Control;
+            obj = btn?.DataContext as ResultObject;
+            if (obj == null) return true;
+            return false;
         }
     }
 }
