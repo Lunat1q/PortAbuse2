@@ -41,8 +41,7 @@ namespace PortAbuse2.Styling
 
         private static void BlockFromControl(object sender, int sec)
         {
-            ResultObject obj;
-            if (GetResultObject(sender, out obj)) return;
+            if (GetResultObject(sender, out ResultObject obj)) return;
             Block.DoInSecBlock(obj, sec);
         }
 
@@ -112,8 +111,7 @@ namespace PortAbuse2.Styling
 
         private void MirrorTraficItem_OnClick(object sender, RoutedEventArgs e)
         {
-            ResultObject obj;
-            if (GetResultObject(sender, out obj)) return;
+            if (GetResultObject(sender, out ResultObject obj)) return;
             obj.ReverseEnabled = !obj.ReverseEnabled;
         }
 

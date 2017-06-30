@@ -9,14 +9,14 @@ namespace PortAbuse2.Core.Common
 {
     public class ExThread
     {
-        public Thread td { get; set; }
-        public DateTime tdTime { get; set; }
-        public int tdLiveTime { get; set; }
-        public ExThread(Thread _td, DateTime _tdTime = new DateTime(), int _tdLiveTime = 0)
+        public Thread Td { get; }
+        public DateTime TdTime { get; }
+        private int TdLiveTime { get; }
+        public ExThread(Thread td, DateTime tdTime = new DateTime(), int tdLiveTime = 0)
         {
-            td = _td;
-            tdTime = _tdTime;
-            tdLiveTime = _tdLiveTime;
+            Td = td;
+            TdTime = tdTime;
+            TdLiveTime = tdLiveTime;
         }
 
     }

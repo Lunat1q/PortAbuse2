@@ -5,10 +5,10 @@
     // ===============================================
     public class Port
     {
-        public string PortNumber { get; set; }
+        public string PortNumber => UPortNumber.ToString();
+        public uint UPortNumber { get; set; }
         public string Protocol { get; set; }
-        public string ProcessName { get; set; }
 
-        public override string ToString() => $"{ProcessName} : {Protocol} : {PortNumber}";
+        public override string ToString() => $"{Protocol} : {PortNumber}";
     }
 }

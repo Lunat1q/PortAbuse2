@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PortAbuse2.Core.Common.Serializer;
+using TiqUtils.Serialize;
 
 namespace PortAbuse2.Core.Common
 {
@@ -16,13 +13,13 @@ namespace PortAbuse2.Core.Common
 
         public static void Load()
         {
-            var loaded = Json.DeserializeData<Dictionary<string, List<string>>>(Path.Combine(CurFolder, FileName));
+            var loaded = Json.DeserializeDataJson<Dictionary<string, List<string>>>(Path.Combine(CurFolder, FileName));
             if (loaded != null)
                 HiddenIps = loaded;
         }
         public static void Save()
         {
-            HiddenIps.SerializeData(Path.Combine(CurFolder, FileName));
+            HiddenIps.SerializeDataJson(Path.Combine(CurFolder, FileName));
         }
 
         public static void Add(string appName, string ip)
@@ -49,6 +46,7 @@ namespace PortAbuse2.Core.Common
 
         public static int CountHidden(string appName)
         {
+            if (string.IsNullOrEmpty(appName)) return 0;
             return HiddenIps.ContainsKey(appName) ? HiddenIps[appName].Count : 0;
         }
     }

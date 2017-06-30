@@ -15,7 +15,7 @@
             {
                 _hiddenCount = value;
                 OnPropertyChanged();
-                OnPropertyChanged("HaveHidden");
+                OnPropertyChanged(@"HaveHidden");
             }
         }
 

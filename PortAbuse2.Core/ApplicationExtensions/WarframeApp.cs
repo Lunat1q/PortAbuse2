@@ -43,8 +43,7 @@ namespace PortAbuse2.Core.ApplicationExtensions
             if (direction) return;
             var protocolTo = protocol.LastOrDefault();
             if (protocolTo == null) return;
-            int port;
-            if (int.TryParse(protocolTo.Item2, out port) && protocolTo.Item1 == "UDPv4")
+            if (int.TryParse(protocolTo.Item2, out int port) && protocolTo.Item1 == "UDPv4")
             {
                 SendWithUdp(ipSource, data, port);
             }

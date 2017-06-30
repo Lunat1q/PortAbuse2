@@ -98,8 +98,10 @@ namespace PortAbuse2
         private async Task RefreshLoadProceses()
         {
             var apps = await AppList.GetRunningApplications();
+            if (apps == null) return;
             foreach (var p in apps)
             {
+                if (p == null) continue;
                 if (_allAppWithPorts.All(x => x.InstancePid != p.InstancePid))
                 {
                     await Dispatcher.BeginInvoke(new ThreadStart(delegate
@@ -185,7 +187,7 @@ namespace PortAbuse2
 
 
 
-        private void button_Click(object sender, RoutedEventArgs e)
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
             ExtraOptions.IsOpen = !ExtraOptions.IsOpen;
         }

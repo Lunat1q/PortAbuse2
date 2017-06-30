@@ -36,12 +36,12 @@ namespace PortAbuse2.Core.WindowsFirewall
 
         public static async Task Wait()
         {
-            while (TdList.Any(x => x.td.IsAlive))
+            while (TdList.Any(x => x.Td.IsAlive))
             {
-                var tooLong = TdList.Where(x => x.tdTime.AddSeconds(30 + 30) < DateTime.Now && x.td.IsAlive);
+                var tooLong = TdList.Where(x => x.TdTime.AddSeconds(30 + 30) < DateTime.Now && x.Td.IsAlive);
                 foreach (var td in tooLong)
                 {
-                    td.td.Abort();
+                    td.Td.Abort();
                 }
                 await Task.Delay(500);
             }

@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,9 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.9.0.2-beta1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -51,7 +51,6 @@
     <Compile Include="Common\ExThread.cs" />
     <Compile Include="Common\IpHider.cs" />
     <Compile Include="Common\PaNotified.cs" />
-    <Compile Include="Common\Serializer\Json.cs" />
     <Compile Include="Files\FileAccess.cs" />
     <Compile Include="Geo\DnsHost.cs" />
     <Compile Include="Geo\GeoQueue.cs" />
@@ -64,6 +63,7 @@
     <Compile Include="Parser\Package.cs" />
     <Compile Include="Port\Port.cs" />
     <Compile Include="Port\PortReader.cs" />
+    <Compile Include="Port\SocketConnectionsReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Proto\DnsHeader.cs" />
     <Compile Include="Proto\IpHeader.cs" />
@@ -77,6 +77,12 @@
     <Compile Include="Result\GeoData.cs" />
     <Compile Include="Result\ResultObject.cs" />
     <Compile Include="WindowsFirewall\Block.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\TiqUtils\TiqUtils.csproj">
+      <Project>{add36afd-5e81-40e7-93f8-381cf03c5fd2}</Project>
+      <Name>TiqUtils</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

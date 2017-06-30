@@ -2,77 +2,83 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Net.NetworkInformation;
+using PortAbuse2.Core.Common;
 
 namespace PortAbuse2.Core.Port
 {
-    public class PortMaker
+    public static class PortMaker
     {
-        public static List<Port> GetNetStatPorts()
+        public static IEnumerable<AppEntry> GetApplicationsWithPorts()
         {
-            var ports = new List<Port>();
-
+            var apps = new List<AppEntry>();
             try
             {
-                using (var p = new Process())
+                IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
+                var test = ipGlobalProperties.GetActiveTcpListeners();
+
+                var tcps = SocketConnectionsReader.GetAllTcpConnections();
+                foreach (var tcp in tcps)
                 {
-
-                    var ps = new ProcessStartInfo
+                    var app = apps.FirstOrDefault(x => x.InstancePid == tcp.ProcessId);
+                    if (app == null)
                     {
-                        Arguments = "/c start \"notitle\" /B \"netstat.exe\" -a -n -o",
-                        FileName = "cmd.exe",
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        RedirectStandardInput = true,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true
-                    };
-
-                    p.StartInfo = ps;
-
-
-                    p.Start();
-
-                    var stdOutput = p.StandardOutput;
-                    var stdError = p.StandardError;
-
-                    var content = stdOutput.ReadToEnd() + stdError.ReadToEnd();
-                    var exitStatus = p.ExitCode.ToString();
-
-                    if (exitStatus != "0")
-                    {
-                        // Command Errored. Handle Here If Need Be
+                        var newEntry = new AppEntry
+                        {
+                            InstancePid = tcp.ProcessId,
+                            Name = tcp.ProcessName,
+                            Title = tcp.Title,
+                            AppPort = new[]
+                            {
+                                new Port{ UPortNumber = tcp.RemotePort, Protocol = "TCPv4" },
+                                new Port{ UPortNumber = tcp.LocalPort, Protocol = "TCPv4" }
+                            },
+                            FullName = tcp.FullName,
+                            HiddenCount = IpHider.CountHidden(tcp.ProcessName)
+                        };
+                        apps.Add(newEntry);
                     }
-
-                    //Get The Rows
-                    var rows = Regex.Split(content, "\r\n");
-                    ports.AddRange(from row in rows
-                                   select Regex.Split(row, "\\s+")
-                        into tokens
-                                   where tokens.Length > 4 && (tokens[1].Equals("UDP") || tokens[1].Equals("TCP"))
-                                   let localAddress = Regex.Replace(tokens[2], @"\[(.*?)\]", "1.1.1.1")
-                                   select new Port
-                                   {
-                                       Protocol = localAddress.Contains("1.1.1.1") ? $"{tokens[1]}v6" : $"{tokens[1]}v4",
-                                       PortNumber = localAddress.Split(':')[1],
-                                       ProcessName = tokens[1] == "UDP" ? LookupProcess(Convert.ToInt16(tokens[4])) : LookupProcess(Convert.ToInt16(tokens[5]))
-                                   });
+                    else
+                    {
+                        var t = app.AppPort.ToList();
+                        t.Add(new Port { UPortNumber = tcp.RemotePort, Protocol = "TCPv4" });
+                        t.Add(new Port { UPortNumber = tcp.LocalPort, Protocol = "TCPv4" });
+                        app.AppPort = t.ToArray();
+                    }
+                }
+                var udps = SocketConnectionsReader.GetAllUdpConnections();
+                foreach (var udp in udps)
+                {
+                    var app = apps.FirstOrDefault(x => x.InstancePid == udp.ProcessId);
+                    if (app == null)
+                    {
+                        var newEntry = new AppEntry
+                        {
+                            InstancePid = udp.ProcessId,
+                            Name = udp.ProcessName,
+                            Title = udp.Title,
+                            AppPort = new[]
+                            {
+                                new Port{ UPortNumber = udp.LocalPort, Protocol = "UDPv4" }
+                            },
+                            FullName = udp.FullName,
+                            HiddenCount = IpHider.CountHidden(udp.ProcessName)
+                        };
+                        apps.Add(newEntry);
+                    }
+                    else
+                    {
+                        var t = app.AppPort.ToList();
+                        t.Add(new Port { UPortNumber = udp.LocalPort, Protocol = "UDPv4" });
+                        app.AppPort = t.ToArray();
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
             }
-            return ports;
-        }
-
-        public static string LookupProcess(int pid)
-        {
-            string procName;
-            try { procName = Process.GetProcessById(pid).ProcessName; }
-            catch (Exception) { procName = "-"; }
-            return procName;
+            return apps;
         }
     }
 }

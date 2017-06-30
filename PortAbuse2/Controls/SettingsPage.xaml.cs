@@ -105,8 +105,7 @@ namespace PortAbuse2.Controls
         {
             var tb = sender as TextBox;
             if (string.IsNullOrEmpty(tb?.Text)) return;
-            int amount;
-            if (!int.TryParse(tb.Text, out amount)) return;
+            if (!int.TryParse(tb.Text, out int amount)) return;
             Properties.Settings.Default.BlockSeconds = amount;
             Properties.Settings.Default.Save();
             _main.RemapBlockButtons(amount);
