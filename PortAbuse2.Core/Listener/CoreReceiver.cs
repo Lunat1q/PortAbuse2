@@ -19,6 +19,7 @@ namespace PortAbuse2.Core.Listener
     {
         private readonly bool _debug;
         private bool _hideOld;
+        // ReSharper disable once FieldCanBeMadeReadOnly.Global
         public ObservableCollection<ResultObject> ResultObjects = new ObservableCollection<ResultObject>();
         private byte[] _byteData = new byte[65536];
         public bool ContinueCapturing; //A flag to check if packets are to be captured or not
