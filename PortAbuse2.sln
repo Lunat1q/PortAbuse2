@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortAbuse2", "PortAbuse2\PortAbuse2.csproj", "{D9FFFE0E-7667-4229-B8FA-4DC72F81346D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortAbuse2.Core", "PortAbuse2.Core\PortAbuse2.Core.csproj", "{6AADCAD8-1D3E-41EF-934E-AEC5DA231057}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlobalHook", "..\GlobalHook\GlobalHook.csproj", "{B4230040-275D-45D5-9811-0C1841FA6033}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlobalHook", "GlobalHook\GlobalHook\GlobalHook.csproj", "{B4230040-275D-45D5-9811-0C1841FA6033}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiqUtils", "..\TiqUtils\TiqUtils.csproj", "{ADD36AFD-5E81-40E7-93F8-381CF03C5FD2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiqUtils", "TiqUtils\TiqUtils\TiqUtils.csproj", "{ADD36AFD-5E81-40E7-93F8-381CF03C5FD2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
