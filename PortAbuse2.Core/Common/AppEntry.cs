@@ -1,4 +1,9 @@
-﻿namespace PortAbuse2.Core.Common
+﻿using System.Linq;
+using PortAbuse2.Core.Proto;
+
+// ReSharper disable ExplicitCallerInfoArgument
+
+namespace PortAbuse2.Core.Common
 {
     public class AppEntry : PaNotified
     {
@@ -10,7 +15,7 @@
 
         public int HiddenCount
         {
-            get { return _hiddenCount; }
+            get => _hiddenCount;
             set
             {
                 _hiddenCount = value;
@@ -28,6 +33,17 @@
         public AppEntry()
         {
             AppPort = new Port.Port[0];
+        }
+
+        public void AddNewPort(uint portNum, Protocol protocol)
+        {
+            if (portNum == 0) return;
+            if (AppPort == null) AppPort = new Port.Port[0];
+            if (AppPort.Any(x => x.UPortNumber == portNum)) return;
+            
+            var t = AppPort.ToList();
+            t.Add(new Port.Port { UPortNumber = portNum, Protocol = protocol });
+            AppPort = t.ToArray();
         }
     }
 }

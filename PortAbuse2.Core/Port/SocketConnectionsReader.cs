@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
+using PortAbuse2.Core.Proto;
 using TiqUtils.Utils;
 // ReSharper disable InconsistentNaming
 // ReSharper disable RedundantAssignment
@@ -12,6 +13,8 @@ using TiqUtils.Utils;
 // ReSharper disable FieldCanBeMadeReadOnly.Global
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable BuiltInTypeReferenceStyle
+// ReSharper disable FieldCanBeMadeReadOnly.Local
 
 namespace PortAbuse2.Core.Port
 {
@@ -173,9 +176,8 @@ namespace PortAbuse2.Core.Port
                 {
                     var udpRow = (MIB_UDPROW_OWNER_PID)
                         Marshal.PtrToStructure(tableRowPtr, typeof(MIB_UDPROW_OWNER_PID));
-                    udpTableRecords.Add(new UdpProcessRecord(new IPAddress(udpRow.localAddr),
-                        BitConverter.ToUInt16(new [] { udpRow.localPort[1],
-                            udpRow.localPort[0] }, 0), udpRow.owningPid, processes));
+                    udpTableRecords.Add(new UdpProcessRecord(udpRow.LocalAddress,
+                        udpRow.LocalPort, udpRow.PID, processes));
                     tableRowPtr = (IntPtr)((long)tableRowPtr + Marshal.SizeOf(udpRow));
                 }
             }
@@ -196,13 +198,6 @@ namespace PortAbuse2.Core.Port
         }
 
 
-    }
-
-    // Enum for protocol types.
-    public enum Protocol
-    {
-        TCP,
-        UDP
     }
 
     // Enum to define the set of values used to indicate the type of table returned by 
@@ -278,34 +273,58 @@ namespace PortAbuse2.Core.Port
         public MIB_TCPROW_OWNER_PID[] table;
     }
 
-    
 
-    /// <summary>
-    /// The structure contains an entry from the User Datagram Protocol (UDP) listener
-    /// table for IPv4 on the local computer. The entry also includes the process ID
-    /// (PID) that issued the call to the bind function for the UDP endpoint.
-    /// </summary>
+
+    ///// <summary>
+    ///// The structure contains an entry from the User Datagram Protocol (UDP) listener
+    ///// table for IPv4 on the local computer. The entry also includes the process ID
+    ///// (PID) that issued the call to the bind function for the UDP endpoint.
+    ///// </summary>
+    //[StructLayout(LayoutKind.Sequential)]
+    //public struct MIB_UDPROW_OWNER_PID
+    //{
+    //    public uint localAddr;
+    //    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+    //    public byte[] localPort;
+    //    public int owningPid;
+    //}
+
     [StructLayout(LayoutKind.Sequential)]
     public struct MIB_UDPROW_OWNER_PID
     {
-        public uint localAddr;
+        // DWORD is System.UInt32 in C#
+        UInt32 localAddr;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] localPort;
-        public int owningPid;
+        byte[] localPort;
+        UInt32 owningPid;
+
+        public int PID => (int)owningPid;
+
+        public IPAddress LocalAddress => new IPAddress(localAddr);
+
+        public ushort LocalPort => BitConverter.ToUInt16(
+            new [] { localPort[1], localPort[0] }, 0);
     }
 
-    /// <summary>
-    /// The structure contains the User Datagram Protocol (UDP) listener table for IPv4
-    /// on the local computer. The table also includes the process ID (PID) that issued
-    /// the call to the bind function for each UDP endpoint.
-    /// </summary>
+    ///// <summary>
+    ///// The structure contains the User Datagram Protocol (UDP) listener table for IPv4
+    ///// on the local computer. The table also includes the process ID (PID) that issued
+    ///// the call to the bind function for each UDP endpoint.
+    ///// </summary>
+    //[StructLayout(LayoutKind.Sequential)]
+    //public struct MIB_UDPTABLE_OWNER_PID
+    //{
+    //    public uint dwNumEntries;
+    //    [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.Struct,
+    //        SizeConst = 1)]
+    //    public UdpProcessRecord[] table;
+    //}
+
     [StructLayout(LayoutKind.Sequential)]
     public struct MIB_UDPTABLE_OWNER_PID
     {
         public uint dwNumEntries;
-        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.Struct,
-            SizeConst = 1)]
-        public UdpProcessRecord[] table;
+        MIB_UDPROW_OWNER_PID table;
     }
 
     /// <summary>
@@ -317,7 +336,7 @@ namespace PortAbuse2.Core.Port
         public IPAddress RemoteAddress { get; }
         public ushort RemotePort { get; }
         public MibTcpState State { get; }
-
+        public override Protocol Protocol => Protocol.Tcp;
         public TcpProcessRecord(IPAddress localIp, IPAddress remoteIp, ushort localPort,
             ushort remotePort, int pId, MibTcpState state, Process[] processList) : base(localIp, localPort, pId, processList)
         {
@@ -335,6 +354,8 @@ namespace PortAbuse2.Core.Port
         public string ProcessName { get; }
         public string Title { get; }
         public string FullName { get; }
+
+        public abstract Protocol Protocol { get; }
 
         protected ProcessRecordBase(IPAddress localAddress, uint localPort, int pId, IEnumerable<Process> processList)
         {
@@ -362,6 +383,7 @@ namespace PortAbuse2.Core.Port
     /// </summary>
     public class UdpProcessRecord : ProcessRecordBase
     {
+        public override Protocol Protocol => Protocol.Udp;
         public UdpProcessRecord(IPAddress localAddress, uint localPort, int pId, IEnumerable<Process> processList) : 
             base(localAddress, localPort, pId, processList)
         {

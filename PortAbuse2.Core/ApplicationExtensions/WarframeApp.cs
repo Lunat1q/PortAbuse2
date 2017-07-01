@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using PortAbuse2.Core.Listener;
 using PortAbuse2.Core.Proto;
@@ -37,13 +36,13 @@ namespace PortAbuse2.Core.ApplicationExtensions
             Receiver.Received -= ReceiverOnReceived;
         }
 
-        private void ReceiverOnReceived(IPAddress ipDest, IPAddress ipSource, byte[] data, bool direction, ResultObject resultobject, IEnumerable<Tuple<string, string>> protocol)
+        private void ReceiverOnReceived(IPAddress ipDest, IPAddress ipSource, byte[] data, bool direction, ResultObject resultobject, IEnumerable<Tuple<Protocol, string>> protocol)
         {
             if (!resultobject.ReverseEnabled || !Active) return;
             if (direction) return;
             var protocolTo = protocol.LastOrDefault();
             if (protocolTo == null) return;
-            if (int.TryParse(protocolTo.Item2, out int port) && protocolTo.Item1 == "UDPv4")
+            if (int.TryParse(protocolTo.Item2, out int port) && protocolTo.Item1 == Protocol.Udp)
             {
                 SendWithUdp(ipSource, data, port);
             }

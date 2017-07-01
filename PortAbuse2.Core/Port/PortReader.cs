@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.NetworkInformation;
 using PortAbuse2.Core.Common;
 
 namespace PortAbuse2.Core.Port
@@ -14,9 +13,6 @@ namespace PortAbuse2.Core.Port
             var apps = new List<AppEntry>();
             try
             {
-                IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
-                var test = ipGlobalProperties.GetActiveTcpListeners();
-
                 var tcps = SocketConnectionsReader.GetAllTcpConnections();
                 foreach (var tcp in tcps)
                 {
@@ -28,22 +24,17 @@ namespace PortAbuse2.Core.Port
                             InstancePid = tcp.ProcessId,
                             Name = tcp.ProcessName,
                             Title = tcp.Title,
-                            AppPort = new[]
-                            {
-                                new Port{ UPortNumber = tcp.RemotePort, Protocol = "TCPv4" },
-                                new Port{ UPortNumber = tcp.LocalPort, Protocol = "TCPv4" }
-                            },
                             FullName = tcp.FullName,
                             HiddenCount = IpHider.CountHidden(tcp.ProcessName)
                         };
+                        //newEntry.AddNewPort(tcp.RemotePort, tcp.Protocol);
+                        newEntry.AddNewPort(tcp.LocalPort, tcp.Protocol);
                         apps.Add(newEntry);
                     }
                     else
                     {
-                        var t = app.AppPort.ToList();
-                        t.Add(new Port { UPortNumber = tcp.RemotePort, Protocol = "TCPv4" });
-                        t.Add(new Port { UPortNumber = tcp.LocalPort, Protocol = "TCPv4" });
-                        app.AppPort = t.ToArray();
+                        //app.AddNewPort(tcp.RemotePort, tcp.Protocol);
+                        app.AddNewPort(tcp.LocalPort, tcp.Protocol);
                     }
                 }
                 var udps = SocketConnectionsReader.GetAllUdpConnections();
@@ -57,20 +48,15 @@ namespace PortAbuse2.Core.Port
                             InstancePid = udp.ProcessId,
                             Name = udp.ProcessName,
                             Title = udp.Title,
-                            AppPort = new[]
-                            {
-                                new Port{ UPortNumber = udp.LocalPort, Protocol = "UDPv4" }
-                            },
                             FullName = udp.FullName,
                             HiddenCount = IpHider.CountHidden(udp.ProcessName)
                         };
+                        newEntry.AddNewPort(udp.LocalPort, udp.Protocol);
                         apps.Add(newEntry);
                     }
                     else
                     {
-                        var t = app.AppPort.ToList();
-                        t.Add(new Port { UPortNumber = udp.LocalPort, Protocol = "UDPv4" });
-                        app.AppPort = t.ToArray();
+                        app.AddNewPort(udp.LocalPort, udp.Protocol);
                     }
                 }
             }
@@ -78,7 +64,7 @@ namespace PortAbuse2.Core.Port
             {
                 Debug.WriteLine(ex.Message);
             }
-            return apps;
+            return apps.OrderBy(x=>x.Name);
         }
     }
 }

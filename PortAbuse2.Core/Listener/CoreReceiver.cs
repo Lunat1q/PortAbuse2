@@ -23,11 +23,13 @@ namespace PortAbuse2.Core.Listener
         private byte[] _byteData = new byte[65536];
         public bool ContinueCapturing; //A flag to check if packets are to be captured or not
         public AppEntry SelectedAppEntry;
-        public string InterfaceLocalIp;
-        public Socket MainSocket; //The socket which captures all incoming packets
+        private string _interfaceLocalIp;
+
+        private Socket _mainSocket; //The socket which captures all incoming packets
         //private readonly string _logFolder = "raw";
-        public int OldTimeLimitSeconds = 120;
-        public bool MinimizeHostname;
+        private const int OldTimeLimitSeconds = 120;
+
+        private bool _minimizeHostname;
 
         public delegate void MessageDetectedEventHandler(
             IPAddress ipDest,
@@ -35,20 +37,20 @@ namespace PortAbuse2.Core.Listener
             byte[] data,
             bool direction,
             ResultObject resultObject,
-            IEnumerable<Tuple<string, string>> protocol
+            IEnumerable<Tuple<Protocol, string>> protocol
         );
 
         public event MessageDetectedEventHandler Received;
 
-        public Func<ResultObject, bool> InvokedAdd { get; set; }
+        protected Func<ResultObject, bool> InvokedAdd { get; set; }
 
         public bool BlockNew = false;
         public bool HideSmallPackets;
         private bool _forceShowHiddenIps;
 
-        public CoreReceiver(bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false)
+        protected CoreReceiver(bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false)
         {
-            MinimizeHostname = minimizeHostname;
+            _minimizeHostname = minimizeHostname;
             _hideOld = hideOld;
             HideSmallPackets = hideSmall;
 #if DEBUG
@@ -73,7 +75,7 @@ namespace PortAbuse2.Core.Listener
 
         public void MinimizeHostnames()
         {
-            MinimizeHostname = true;
+            _minimizeHostname = true;
             Task.Delay(200);
             foreach (var ro in ResultObjects)
             {
@@ -93,7 +95,7 @@ namespace PortAbuse2.Core.Listener
 
         public void UnminimizeHostnames()
         {
-            MinimizeHostname = false;
+            _minimizeHostname = false;
             Task.Delay(200);
             foreach (var ro in ResultObjects)
             {
@@ -160,16 +162,16 @@ namespace PortAbuse2.Core.Listener
             Task.Run(HideOldTask);
             Task.Run(CleanupDupes);
 
-            InterfaceLocalIp = ipInterface;
+            _interfaceLocalIp = ipInterface;
             var ipe = new IPEndPoint(IPAddress.Parse(ipInterface), 0);
 
             //mainSocket = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.IP);
-            MainSocket = new Socket(ipe.AddressFamily, SocketType.Raw, ProtocolType.IP);
+            _mainSocket = new Socket(ipe.AddressFamily, SocketType.Raw, ProtocolType.IP);
 
             //Bind the socket to the selected IP address  
-            MainSocket.Bind(ipe);
+            _mainSocket.Bind(ipe);
             //Set the socket  options
-            MainSocket.SetSocketOption(SocketOptionLevel.IP, //Applies only to IP packets
+            _mainSocket.SetSocketOption(SocketOptionLevel.IP, //Applies only to IP packets
                 SocketOptionName.HeaderIncluded, //Set the include the header
                 true); //option to true
 
@@ -178,7 +180,7 @@ namespace PortAbuse2.Core.Listener
             //Socket.IOControl is analogous to the WSAIoctl method of Winsock 2
             try
             {
-                MainSocket.IOControl(IOControlCode.ReceiveAll, byTrue, byOut);
+                _mainSocket.IOControl(IOControlCode.ReceiveAll, byTrue, byOut);
                 //Equivalent to SIO_RCVALL constant   //of Winsock 2                                             
             }
             catch (SocketException sEx)
@@ -188,7 +190,7 @@ namespace PortAbuse2.Core.Listener
                     //MessageBox.Show(sEx.Message, "PortAbuse - Listener Error");
             }
             //Start receiving the packets asynchronously
-            MainSocket.BeginReceive(_byteData, 0, _byteData.Length, SocketFlags.None, OnReceive, null);
+            _mainSocket.BeginReceive(_byteData, 0, _byteData.Length, SocketFlags.None, OnReceive, null);
         }
 
         public void SendToUdp(IPAddress ip, byte[] data, int port)
@@ -203,7 +205,7 @@ namespace PortAbuse2.Core.Listener
         {
             try
             {
-                var nReceived = MainSocket.EndReceive(ar);
+                var nReceived = _mainSocket.EndReceive(ar);
                 if (nReceived > 65536) nReceived = 65536;
                 Task.Run(() => ParseData(_byteData, nReceived));
 
@@ -212,7 +214,7 @@ namespace PortAbuse2.Core.Listener
 
                 //Another call to BeginReceive so that we continue to receive the incoming
                 //packets
-                MainSocket.BeginReceive(_byteData, 0, _byteData.Length, SocketFlags.None, OnReceive, null);
+                _mainSocket.BeginReceive(_byteData, 0, _byteData.Length, SocketFlags.None, OnReceive, null);
             }
             catch (ObjectDisposedException)
             {
@@ -240,7 +242,7 @@ namespace PortAbuse2.Core.Listener
                     x => port != null && port.Any(v => v.Item2 == x.PortNumber && x.Protocol == v.Item1));
             if (!portsMatch) return;
 
-            var fromMe = ipHeader.SourceAddress.ToString() == InterfaceLocalIp;
+            var fromMe = ipHeader.SourceAddress.ToString() == _interfaceLocalIp;
             var existedDetection = (fromMe
                 ? ResultObjects.Where(
                     x =>
@@ -295,7 +297,7 @@ namespace PortAbuse2.Core.Listener
                     ResultObjects.Add(ro);
             }
             GeoWorker.InsertGeoDataQueue(ro);
-            DnsHost.FillIpHost(ro, MinimizeHostname);
+            DnsHost.FillIpHost(ro, _minimizeHostname);
             if (BlockNew)
             {
                 Block.DoInSecBlock(ro);

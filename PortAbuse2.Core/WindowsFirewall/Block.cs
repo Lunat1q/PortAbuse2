@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Result;
+using NetFwTypeLib;
 
 namespace PortAbuse2.Core.WindowsFirewall
 {
@@ -23,7 +23,8 @@ namespace PortAbuse2.Core.WindowsFirewall
                 TdList.Add(new ExThread(td, DateTime.Now, sec));
             }
         }
-        public static void UnBlockInSeconds(ResultObject resultObject, int sec)
+
+        private static void UnBlockInSeconds(ResultObject resultObject, int sec)
         {
             var i = 0;
             while (i < sec * 2 && !ShutAll)
@@ -47,6 +48,22 @@ namespace PortAbuse2.Core.WindowsFirewall
             }
         }
 
+        private static void AddRule(string name, string ip, NET_FW_RULE_DIRECTION_ direction)
+        {
+            var firewallRule = (INetFwRule)Activator.CreateInstance(
+                Type.GetTypeFromProgID("HNetCfg.FWRule"));
+            firewallRule.Action = NET_FW_ACTION_.NET_FW_ACTION_BLOCK;
+            firewallRule.Description = $"Used to block all internet access for IP:{ip}";
+            firewallRule.RemoteAddresses = ip;
+            firewallRule.Direction = direction;
+            firewallRule.Enabled = true;
+            firewallRule.InterfaceTypes = "All";
+            firewallRule.Name = name;
+            var firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(
+                Type.GetTypeFromProgID("HNetCfg.FwPolicy2"));
+            firewallPolicy.Rules.Add(firewallRule);
+        }
+
         public static void DoBlock(ResultObject resultObject, bool onlyOut = false, bool onlyIn = false)
         {
             if (resultObject == null) return;
@@ -54,36 +71,15 @@ namespace PortAbuse2.Core.WindowsFirewall
             {
                 var sRemIp = resultObject.ShowIp;
                 var blockName = sRemIp + "-BLOCK_PA";
-                var args = "advfirewall firewall add rule name=" + blockName + " dir=out interface=any action=block remoteip=" + sRemIp + "/32";
-                var args2 = "advfirewall firewall add rule name=" + blockName + " dir=in interface=any action=block remoteip=" + sRemIp + "/32";
 
-                var ps = new ProcessStartInfo
-                {
-                    Arguments = $"/c start \"notitle\" /B \"netsh.exe\" {args}",
-                    FileName = "cmd.exe",
-                    WindowStyle = ProcessWindowStyle.Hidden
-                };
-                //ps.RedirectStandardInput = true;
-                //ps.RedirectStandardOutput = true;
-                //ps.RedirectStandardError = true;
-
-                var ps2 = new ProcessStartInfo
-                {
-                    Arguments = $"/c start \"notitle\" /B \"netsh.exe\" {args2}",
-                    FileName = "cmd.exe",
-                    WindowStyle = ProcessWindowStyle.Hidden
-                };
-                //ps2.RedirectStandardInput = true;
-                //ps2.RedirectStandardOutput = true;
-                //ps2.RedirectStandardError = true;
-
-                var p1 = new Process {StartInfo = ps};
                 if (!onlyOut)
-                    p1.Start();
-
-                var p2 = new Process {StartInfo = ps2};
+                {
+                    AddRule(blockName, sRemIp, NET_FW_RULE_DIRECTION_.NET_FW_RULE_DIR_IN);
+                }
                 if (!onlyIn)
-                    p2.Start();
+                {
+                    AddRule(blockName, sRemIp, NET_FW_RULE_DIRECTION_.NET_FW_RULE_DIR_OUT);
+                }
 
                 resultObject.Blocked = true;
             }
@@ -93,19 +89,26 @@ namespace PortAbuse2.Core.WindowsFirewall
         {
             if (resultObject == null) return;
             var blockName = resultObject.ShowIp + "-BLOCK_PA";
-            var args = "advfirewall firewall delete rule name=" + blockName;
+            var firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(
+                Type.GetTypeFromProgID("HNetCfg.FwPolicy2"));
 
-            var ps = new ProcessStartInfo
+            try
             {
-                Arguments = $"/c start \"notitle\" /B \"netsh.exe\" {args}",
-                FileName = "cmd.exe",
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
-
-
-            var p1 = new Process {StartInfo = ps};
-            p1.Start();
-
+                var i = firewallPolicy.Rules.GetEnumerator();
+                while (i.MoveNext())
+                {
+                    var cur = i.Current as INetFwRule;
+                    if (cur != null && cur.Name == blockName)
+                    {
+                        firewallPolicy.Rules.Remove(cur.Name);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
             resultObject.Blocked = false;
         }
     }

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PortAbuse2.Core.Proto;
 using PortAbuse2.Core.Proto.Tcp;
 using PortAbuse2.Core.Proto.Udp;
@@ -11,7 +8,7 @@ namespace PortAbuse2.Core.Parser
 {
     public static class Package
     {
-        public static IEnumerable<Tuple<string,string>> GetPorts(IpHeader ipHeader)
+        public static IEnumerable<Tuple<Protocol,string>> GetPorts(IpHeader ipHeader)
         {
             switch (ipHeader.ProtocolType)
             {
@@ -21,7 +18,7 @@ namespace PortAbuse2.Core.Parser
                                                                               //carried by the IP datagram
                                                         ipHeader.MessageLength);//Length of the data field                    
 
-                    return new[] { Tuple.Create("TCPv4", tcpHeader.DestinationPort), Tuple.Create("TCPv4", tcpHeader.SourcePort) };
+                    return new[] { Tuple.Create(Protocol.Tcp, tcpHeader.DestinationPort), Tuple.Create(Protocol.Tcp, tcpHeader.SourcePort) };
 
                 case Protocol.Udp:
 
@@ -29,7 +26,7 @@ namespace PortAbuse2.Core.Parser
                                                                               //carried by the IP datagram
                                                        ipHeader.MessageLength);//Length of the data field                    
 
-                    return new[] { Tuple.Create("UDPv4", udpHeader.DestinationPort), Tuple.Create("UDPv4", udpHeader.SourcePort) };
+                    return new[] { Tuple.Create(Protocol.Udp, udpHeader.DestinationPort), Tuple.Create(Protocol.Udp, udpHeader.SourcePort) };
 
                 case Protocol.Unknown:
                     return null;

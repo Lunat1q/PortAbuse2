@@ -173,6 +173,7 @@ namespace PortAbuse2
             IpHider.Save();
             _extensionControl.Stop();
             _keyEventsHandling.Stop();
+            Block.ShutAll = true;
             await Block.Wait();
         }
 
