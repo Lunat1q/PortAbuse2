@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using PacketDotNet;
 using PortAbuse2.Core.Proto;
 using PortAbuse2.Core.Proto.Tcp;
 using PortAbuse2.Core.Proto.Udp;
 
 namespace PortAbuse2.Core.Parser
 {
-    public static class Package
+    public static class PackageHelper
     {
+
         public static IEnumerable<Tuple<Protocol,string>> GetPorts(IpHeader ipHeader)
         {
             switch (ipHeader.ProtocolType)
@@ -30,6 +32,27 @@ namespace PortAbuse2.Core.Parser
 
                 case Protocol.Unknown:
                     return null;
+                default:
+                    return null;
+            }
+        }
+
+        public static IEnumerable<Tuple<Protocol, ushort>> GetPorts(Packet packet, out IpPacket ipPacket, out TcpPacket tcpPacket, out UdpPacket udpPacket)
+        {
+            ipPacket = (IpPacket)packet.Extract(typeof(IpPacket));
+            udpPacket = null;
+            tcpPacket = null;
+            if (ipPacket == null) return null;
+
+            switch (ipPacket.Protocol)
+            {
+                case IPProtocolType.TCP:
+                    tcpPacket = (TcpPacket)packet.Extract(typeof(TcpPacket));
+                    return new[] { Tuple.Create(Protocol.Tcp, tcpPacket.DestinationPort), Tuple.Create(Protocol.Tcp, tcpPacket.SourcePort) };
+
+                case IPProtocolType.UDP:
+                    udpPacket = (UdpPacket)packet.Extract(typeof(UdpPacket));
+                    return new[] { Tuple.Create(Protocol.Udp, udpPacket.DestinationPort), Tuple.Create(Protocol.Udp, udpPacket.SourcePort) };
                 default:
                     return null;
             }

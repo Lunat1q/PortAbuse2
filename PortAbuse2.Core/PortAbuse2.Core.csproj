@@ -38,6 +38,12 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PacketDotNet, Version=0.16.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\PacketDotNet.0.16.0\lib\PacketDotNet.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpPcap, Version=4.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpPcap.4.4.0\lib\SharpPcap.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -48,9 +54,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationExtensions\ExtensionsRepository.cs" />
     <Compile Include="ApplicationExtensions\IApplicationExtension.cs" />
     <Compile Include="ApplicationExtensions\WarframeApp.cs" />
     <Compile Include="Common\Admin.cs" />
+    <Compile Include="Common\BytesParser.cs" />
     <Compile Include="Common\DateTimeExtensions.cs" />
     <Compile Include="Common\ExThread.cs" />
     <Compile Include="Common\IpHider.cs" />
@@ -64,7 +72,7 @@
     <Compile Include="Common\AppEntry.cs" />
     <Compile Include="Listener\CoreReceiver.cs" />
     <Compile Include="Parser\Compressor.cs" />
-    <Compile Include="Parser\Package.cs" />
+    <Compile Include="Parser\PackageHelper.cs" />
     <Compile Include="Port\Port.cs" />
     <Compile Include="Port\PortReader.cs" />
     <Compile Include="Port\SocketConnectionsReader.cs" />

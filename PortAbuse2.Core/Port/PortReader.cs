@@ -17,6 +17,7 @@ namespace PortAbuse2.Core.Port
                 foreach (var tcp in tcps)
                 {
                     var app = apps.FirstOrDefault(x => x.InstancePid == tcp.ProcessId);
+                    if (tcp.ProcessName == null && tcp.FullName == null) continue;
                     if (app == null)
                     {
                         var newEntry = new AppEntry

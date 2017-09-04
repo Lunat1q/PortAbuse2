@@ -26,7 +26,6 @@ namespace PortAbuse2
     {
         private readonly ObservableCollection<AppIconEntry> _allAppWithPorts = new ObservableCollection<AppIconEntry>();
         internal readonly Receiver Receiver;
-        private readonly ExtensionControl _extensionControl;
         private readonly KeyEventsHandling _keyEventsHandling;
 
         public MainWindow()
@@ -35,7 +34,6 @@ namespace PortAbuse2
                 Properties.Settings.Default.HideOldConnections,
                 Properties.Settings.Default.HideSmallPackets);
 
-            _extensionControl = new ExtensionControl(Receiver);
             InitializeComponent();
 
             //"hacky" fix of designer glitch
@@ -152,7 +150,6 @@ namespace PortAbuse2
             if (!Receiver.ContinueCapturing)
             {
                 Receiver.Clear();
-                Receiver.ContinueCapturing = true;
                 btn.Content = "Stop";
                 Receiver.StartListener(InterfaceBox.SelectedItem.ToString());
                 var red = FindResource("PaLightRed") as SolidColorBrush;
@@ -161,7 +158,7 @@ namespace PortAbuse2
             else
             {
                 btn.Content = "Start";
-                Receiver.ContinueCapturing = false;
+                Receiver.Stop();
                 var green = FindResource("PaLightGreen") as SolidColorBrush;
                 btn.Background = green;
             }
@@ -171,7 +168,7 @@ namespace PortAbuse2
         private async void MetroWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             IpHider.Save();
-            _extensionControl.Stop();
+            Receiver.Stop();
             _keyEventsHandling.Stop();
             Block.ShutAll = true;
             await Block.Wait();
@@ -183,7 +180,6 @@ namespace PortAbuse2
             var app = cb?.SelectedItem as AppIconEntry;
             if (app == null) return;
             Receiver.SelectedAppEntry = app;
-            _extensionControl.AppSelected(app.Name);
         }
 
 

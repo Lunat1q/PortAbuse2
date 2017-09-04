@@ -35,7 +35,7 @@ namespace PortAbuse2.Controls
 
             BlockTimeContainer.CurrentBlockTime = Properties.Settings.Default.BlockSeconds;
 
-            VersionNumberBlock.Text = $"v{Assembly.GetExecutingAssembly().GetName().Version}";
+            VersionNumberBlock.Text = $"Lunatiq© - v{Assembly.GetExecutingAssembly().GetName().Version}";
         }
 
         private void BlockNewSwitch_Click(object sender, RoutedEventArgs e)

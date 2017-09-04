@@ -21,6 +21,8 @@ namespace PortAbuse2.Core.Result
         public string SourceIp => SourceAddress.ToString();
         public string DestIp => DestinationAddress.ToString();
 
+        public bool Resolved { get; set; } = false;
+
 
         public bool ForceShow
         {

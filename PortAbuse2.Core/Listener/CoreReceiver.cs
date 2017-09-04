@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Threading.Tasks;
+using PacketDotNet;
+using PortAbuse2.Core.ApplicationExtensions;
 using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Geo;
 using PortAbuse2.Core.Parser;
 using PortAbuse2.Core.Proto;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
+using SharpPcap;
+using SharpPcap.WinPcap;
 
 namespace PortAbuse2.Core.Listener
 {
@@ -21,14 +23,16 @@ namespace PortAbuse2.Core.Listener
         private bool _hideOld;
         // ReSharper disable once FieldCanBeMadeReadOnly.Global
         public ObservableCollection<ResultObject> ResultObjects = new ObservableCollection<ResultObject>();
-        private byte[] _byteData = new byte[65536];
-        public bool ContinueCapturing; //A flag to check if packets are to be captured or not
+        public bool ContinueCapturing { get; private set; } //A flag to check if packets are to be captured or not
         public AppEntry SelectedAppEntry;
         private string _interfaceLocalIp;
+        private IEnumerable<IApplicationExtension> _currentExtensions;
+        private ICaptureDevice _captureDevice;
 
-        private Socket _mainSocket; //The socket which captures all incoming packets
         //private readonly string _logFolder = "raw";
         private const int OldTimeLimitSeconds = 120;
+
+        private const int RegularActionsDelay = 500;
 
         private bool _minimizeHostname;
 
@@ -38,8 +42,22 @@ namespace PortAbuse2.Core.Listener
             byte[] data,
             bool direction,
             ResultObject resultObject,
-            IEnumerable<Tuple<Protocol, string>> protocol
+            IEnumerable<Tuple<Protocol, ushort>> protocol
         );
+
+        public void Stop()
+        {
+            ContinueCapturing = false;
+            _captureDevice.StopCapture();
+            if (_currentExtensions != null)
+            {
+                foreach (var ext in _currentExtensions)
+                {
+                    Received -= ext.PackageReceived;
+                    ext.Stop();
+                }
+            }
+        }
 
         public event MessageDetectedEventHandler Received;
 
@@ -67,7 +85,7 @@ namespace PortAbuse2.Core.Listener
         public void ShowOld()
         {
             _hideOld = false;
-            Task.Delay(200);
+            Task.Delay(RegularActionsDelay);
             foreach (var ro in ResultObjects)
             {
                 ro.Old = false;
@@ -77,7 +95,7 @@ namespace PortAbuse2.Core.Listener
         public void MinimizeHostnames()
         {
             _minimizeHostname = true;
-            Task.Delay(200);
+            Task.Delay(RegularActionsDelay);
             foreach (var ro in ResultObjects)
             {
                 ro.Hostname = DnsHost.MinimizeHostname(ro.DetectedHostname);
@@ -87,7 +105,7 @@ namespace PortAbuse2.Core.Listener
         public void SetForceShowHiddenIps(bool forceShow = true)
         {
             _forceShowHiddenIps = forceShow;
-            Task.Delay(200);
+            Task.Delay(RegularActionsDelay);
             foreach (var ro in ResultObjects)
             {
                 ro.ForceShow = _forceShowHiddenIps;
@@ -97,7 +115,7 @@ namespace PortAbuse2.Core.Listener
         public void UnminimizeHostnames()
         {
             _minimizeHostname = false;
-            Task.Delay(200);
+            Task.Delay(RegularActionsDelay);
             foreach (var ro in ResultObjects)
             {
                 ro.Hostname = ro.DetectedHostname;
@@ -158,135 +176,102 @@ namespace PortAbuse2.Core.Listener
             ResultObjects.Clear();
         }
 
+        private void InitExtensions()
+        {
+            _currentExtensions = ExtensionsRepository.GetExtensionsForApp(SelectedAppEntry.Name);
+            foreach (var ext in _currentExtensions)
+            {
+                Received += ext.PackageReceived;
+                ext.ResultObjectRef = ResultObjects;
+                ext.Start();
+            }
+        }
+
         public void StartListener(string ipInterface)
         {
+            ResultObjects.Clear();
             Task.Run(HideOldTask);
             Task.Run(CleanupDupes);
+            InitExtensions();
+
+            ContinueCapturing = true;
 
             _interfaceLocalIp = ipInterface;
-            var ipe = new IPEndPoint(IPAddress.Parse(ipInterface), 0);
-
-            //mainSocket = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.IP);
-            _mainSocket = new Socket(ipe.AddressFamily, SocketType.Raw, ProtocolType.IP);
-
-            //Bind the socket to the selected IP address  
-            _mainSocket.Bind(ipe);
-            //Set the socket  options
-            _mainSocket.SetSocketOption(SocketOptionLevel.IP, //Applies only to IP packets
-                SocketOptionName.HeaderIncluded, //Set the include the header
-                true); //option to true
-
-            byte[] byTrue = {1, 0, 0, 0};
-            byte[] byOut = {1, 0, 0, 0}; //Capture outgoing packets
-            //Socket.IOControl is analogous to the WSAIoctl method of Winsock 2
-            try
+            // метод для получения списка устройств
+            CaptureDeviceList deviceList = CaptureDeviceList.Instance;
+            foreach (var device in deviceList)
             {
-                _mainSocket.IOControl(IOControlCode.ReceiveAll, byTrue, byOut);
-                //Equivalent to SIO_RCVALL constant   //of Winsock 2                                             
+                var pcapDevice = device as WinPcapDevice;
+                if (pcapDevice == null) continue;
+                var winDevice = pcapDevice;
+                if (winDevice.Addresses.Any(x => x.Addr.ToString() == _interfaceLocalIp))
+                {
+                    _captureDevice = winDevice;
+                    break;
+                }
             }
-            catch (SocketException sEx)
-            {
-                if (_debug)
-                    Debug.WriteLine("StartListener Err:" + sEx.Message);
-                    //MessageBox.Show(sEx.Message, "PortAbuse - Listener Error");
-            }
-            //Start receiving the packets asynchronously
-            _mainSocket.BeginReceive(_byteData, 0, _byteData.Length, SocketFlags.None, OnReceive, null);
+            if (_captureDevice == null) //просрали девайс, берем первый и молимся
+                _captureDevice = deviceList[0];
+            // регистрируем событие, которое срабатывает, когда пришел новый пакет
+            _captureDevice.OnPacketArrival += Receiver_OnPacketArrival;
+            // открываем в режиме promiscuous, поддерживается также нормальный режим
+            _captureDevice.Open(DeviceMode.Promiscuous, 1000);
+            // начинаем захват пакетов
+            _captureDevice.StartCapture();
         }
 
-        public void SendToUdp(IPAddress ip, byte[] data, int port)
+        private void Receiver_OnPacketArrival(object sender, CaptureEventArgs e)
         {
-            var remoteEndPoint = new IPEndPoint(ip, port);
-            var server = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.Udp);
-            server.Connect(remoteEndPoint);
-            server.SendTo(data, data.Length, SocketFlags.None, remoteEndPoint);
+            // парсинг всего пакета
+            var packet = Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
+            Task.Run(() => ParsePacket(packet));
         }
 
-        private void OnReceive(IAsyncResult ar)
+        private static byte[] GetData(TcpPacket tcp, UdpPacket udp)
         {
-            try
-            {
-                var nReceived = _mainSocket.EndReceive(ar);
-                if (nReceived > 65536) nReceived = 65536;
-                Task.Run(() => ParseData(_byteData, nReceived));
-
-                if (!ContinueCapturing) return;
-                _byteData = new byte[65536];
-
-                //Another call to BeginReceive so that we continue to receive the incoming
-                //packets
-                _mainSocket.BeginReceive(_byteData, 0, _byteData.Length, SocketFlags.None, OnReceive, null);
-            }
-            catch (ObjectDisposedException)
-            {
-            }
-            catch (Exception ex)
-            {
-                if (_debug)
-                    Debug.WriteLine("OnReceive Err:" + ex.Message);
-            }
+            return tcp?.PayloadData ?? udp.PayloadData;
         }
 
-        private async Task ParseData(byte[] receivedByteData, int nReceived)
+        private async Task ParsePacket(Packet packet)
         {
-            //Since all protocol packets are encapsulated in the IP datagram
-            //so we start by parsing the IP header and see what protocol data
-            //is being carried by it
-            var ipHeader = new IpHeader(receivedByteData, nReceived);
-
-            //Now according to the protocol being carried by the IP datagram we parse 
-            //the data field of the datagram
-            var port = Package.GetPorts(ipHeader);
+            var port = PackageHelper.GetPorts(packet, out IpPacket ipPacket, out TcpPacket tcpPacket, out UdpPacket udpPacket);
 
             var portsMatch =
                 SelectedAppEntry.AppPort.Any(
-                    x => port != null && port.Any(v => v.Item2 == x.PortNumber && x.Protocol == v.Item1));
+                    x => port != null && port.Any(v => v.Item2 == x.UPortNumber && x.Protocol == v.Item1));
             if (!portsMatch) return;
 
-            var fromMe = ipHeader.SourceAddress.ToString() == _interfaceLocalIp;
-            var existedDetection = (fromMe
-                ? ResultObjects.Where(
-                    x =>
-                        Equals(x.SourceAddress, ipHeader.DestinationAddress) ||
-                        Equals(x.DestinationAddress, ipHeader.DestinationAddress))
-                : ResultObjects.Where(
-                    x =>
-                        Equals(x.DestinationAddress, ipHeader.SourceAddress) ||
-                        Equals(x.SourceAddress, ipHeader.SourceAddress))).FirstOrDefault();
-            
+            var fromMe = ipPacket.SourceAddress.ToString() == _interfaceLocalIp;
+            var existedDetection = GetExistedDetection(fromMe, ipPacket);
+
             if (existedDetection != null)
             {
-                Received?.Invoke(
-                    ipHeader.DestinationAddress,
-                    ipHeader.SourceAddress,
-                    ipHeader.Data.Take(ipHeader.MessageLength).ToArray(),
-                    fromMe,
-                    existedDetection,
-                    port
-                );
 
-                existedDetection.DataTransfered += ipHeader.MessageLength;
-                if (ipHeader.MessageLength > 32 || !HideSmallPackets)
+                OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,
+                    existedDetection, port);
+
+                existedDetection.DataTransfered += ipPacket.PayloadLength;
+                if (ipPacket.PayloadLength > 32 || !HideSmallPackets)
                 {
                     existedDetection.PackagesReceived++;
                 }
                 return;
             }
-            var ro = new ResultObject
-            {
-                SourceAddress = ipHeader.SourceAddress,
-                DestinationAddress = ipHeader.DestinationAddress,
-                From = fromMe,
-                PackagesReceived = 1,
-                Application = SelectedAppEntry,
-                DataTransfered = ipHeader.MessageLength,
-                ForceShow = _forceShowHiddenIps
-            };
-            ro.Hidden = IpHider.Check(SelectedAppEntry.Name, ro.ShowIp);
+
+            var ro = CreateNewResultObject(ipPacket, fromMe);
+            OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,
+                ro, port, ro.FirstFrom);
 
             if (ResultObjects.Any(x => x.ShowIp == ro.ShowIp))
                 return;
 
+            await AddToResult(ro);
+
+            PostProcess(ro);
+        }
+
+        private async Task AddToResult(ResultObject ro)
+        {
             if (InvokedAdd != null)
             {
                 InvokedAdd(ro);
@@ -297,12 +282,52 @@ namespace PortAbuse2.Core.Listener
                 if (ResultObjects.All(x => x.ShowIp != ro.ShowIp))
                     ResultObjects.Add(ro);
             }
+        }
+
+        private void PostProcess(ResultObject ro)
+        {
             GeoWorker.InsertGeoDataQueue(ro);
             DnsHost.FillIpHost(ro, _minimizeHostname);
             if (BlockNew)
             {
                 Block.DoInSecBlock(ro);
             }
+        }
+
+        private ResultObject CreateNewResultObject(IpPacket ipPacket, bool fromMe)
+        {
+            var ro = new ResultObject
+            {
+                SourceAddress = ipPacket.SourceAddress,
+                DestinationAddress = ipPacket.DestinationAddress,
+                From = fromMe,
+                PackagesReceived = 1,
+                Application = SelectedAppEntry,
+                DataTransfered = ipPacket.PayloadLength,
+                ForceShow = _forceShowHiddenIps,
+                FirstFrom = !fromMe,
+                Initialized = !fromMe
+            };
+            ro.Hidden = IpHider.Check(SelectedAppEntry.Name, ro.ShowIp);
+            return ro;
+        }
+
+        private ResultObject GetExistedDetection(bool fromMe, IpPacket ipPacket)
+        {
+            return (fromMe
+                ? ResultObjects.Where(
+                    x =>
+                        Equals(x.SourceAddress, ipPacket.DestinationAddress) ||
+                        Equals(x.DestinationAddress, ipPacket.DestinationAddress))
+                : ResultObjects.Where(
+                    x =>
+                        Equals(x.DestinationAddress, ipPacket.SourceAddress) ||
+                        Equals(x.SourceAddress, ipPacket.SourceAddress))).FirstOrDefault();
+        }
+
+        private void OnReceived(IPAddress ipdest, IPAddress ipsource, byte[] data, bool direction, ResultObject resultobject, IEnumerable<Tuple<Protocol, ushort>> protocol)
+        {
+            Received?.Invoke(ipdest, ipsource, data, direction, resultobject, protocol);
         }
     }
 }

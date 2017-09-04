@@ -83,12 +83,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Applications\AppEntry.cs" />
     <Compile Include="Applications\AppIcon.cs" />
+    <Compile Include="Applications\AppIconEntry.cs" />
     <Compile Include="Applications\AppList.cs" />
     <Compile Include="Common\Admin.cs" />
     <Compile Include="Common\Converters.cs" />
-    <Compile Include="Common\ExtensionControl.cs" />
     <Compile Include="Common\Images.cs" />
     <Compile Include="Controls\BlockTimeContainer.cs" />
     <Compile Include="Controls\SettingsPage.xaml.cs">

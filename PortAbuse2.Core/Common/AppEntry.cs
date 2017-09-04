@@ -8,8 +8,8 @@ namespace PortAbuse2.Core.Common
     public class AppEntry : PaNotified
     {
         private int _hiddenCount;
-        public string Name { get; set; }
-        public string FullName { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
         public int InstancePid { get; set; }
         public string Title { get; set; }
 
