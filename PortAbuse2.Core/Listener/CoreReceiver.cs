@@ -30,7 +30,7 @@ namespace PortAbuse2.Core.Listener
         private ICaptureDevice _captureDevice;
 
         //private readonly string _logFolder = "raw";
-        private const int OldTimeLimitSeconds = 120;
+        private const int OldTimeLimitSeconds = 30;
 
         private const int RegularActionsDelay = 500;
 
@@ -260,7 +260,7 @@ namespace PortAbuse2.Core.Listener
 
             var ro = CreateNewResultObject(ipPacket, fromMe);
             OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,
-                ro, port, ro.FirstFrom);
+                ro, port);
 
             if (ResultObjects.Any(x => x.ShowIp == ro.ShowIp))
                 return;
@@ -304,9 +304,7 @@ namespace PortAbuse2.Core.Listener
                 PackagesReceived = 1,
                 Application = SelectedAppEntry,
                 DataTransfered = ipPacket.PayloadLength,
-                ForceShow = _forceShowHiddenIps,
-                FirstFrom = !fromMe,
-                Initialized = !fromMe
+                ForceShow = _forceShowHiddenIps
             };
             ro.Hidden = IpHider.Check(SelectedAppEntry.Name, ro.ShowIp);
             return ro;

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PortAbuse2.Core.Ip
+﻿namespace PortAbuse2.Core.Ip
 {
     public class IpEntry
     {

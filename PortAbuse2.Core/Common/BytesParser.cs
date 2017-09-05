@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using System.IO.Compression;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace PortAbuse2.Core.Common
 {
-    internal static class BytesParser
+    public static class BytesParser
     {
         private static readonly Regex NonAlphaNumericSpecial = new Regex("[^a-zA-Z0-9':{}()/, -]");
-        internal static string BytesToStringConverted(byte[] bytes, bool removeNonAscii = false)
+        public static string BytesToStringConverted(byte[] bytes, bool removeNonAscii = false)
         {
             using (var stream = new MemoryStream(bytes))
             {
@@ -20,6 +18,13 @@ namespace PortAbuse2.Core.Common
                     var res = streamReader.ReadToEnd();
                     if (removeNonAscii)
                     {
+#if DEBUG
+                        //if (bytes.Length > 1000)
+                        //{
+                        //    byte[] decompressed = Decompress(bytes);
+                        //    var str = BytesToStringConverted(decompressed);
+                        //}
+#endif
                         res = RemoveNonAsciiAndUnEscape(res);
                     }
                     return res;

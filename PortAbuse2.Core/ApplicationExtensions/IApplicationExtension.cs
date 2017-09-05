@@ -1,12 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Runtime.Remoting.Channels;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using PortAbuse2.Core.Listener;
 using PortAbuse2.Core.Proto;
 using PortAbuse2.Core.Result;
 

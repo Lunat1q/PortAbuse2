@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Proto;
 using PortAbuse2.Core.Result;
@@ -23,22 +21,6 @@ namespace PortAbuse2.Core.ApplicationExtensions
 
         public IEnumerable<ResultObject> ResultObjectRef { private get; set; }
 
-        [Obsolete("No longer usefull")]
-        private async Task Worker()
-        {
-            while (Active)
-            {
-                var visible = ResultObjectRef.Where(x=>!x.Old && !x.Hidden).OrderBy(x=>x.DetectionStamp);
-                var i = 2;
-                foreach (var hosts in visible)
-                {
-                    hosts.ExtraInfo = i.ToString();
-                    i++;
-                }
-                await Task.Delay(2000);
-            }
-        }
-
         public void Stop()
         {
             Active = false;
@@ -55,16 +37,29 @@ namespace PortAbuse2.Core.ApplicationExtensions
                 TryToDetermineSessionHash(resultobject, data);
             }
             var strData = BytesParser.BytesToStringConverted(data, true);
-            TryHandleWfData(strData);
+            TryHandleWfData(strData, resultobject);
         }
 
-        private void TryHandleWfData(string strData)
+        private void TryHandleWfData(string strData, ResultObject ro)
         {
-            var match = _nameSessionPotention.Match(strData);
-            if (match.Success)
+            if (TryGetWfData(strData) && !ro.Resolved)
             {
-                TryAddSession(BuildWfData(strData, match.Groups[1].Value), match.Groups[2].Value);
-                IdentifyAttempt(match.Groups[2].Value);
+                ro.Resolved = true;
+                ro.ExtraInfo = "DE Server";
+            }
+            else if (!ro.Resolved)
+            {
+                if (strData.Length > 100)
+                {
+                    var lameSearch = "/powersuits/";
+                    var indexOf = strData.IndexOf(lameSearch, StringComparison.CurrentCultureIgnoreCase);
+                    if (indexOf > 0)
+                    {
+                        var badString = strData.Substring(indexOf + lameSearch.Length, 16);
+                        badString = badString.Replace("(", "");
+                        ro.ExtraInfo = badString.Split(' ').FirstOrDefault();
+                    }
+                }
             }
         }
 
@@ -81,22 +76,31 @@ namespace PortAbuse2.Core.ApplicationExtensions
             }
         }
 
-        private WarframePlayerData BuildWfData(string strData, string name)
+        private bool TryGetWfData(string strData)
         {
-            WarframePlayerData wfData = new WarframePlayerData(name);
             try
             {
                 var match = _warframeName.Match(strData);
                 if (match.Success)
                 {
-                    wfData.Warframe = match.Groups[2].Value.Split('/').Skip(1).FirstOrDefault();
+                    var warframeName = match.Groups[2].Value.Split('/').Skip(1).FirstOrDefault();
+                    match = _nameSessionPotention.Match(strData);
+                    if (match.Success)
+                    {
+                        var sessionHash = match.Groups[2].Value;
+                        var wfData = new WarframePlayerData(match.Groups[1].Value) {Warframe = warframeName};
+                        AddOrUpdateSession(wfData, sessionHash);
+                        IdentifyAttempt(sessionHash);
+                        return true;
+
+                    }
                 }
             }
             catch (Exception)
             {
                 //ignore
             }
-            return wfData;
+            return false;
         }
 
         private void TryToDetermineSessionHash(ResultObject resultobject, byte[] data)
@@ -125,12 +129,14 @@ namespace PortAbuse2.Core.ApplicationExtensions
         private static string GetSessionFromInitialPacket(byte[] data)
         {
             if (data.Length != 44) return string.Empty;
+            if (data.Skip(44 - 5).Any(x => x != 170)) return string.Empty; //TODO:Check that logic
             var t = data.Skip(14).Take(12).ToArray();
             return BitConverter.ToString(t).Replace("-", string.Empty).ToLower();
         }
 
-        private void TryAddSession(WarframePlayerData wfData, string sessionKey)
+        private void AddOrUpdateSession(WarframePlayerData wfData, string sessionKey)
         {
+            if (wfData == null) return;
             if (_sniffedSessions.ContainsKey(sessionKey))
             {
                 _sniffedSessions[sessionKey] = wfData;
@@ -158,7 +164,10 @@ namespace PortAbuse2.Core.ApplicationExtensions
 
             public string Name { get; }
             public string Warframe { get; set; }
-
+            public override string ToString()
+            {
+                return $"{Name} - {Warframe}";
+            }
         }
     }
 }
