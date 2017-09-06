@@ -9,17 +9,27 @@ namespace PortAbuse2.Core.Result
         private string _index;
         private string _countryCode;
         private string _isp;
+        private bool _geoRequestEnqueued;
 
+        public bool GeoRequestEnqueued
+        {
+            get => _geoRequestEnqueued;
+            set
+            {
+                _geoRequestEnqueued = value; 
+                OnPropertyChanged();
+            }
+        }
 
         public string Isp
         {
-            get { return _isp; }
+            get => _isp;
             set { _isp = value; OnPropertyChanged(); }
         }
 
         public string Country
         {
-            get { return _country; }
+            get => _country;
             set
             {
                 _country = value;
@@ -29,7 +39,7 @@ namespace PortAbuse2.Core.Result
 
         public string City
         {
-            get { return _city; }
+            get => _city;
             set
             {
                 _city = value;
@@ -39,7 +49,7 @@ namespace PortAbuse2.Core.Result
 
         public string Index
         {
-            get { return _index; }
+            get => _index;
             set
             {
                 _index = value;
@@ -49,7 +59,7 @@ namespace PortAbuse2.Core.Result
 
         public string CountryCode
         {
-            get { return _countryCode; }
+            get => _countryCode;
             set
             {
                 _countryCode = value;

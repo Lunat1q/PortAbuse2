@@ -40,7 +40,7 @@
             </Grid>
             <ListBox x:Name="ResultBox" Margin="5,0,0,5" Grid.Row="1" ItemTemplate="{DynamicResource ResultTemplate}" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource HiddenContainer}"/>
             <Button x:Name="SwitchButton" Content="Start" HorizontalAlignment="Left" Margin="0" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="SwitchButton_Click" Background="{DynamicResource PaLightGreen}"/>
-            <Button x:Name="ShowOptionsButton" Content="Options" HorizontalAlignment="Right" Margin="457,4,0,0" Grid.Row="2" VerticalAlignment="Top" Click="Button_Click" Width="75"/>
+            <Button x:Name="ShowOptionsButton" Content="Options" HorizontalAlignment="Right" Margin="5,0,0,0" Grid.Row="2" VerticalAlignment="Center" Click="Button_Click" Width="75"/>
         </Grid>
         <Grid x:Name="FlyOutGrid" Visibility="Collapsed">
             <controls:Flyout x:Name="ExtraOptions" Header="Options" Position="Right" Margin="10,10,0,10" 

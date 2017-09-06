@@ -67,6 +67,10 @@
     <Compile Include="Geo\DnsHost.cs" />
     <Compile Include="Geo\GeoQueue.cs" />
     <Compile Include="Geo\GeoWorker.cs" />
+    <Compile Include="Geo\IGeoService.cs" />
+    <Compile Include="Geo\Providers\GeoProvider2IpComUa.cs" />
+    <Compile Include="Geo\Providers\GeoProviderFreeGeoIpNet.cs" />
+    <Compile Include="Geo\Providers\GeoProviderIpApiCom.cs" />
     <Compile Include="Ip\IpEntry.cs" />
     <Compile Include="Ip\IpInterface.cs" />
     <Compile Include="Common\AppEntry.cs" />

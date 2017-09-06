@@ -48,7 +48,7 @@ namespace PortAbuse2.Core.Listener
         public void Stop()
         {
             ContinueCapturing = false;
-            _captureDevice.StopCapture();
+            _captureDevice?.StopCapture();
             if (_currentExtensions != null)
             {
                 foreach (var ext in _currentExtensions)
@@ -189,12 +189,13 @@ namespace PortAbuse2.Core.Listener
 
         public void StartListener(string ipInterface)
         {
+            ContinueCapturing = true;
+
             ResultObjects.Clear();
             Task.Run(HideOldTask);
             Task.Run(CleanupDupes);
             InitExtensions();
 
-            ContinueCapturing = true;
 
             _interfaceLocalIp = ipInterface;
             // метод для получения списка устройств

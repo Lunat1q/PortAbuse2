@@ -70,5 +70,17 @@ namespace PortAbuse2.Properties {
                 this["BlockSeconds"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string GeoProvider {
+            get {
+                return ((string)(this["GeoProvider"]));
+            }
+            set {
+                this["GeoProvider"] = value;
+            }
+        }
     }
 }

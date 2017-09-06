@@ -1,8 +1,10 @@
-﻿using System.Reflection;
+﻿using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using MahApps.Metro.Controls;
+using PortAbuse2.Core.Geo;
 using TiqUtils.Conversion;
 using TiqUtils.Events.Controls;
 
@@ -18,6 +20,7 @@ namespace PortAbuse2.Controls
         public SettingsPage()
         {
             InitializeComponent();
+            GeoProviderBox.ItemsSource = GeoWorker.GeoProviders;
         }
 
         public void SetMainWindow(MainWindow main)
@@ -32,6 +35,9 @@ namespace PortAbuse2.Controls
             HideOldRecords.IsChecked = Properties.Settings.Default.HideOldConnections;
             HideSmallPackets.IsChecked = Properties.Settings.Default.HideSmallPackets;
             SecondsBlockBox.Text = Properties.Settings.Default.BlockSeconds.ToString();
+            
+            GeoProviderBox.SelectedItem = GeoWorker.SelectProviderByName(Properties.Settings.Default.GeoProvider);
+            
 
             BlockTimeContainer.CurrentBlockTime = Properties.Settings.Default.BlockSeconds;
 
@@ -109,6 +115,16 @@ namespace PortAbuse2.Controls
             Properties.Settings.Default.BlockSeconds = amount;
             Properties.Settings.Default.Save();
             _main.RemapBlockButtons(amount);
+        }
+
+        private void GeoProviderBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var cb = sender as ComboBox;
+            var item = cb?.SelectedItem as IGeoService;
+            if (item == null) return;
+            GeoWorker.SelectProviderByObject(item);
+            Properties.Settings.Default.GeoProvider = item.Name;
+            Properties.Settings.Default.Save();
         }
     }
 }

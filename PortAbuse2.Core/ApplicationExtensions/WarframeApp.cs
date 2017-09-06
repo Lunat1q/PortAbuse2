@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -14,8 +15,8 @@ namespace PortAbuse2.Core.ApplicationExtensions
         public IEnumerable<string> AppNames => new[] {"Warframe.x64", "Warframe"};
         private readonly Regex _nameSessionPotention = new Regex("([a-zA-z0-9]{3,64})[\\s]+([a-zA-z0-9]{20,27})");
         private readonly Regex _warframeName = new Regex("(\\/Lotus\\/Powersuits\\/)(\\w+\\/\\w+)");
-        private Dictionary<string, WarframePlayerData> _sniffedSessions;
-        private Dictionary<string, ResultObject> _connectionPackageCollection;
+        private ConcurrentDictionary<string, WarframePlayerData> _sniffedSessions;
+        private ConcurrentDictionary<string, ResultObject> _connectionPackageCollection;
 
         public bool Active { get; set; }
 
@@ -24,8 +25,8 @@ namespace PortAbuse2.Core.ApplicationExtensions
         public void Stop()
         {
             Active = false;
-            _sniffedSessions = new Dictionary<string, WarframePlayerData>();
-            _connectionPackageCollection = new Dictionary<string, ResultObject>();
+            _sniffedSessions = new ConcurrentDictionary<string, WarframePlayerData>();
+            _connectionPackageCollection = new ConcurrentDictionary<string, ResultObject>();
         }
 
         public void PackageReceived(IPAddress ipDest, IPAddress ipSource, byte[] data, bool direction,
@@ -40,6 +41,11 @@ namespace PortAbuse2.Core.ApplicationExtensions
             TryHandleWfData(strData, resultobject);
         }
 
+        private static bool ContainsIgnoreCase(string str, string contains)
+        {
+            return str.IndexOf(contains, StringComparison.CurrentCultureIgnoreCase) >= 0;
+        }
+
         private void TryHandleWfData(string strData, ResultObject ro)
         {
             if (TryGetWfData(strData) && !ro.Resolved)
@@ -51,13 +57,15 @@ namespace PortAbuse2.Core.ApplicationExtensions
             {
                 if (strData.Length > 100)
                 {
-                    var lameSearch = "/powersuits/";
+                    var lameSearch = "lotus/powersuits/";
                     var indexOf = strData.IndexOf(lameSearch, StringComparison.CurrentCultureIgnoreCase);
-                    if (indexOf > 0)
+                    if (indexOf >= 0)
                     {
                         var badString = strData.Substring(indexOf + lameSearch.Length, 16);
                         badString = badString.Replace("(", "");
-                        ro.ExtraInfo = badString.Split(' ').FirstOrDefault();
+                        var badWarFrameName = badString.Split(' ').FirstOrDefault();
+                        if (badWarFrameName != null && !ContainsIgnoreCase(badWarFrameName, "operator") && !ContainsIgnoreCase(badWarFrameName, "npc"))
+                            ro.ExtraInfo = badString.Split(' ').FirstOrDefault();
                     }
                 }
             }
@@ -115,7 +123,7 @@ namespace PortAbuse2.Core.ApplicationExtensions
                 }
                 else
                 {
-                    _connectionPackageCollection.Add(sessionKey, resultobject);
+                    _connectionPackageCollection.TryAdd(sessionKey, resultobject);
                 }
                 resultobject.Resolved = true;
                 IdentifyAttempt(sessionKey);
@@ -143,14 +151,14 @@ namespace PortAbuse2.Core.ApplicationExtensions
             }
             else
             {
-                _sniffedSessions.Add(sessionKey, wfData);
+                _sniffedSessions.TryAdd(sessionKey, wfData);
             }
         }
 
         public void Start()
         {
-            _sniffedSessions = new Dictionary<string, WarframePlayerData>();
-            _connectionPackageCollection = new Dictionary<string, ResultObject>();
+            _sniffedSessions = new ConcurrentDictionary<string, WarframePlayerData>();
+            _connectionPackageCollection = new ConcurrentDictionary<string, ResultObject>();
             Active = true;
             //Task.Run(Worker);
         }

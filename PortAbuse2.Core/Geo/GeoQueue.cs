@@ -5,14 +5,14 @@ namespace PortAbuse2.Core.Geo
     public class GeoQueue
     {
         public string Ip => Object.ShowIp;
-        public int GeoBase { get; set; }
-        public bool RequestDone { get; set; }
-        public bool RequestInProgress { get; set; }
-        public ResultObject Object { get; set; }
-        public GeoQueue(ResultObject obj, int geoBase)
+        public string GeoProvider { get; }
+        public bool RequestDone { get; }
+        public bool RequestInProgress { get; }
+        public ResultObject Object { get; }
+        public GeoQueue(ResultObject obj, string providerName)
         {
             Object = obj;
-            GeoBase = geoBase;
+            GeoProvider = providerName;
             RequestInProgress = true;
             RequestDone = false;
         }
