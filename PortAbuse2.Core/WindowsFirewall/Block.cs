@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -97,10 +98,17 @@ namespace PortAbuse2.Core.WindowsFirewall
                 var i = firewallPolicy.Rules.GetEnumerator();
                 while (i.MoveNext())
                 {
-                    var cur = i.Current as INetFwRule;
-                    if (cur != null && cur.Name == blockName)
+                    try
                     {
-                        firewallPolicy.Rules.Remove(cur.Name);
+                        var cur = i.Current as INetFwRule;
+                        if (cur != null && cur.Name == blockName)
+                        {
+                            firewallPolicy.Rules.Remove(cur.Name);
+                        }
+                    }
+                    catch (FileNotFoundException)
+                    {
+                       //ignore
                     }
                 }
             }

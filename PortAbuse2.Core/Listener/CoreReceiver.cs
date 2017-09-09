@@ -19,7 +19,6 @@ namespace PortAbuse2.Core.Listener
 {
     public class CoreReceiver
     {
-        private readonly bool _debug;
         private bool _hideOld;
         // ReSharper disable once FieldCanBeMadeReadOnly.Global
         public ObservableCollection<ResultObject> ResultObjects = new ObservableCollection<ResultObject>();
@@ -72,9 +71,6 @@ namespace PortAbuse2.Core.Listener
             _minimizeHostname = minimizeHostname;
             _hideOld = hideOld;
             HideSmallPackets = hideSmall;
-#if DEBUG
-            _debug = true;
-#endif
         }
 
         public void HideOld()

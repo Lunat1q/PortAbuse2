@@ -14,17 +14,36 @@ namespace PortAbuse2.Core.Parser
             tcpPacket = null;
             if (ipPacket == null) return null;
 
-            switch (ipPacket.Protocol)
+            try
             {
-                case IPProtocolType.TCP:
-                    tcpPacket = (TcpPacket)packet.Extract(typeof(TcpPacket));
-                    return new[] { Tuple.Create(Protocol.Tcp, tcpPacket.DestinationPort), Tuple.Create(Protocol.Tcp, tcpPacket.SourcePort) };
 
-                case IPProtocolType.UDP:
-                    udpPacket = (UdpPacket)packet.Extract(typeof(UdpPacket));
-                    return new[] { Tuple.Create(Protocol.Udp, udpPacket.DestinationPort), Tuple.Create(Protocol.Udp, udpPacket.SourcePort) };
-                default:
-                    return null;
+
+                switch (ipPacket.Protocol)
+                {
+                    case IPProtocolType.TCP:
+                        tcpPacket = (TcpPacket) packet.Extract(typeof(TcpPacket));
+                        if (tcpPacket == null) return null;
+                        return new[]
+                        {
+                            Tuple.Create(Protocol.Tcp, tcpPacket.DestinationPort),
+                            Tuple.Create(Protocol.Tcp, tcpPacket.SourcePort)
+                        };
+
+                    case IPProtocolType.UDP:
+                        udpPacket = (UdpPacket) packet.Extract(typeof(UdpPacket));
+                        if (udpPacket == null) return null;
+                        return new[]
+                        {
+                            Tuple.Create(Protocol.Udp, udpPacket.DestinationPort),
+                            Tuple.Create(Protocol.Udp, udpPacket.SourcePort)
+                        };
+                    default:
+                        return null;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
     }
