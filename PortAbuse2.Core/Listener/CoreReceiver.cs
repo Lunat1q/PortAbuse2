@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -243,7 +244,6 @@ namespace PortAbuse2.Core.Listener
 
             if (existedDetection != null)
             {
-
                 OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,
                     existedDetection, port);
 
@@ -309,15 +309,27 @@ namespace PortAbuse2.Core.Listener
 
         private ResultObject GetExistedDetection(bool fromMe, IpPacket ipPacket)
         {
-            return (fromMe
-                ? ResultObjects.Where(
-                    x =>
-                        Equals(x.SourceAddress, ipPacket.DestinationAddress) ||
-                        Equals(x.DestinationAddress, ipPacket.DestinationAddress))
-                : ResultObjects.Where(
-                    x =>
-                        Equals(x.DestinationAddress, ipPacket.SourceAddress) ||
-                        Equals(x.SourceAddress, ipPacket.SourceAddress))).FirstOrDefault();
+            ResultObject detection;
+            try
+            {
+                detection = (fromMe
+                    ? ResultObjects.Where(
+                        x =>
+                            Equals(x.SourceAddress, ipPacket.DestinationAddress) ||
+                            Equals(x.DestinationAddress, ipPacket.DestinationAddress))
+                    : ResultObjects.Where(
+                        x =>
+                            Equals(x.DestinationAddress, ipPacket.SourceAddress) ||
+                            Equals(x.SourceAddress, ipPacket.SourceAddress))).FirstOrDefault();
+            }
+            catch(Exception)
+            {
+                Debugger.Log(1,"","Get RO crushed.");
+                detection = GetExistedDetection(fromMe, ipPacket);
+            }
+            
+
+            return detection;
         }
 
         private void OnReceived(IPAddress ipdest, IPAddress ipsource, byte[] data, bool direction, ResultObject resultobject, IEnumerable<Tuple<Protocol, ushort>> protocol)

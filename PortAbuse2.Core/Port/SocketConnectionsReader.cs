@@ -365,6 +365,7 @@ namespace PortAbuse2.Core.Port
             if (processList.All(process => process.Id != pId)) return;
             var proc = Process.GetProcessById(ProcessId);
             ProcessName = proc.ProcessName;
+            if (SystemProcess(ProcessName)) return;
             try
             {
                 Title = proc.MainWindowTitle;
@@ -374,6 +375,12 @@ namespace PortAbuse2.Core.Port
             {
                 //ignore
             }
+        }
+
+        private static bool SystemProcess(string name)
+        {
+            name = name.ToLowerInvariant();
+            return name == "system" || name == "idle" || name == "wininit" || name == "services";
         }
     }
 

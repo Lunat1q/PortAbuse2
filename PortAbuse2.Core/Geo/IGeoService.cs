@@ -7,7 +7,5 @@ namespace PortAbuse2.Core.Geo
     {
         string Name { get;}
         Task<GeoData> GetLocationByIp(string ip);
-
-        string ToString();
     }
 }

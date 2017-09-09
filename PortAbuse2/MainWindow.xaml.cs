@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using PortAbuse2.Applications;
-using PortAbuse2.Common;
 using PortAbuse2.Controls;
 using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Ip;

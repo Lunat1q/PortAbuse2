@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using PortAbuse2.Core.Result;
 
@@ -15,7 +16,7 @@ namespace PortAbuse2.Core.Geo
             {
                 hostName = (await Dns.GetHostEntryAsync(ip)).HostName;
             }
-            catch (Exception)
+            catch (SocketException)
             {
                 hostName = obj.ShowIp.Replace('.', '-') + ".NoHost";
             }

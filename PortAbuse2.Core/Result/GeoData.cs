@@ -76,7 +76,18 @@ namespace PortAbuse2.Core.Result
             Country = geo.Country;
             Index = geo.Index;
             Isp = geo.Isp;
-            OnPropertyChangedByName("Result");
+            OnPropertyChangedByName(nameof(Result));
+        }
+
+        public void Reset()
+        {
+            City = string.Empty;
+            CountryCode = string.Empty;
+            Country = string.Empty;
+            Index = string.Empty;
+            Isp = string.Empty;
+            GeoRequestEnqueued = false;
+            OnPropertyChangedByName(nameof(Result));
         }
     }
 }

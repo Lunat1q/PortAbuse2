@@ -26,14 +26,14 @@ namespace PortAbuse2.Core.Result
 
         public bool ForceShow
         {
-            get { return _forceShow; }
+            get => _forceShow;
             set
             {
                 _forceShow = value;
                 OnPropertyChanged();
-                OnPropertyChanged("Hidden");
-                OnPropertyChanged("ForseShown");
-                OnPropertyChanged("HiddenProp");
+                OnPropertyChangedByName(nameof(Hidden));
+                OnPropertyChangedByName(nameof(ForseShown));
+                OnPropertyChangedByName(nameof(HiddenProp));
             }
         }
 
@@ -41,7 +41,7 @@ namespace PortAbuse2.Core.Result
 
         public int PackagesReceived
         {
-            get { return _packagesReceived; }
+            get => _packagesReceived;
             set
             {
                 _packagesReceived = value;
@@ -52,7 +52,7 @@ namespace PortAbuse2.Core.Result
 
         public long DataTransfered
         {
-            get { return _dataTransfered; }
+            get => _dataTransfered;
             set
             {
                 _dataTransfered = value;
@@ -62,7 +62,7 @@ namespace PortAbuse2.Core.Result
 
         public bool Old
         {
-            get { return _old; }
+            get => _old;
             set
             {
                 _old = value;
@@ -72,25 +72,25 @@ namespace PortAbuse2.Core.Result
 
         public bool HiddenProp
         {
-            get { return _hidden && !_forceShow; }
+            get => _hidden && !_forceShow;
             set
             {
                 _hidden = value;
                 OnPropertyChanged();
-                OnPropertyChanged("Hidden");
-                OnPropertyChanged("ForseShown");
+                OnPropertyChangedByName(nameof(Hidden));
+                OnPropertyChangedByName(nameof(ForseShown));
             }
         }
 
         public bool Hidden
         {
-            get { return _hidden; }
+            get => _hidden;
             set
             {
                 _hidden = value;
                 OnPropertyChanged();
-                OnPropertyChanged("HiddenProp");
-                OnPropertyChanged("ForseShown");
+                OnPropertyChangedByName(nameof(HiddenProp));
+                OnPropertyChangedByName(nameof(ForseShown));
             }
         }
 
@@ -102,7 +102,7 @@ namespace PortAbuse2.Core.Result
 
         public string ExtraInfo
         {
-            get { return _extraInfo; }
+            get => _extraInfo;
             set
             {
                 HaveExtraInfo = !string.IsNullOrEmpty(value);
@@ -113,7 +113,7 @@ namespace PortAbuse2.Core.Result
 
         public bool HaveExtraInfo
         {
-            get { return _haveExtraInfo; }
+            get => _haveExtraInfo;
             set
             {
                 _haveExtraInfo = value;
@@ -128,10 +128,7 @@ namespace PortAbuse2.Core.Result
 
         public string Hostname
         {
-            get
-            {
-                return _hostname;
-            }
+            get => _hostname;
             set
             {
                 _hostname = value;
@@ -143,7 +140,7 @@ namespace PortAbuse2.Core.Result
 
         public GeoData Geo
         {
-            get { return _geo ?? (_geo = new GeoData()); }
+            get => _geo ?? (_geo = new GeoData());
             set
             {
                 _geo = value;
@@ -155,10 +152,7 @@ namespace PortAbuse2.Core.Result
 
         public bool From
         {
-            get
-            {
-                return _from;
-            }
+            get => _from;
             set
             {
                 _from = value;
@@ -168,10 +162,7 @@ namespace PortAbuse2.Core.Result
 
         public bool Blocked
         {
-            get
-            {
-                return _blocked;
-            }
+            get => _blocked;
             set
             {
                 _blocked = value;
@@ -181,7 +172,7 @@ namespace PortAbuse2.Core.Result
 
         public bool ReverseEnabled
         {
-            get { return _reverseEnabled; }
+            get => _reverseEnabled;
             set
             {
                 _reverseEnabled = value;

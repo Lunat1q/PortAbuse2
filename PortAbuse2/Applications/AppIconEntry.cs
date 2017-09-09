@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using PortAbuse2.Common;
 using PortAbuse2.Core.Common;
-using PortAbuse2.Core.Port;
 
 namespace PortAbuse2.Applications
 {

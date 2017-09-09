@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -123,6 +122,11 @@ namespace PortAbuse2.Controls
             var item = cb?.SelectedItem as IGeoService;
             if (item == null) return;
             GeoWorker.SelectProviderByObject(item);
+            foreach (var ro in _main.Receiver.ResultObjects)
+            {
+                ro.Geo.Reset();
+                GeoWorker.InsertGeoDataQueue(ro);
+            }
             Properties.Settings.Default.GeoProvider = item.Name;
             Properties.Settings.Default.Save();
         }

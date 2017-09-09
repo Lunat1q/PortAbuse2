@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using PortAbuse2.Core.ApplicationExtensions;
 using PortAbuse2.Core.Result;
+
 // ReSharper disable AssignNullToNotNullAttribute
 
 namespace PortAbuse2.Core.Geo
@@ -18,8 +15,10 @@ namespace PortAbuse2.Core.Geo
         private static readonly ConcurrentQueue<GeoQueue> GeoQ = new ConcurrentQueue<GeoQueue>();
         private static int _geoRequests;
         private static bool _geoRunning;
-        public static List<IGeoService> GeoProviders = new List<IGeoService>();
+        public static readonly List<IGeoService> GeoProviders = new List<IGeoService>();
         private static IGeoService _selectedGeoService;
+        private static Task _geoTask;
+        private static readonly ReaderWriterLockSlim Rwl = new ReaderWriterLockSlim();
 
         static GeoWorker()
         {
@@ -48,55 +47,61 @@ namespace PortAbuse2.Core.Geo
             var gq = new GeoQueue(item, providerName);
             GeoQ.Enqueue(gq);
 
-            if (!_geoRunning)
-                Task.Run(DoGeoDataQueue);
+            Rwl.EnterWriteLock();
+            if (!_geoRunning || _geoTask == null || _geoTask.IsCanceled || _geoTask.IsCompleted || _geoTask.IsFaulted)
+            {
+                _geoRunning = true;
+                _geoTask = Task.Run(DoGeoDataQueue);
+            }
+            Rwl.ExitWriteLock();
         }
 
         private static async Task DoGeoDataQueue()
         {
-            _geoRunning = true;
-            while (GeoQ.Count > 0)
+            try
             {
-                if (_geoRequests >= 5) continue;
-                if (GeoQ.TryDequeue(out GeoQueue gq))
+                while (GeoQ.Count > 0)
                 {
-                    if (gq != null)
+                    if (_geoRequests >= 5) continue;
+                    if (GeoQ.TryDequeue(out GeoQueue gq))
                     {
-                        _geoRequests++;
-                        await GetGeoData(gq.Object, gq.GeoProvider);
+                        if (gq != null)
+                        {
+                            _geoRequests++;
+                            GetGeoData(gq.Object, gq.GeoProvider);
+                        }
+                        await Task.Delay(200);
                     }
-                    await Task.Delay(100);
                 }
             }
-            _geoRunning = false;
+            catch (Exception)
+            {
+                //ignore
+            }
+            finally
+            {
+                _geoRunning = false;
+            }
         }
-        private static async Task GetGeoData(ResultObject obj, string providerName = "")
+
+        private static async void GetGeoData(ResultObject obj, string providerName = "")
         {
-            GeoData loc;
+            IGeoService provider;
             if (providerName == string.Empty)
             {
-                loc = await _selectedGeoService.GetLocationByIp(obj.ShowIp);
+                provider = _selectedGeoService;
             }
             else
             {
-                var provider = GeoProviders.FirstOrDefault(x => x.Name == providerName);
-                if (provider != null)
-                {
-                    loc = await provider.GetLocationByIp(obj.ShowIp);
-                }
-                else
-                {
-                    await GetGeoData(obj);
-                    return;
-                }
-
+                provider = GeoProviders.FirstOrDefault(x => x.Name == providerName) ?? _selectedGeoService;
             }
+            var loc = await provider.GetLocationByIp(obj.ShowIp);
 
             if (loc == null)
             {
-                foreach (var provider in GeoProviders)
+                foreach (var prov in GeoProviders.Where(x => x != provider))
                 {
-                    loc = await provider.GetLocationByIp(obj.ShowIp);
+                    loc = await prov.GetLocationByIp(obj.ShowIp);
                     if (loc != null) break;
                 }
             }
@@ -110,42 +115,6 @@ namespace PortAbuse2.Core.Geo
                 };
             obj.Geo.Merge(loc);
             _geoRequests--;
-        }
-        
-        private static async Task<GeoData> GetLocationByIp3(string ip)
-        {
-            var loc = new GeoData();
-            var url = "http://freegeoip.net/xml/" + ip;
-
-            try
-            {
-                var request = WebRequest.Create(url);
-                request.Timeout = 10000;
-                using (var response = (HttpWebResponse)await request.GetResponseAsync())
-                {
-                    var encoding = response.CharacterSet != "" ? Encoding.GetEncoding(response.CharacterSet) : null;
-                    using (var sr = encoding != null ? new StreamReader(response.GetResponseStream(), encoding) :
-                                                           new StreamReader(response.GetResponseStream(), true))
-                    {
-                        var response2 = sr.ReadToEnd();
-                        var doc = XDocument.Parse(response2);
-                        var geoData = doc.Element("Response");
-                        var locCountry = geoData?.Element("CountryName")?.Value;
-                        var locCity = geoData?.Element("City")?.Value;
-                        var zip = geoData?.Element("ZipCode")?.Value;
-                        var countryCode = geoData?.Element("CountryCode")?.Value.ToLower();
-                        loc.CountryCode = countryCode;
-                        loc.City = locCity == "" ? "Unknown" : locCity;
-                        loc.Country = locCountry == "" ? "Unknown" : locCountry;
-                        loc.Index = zip == "" ? "" : zip;
-                    }
-                }
-            }
-            catch
-            {
-                loc = null;
-            }
-            return loc;
         }
 
         public static IGeoService SelectProviderByName(string defaultGeoProvider)

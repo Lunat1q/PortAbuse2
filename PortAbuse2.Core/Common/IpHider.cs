@@ -13,7 +13,7 @@ namespace PortAbuse2.Core.Common
 
         public static void Load()
         {
-            var loaded = Json.DeserializeDataJson<Dictionary<string, List<string>>>(Path.Combine(CurFolder, FileName));
+            var loaded = Json.DeserializeDataFromFile<Dictionary<string, List<string>>>(Path.Combine(CurFolder, FileName));
             if (loaded != null)
                 HiddenIps = loaded;
         }
