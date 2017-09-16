@@ -19,7 +19,7 @@ namespace PortAbuse2.Styling
             if (obj == null) return;
             if (!obj.Blocked)
             {
-                Block.DoBlock(obj);
+                Block.DoBlock(obj, true, Block.DefaultBlockMode);
                 btn.Content = "UnB";
                 var unblockColor = btn.FindResource("UnblockColor") as SolidColorBrush;
                 btn.Background = unblockColor;
@@ -27,7 +27,7 @@ namespace PortAbuse2.Styling
             else
             {
                 btn.Content = "B";
-                Block.DoUnBlock(obj);
+                Block.DoUnBlock(obj, true);
                 var blockColor = btn.FindResource("BlockColor") as SolidColorBrush;
                 btn.Background = blockColor;
             }
@@ -40,8 +40,8 @@ namespace PortAbuse2.Styling
 
         private static void BlockFromControl(object sender, int sec)
         {
-            if (GetResultObject(sender, out ResultObject obj)) return;
-            Block.DoInSecBlock(obj, sec);
+            if (!TryGetResultObject(sender, out ResultObject obj, out BlockMode blockDirection)) return;
+            Block.DoInSecBlock(obj, sec, blockDirection);
         }
 
         private void HideThisIpMenuItem_OnClick(object sender, RoutedEventArgs e)
@@ -108,18 +108,20 @@ namespace PortAbuse2.Styling
             BlockFromControl(sender, 120);
         }
 
-        private void MirrorTraficItem_OnClick(object sender, RoutedEventArgs e)
+        private static bool TryGetResultObject(object sender, out ResultObject obj, out BlockMode blockDirection)
         {
-            if (GetResultObject(sender, out ResultObject obj)) return;
-            obj.ReverseEnabled = !obj.ReverseEnabled;
-        }
+            var control = sender as Control;
+            obj = control?.DataContext as ResultObject;
+            blockDirection = default(BlockMode);
+            if (obj == null) return false;
+            var parentMenu = control.Parent as MenuItem;
+            if (int.TryParse(parentMenu?.Tag as string, out int mode))
+                blockDirection = (BlockMode) mode;
+            else
+                blockDirection = Block.DefaultBlockMode;
 
-        private static bool GetResultObject(object sender, out ResultObject obj)
-        {
-            var btn = sender as Control;
-            obj = btn?.DataContext as ResultObject;
-            if (obj == null) return true;
-            return false;
+
+            return true;
         }
     }
 }

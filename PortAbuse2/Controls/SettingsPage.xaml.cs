@@ -1,20 +1,24 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using MahApps.Metro.Controls;
 using PortAbuse2.Core.Geo;
+using PortAbuse2.Core.WindowsFirewall;
 using TiqUtils.Conversion;
 using TiqUtils.Events.Controls;
+using TiQWpfUtils.Helpers;
 
 namespace PortAbuse2.Controls
 {
     /// <summary>
     /// Interaction logic for SettingsPage.xaml
     /// </summary>
-    public partial class SettingsPage : UserControl
+    public partial class SettingsPage
     {
         private MainWindow _main;
+        public BlockMode SelectedBlockSate => Block.DefaultBlockMode;
 
         public SettingsPage()
         {
@@ -36,7 +40,8 @@ namespace PortAbuse2.Controls
             SecondsBlockBox.Text = Properties.Settings.Default.BlockSeconds.ToString();
             
             GeoProviderBox.SelectedItem = GeoWorker.SelectProviderByName(Properties.Settings.Default.GeoProvider);
-            
+            BlockDirectionBox.SelectedValue = (BlockMode)Properties.Settings.Default.BlockType;
+            Block.DefaultBlockMode = (BlockMode)Properties.Settings.Default.BlockType;
 
             BlockTimeContainer.CurrentBlockTime = Properties.Settings.Default.BlockSeconds;
 
@@ -128,6 +133,16 @@ namespace PortAbuse2.Controls
                 GeoWorker.InsertGeoDataQueue(ro);
             }
             Properties.Settings.Default.GeoProvider = item.Name;
+            Properties.Settings.Default.Save();
+        }
+
+        private void BlockDirectionBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var cb = sender as ComboBox;
+            var item = cb?.SelectedItem as ValueDescription;
+            if (item == null) return;
+            Properties.Settings.Default.BlockType = Convert.ToInt32(item.Value);
+            Block.DefaultBlockMode = (BlockMode)item.Value;
             Properties.Settings.Default.Save();
         }
     }

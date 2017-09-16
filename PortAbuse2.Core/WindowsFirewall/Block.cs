@@ -12,10 +12,17 @@ namespace PortAbuse2.Core.WindowsFirewall
 {
     public static class Block
     {
+        public static BlockMode DefaultBlockMode { get; set; }
         private const string EndlessBlockSuffix = "-BLOCK_PA_ENDLESS";
         private const string BlockSuffix = "-BLOCK_PA";
         public static bool ShutAll = false;
         private static readonly List<ExThread> TdList = new List<ExThread>();
+
+        static Block()
+        {
+            UnBlockAllTemporary();
+        }
+
         public static void DoInSecBlock(ResultObject resultObject, int sec = 30, BlockMode blockMode = BlockMode.BlockAll)
         {
             if (resultObject.ShowIp != "")
@@ -120,6 +127,37 @@ namespace PortAbuse2.Core.WindowsFirewall
                 throw;
             }
             resultObject.Blocked = false;
+        }
+
+        public static void UnBlockAllTemporary()
+        {
+            var firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(
+                Type.GetTypeFromProgID("HNetCfg.FwPolicy2"));
+
+            try
+            {
+                var i = firewallPolicy.Rules.GetEnumerator();
+                while (i.MoveNext())
+                {
+                    try
+                    {
+                        var cur = i.Current as INetFwRule;
+                        if (cur != null && cur.Name.EndsWith(BlockSuffix))
+                        {
+                            firewallPolicy.Rules.Remove(cur.Name);
+                        }
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        //ignore
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
     }
 }

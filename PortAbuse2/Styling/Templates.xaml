@@ -26,7 +26,7 @@
 
     <ContextMenu x:Key="EntryContextMenu"  Tag="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}">
         <MenuItem x:Name="HideThisIpMenuItem" Header="Hide this IP for App" Click="HideThisIpMenuItem_OnClick"/>
-        <MenuItem Header="Block for">
+        <MenuItem Header="Block all connections for" Tag="0">
             <MenuItem x:Name="BlockMenu5s" Header="5 sec" Click="BlockFor5sMenuItem_OnClick"/>
             <MenuItem x:Name="BlockMenu10s" Header="10 sec" Click="BlockFor10sMenuItem_OnClick"/>
             <MenuItem x:Name="BlockMenu15s" Header="15 sec" Click="BlockFor15sMenuItem_OnClick"/>
@@ -34,9 +34,22 @@
             <MenuItem x:Name="BlockMenu60s" Header="60 sec" Click="BlockFor60sMenuItem_OnClick"/>
             <MenuItem x:Name="BlockMenu120s" Header="120 sec" Click="BlockFor120sMenuItem_OnClick"/>
         </MenuItem>
-        <!--<MenuItem Header="Extra actions">
-            <MenuItem x:Name="MirrorTraffic" Header="Mirror traffic back" Click="MirrorTraficItem_OnClick"/>
-        </MenuItem>-->
+        <MenuItem Header="Block input connection for" Tag="2">
+            <MenuItem Header="5 sec" Click="BlockFor5sMenuItem_OnClick"/>
+            <MenuItem Header="10 sec" Click="BlockFor10sMenuItem_OnClick"/>
+            <MenuItem Header="15 sec" Click="BlockFor15sMenuItem_OnClick"/>
+            <MenuItem Header="30 sec" Click="BlockFor30sMenuItem_OnClick"/>
+            <MenuItem Header="60 sec" Click="BlockFor60sMenuItem_OnClick"/>
+            <MenuItem Header="120 sec" Click="BlockFor120sMenuItem_OnClick"/>
+        </MenuItem>
+        <MenuItem Header="Block output connections for" Tag="4">
+            <MenuItem Header="5 sec" Click="BlockFor5sMenuItem_OnClick"/>
+            <MenuItem Header="10 sec" Click="BlockFor10sMenuItem_OnClick"/>
+            <MenuItem Header="15 sec" Click="BlockFor15sMenuItem_OnClick"/>
+            <MenuItem Header="30 sec" Click="BlockFor30sMenuItem_OnClick"/>
+            <MenuItem Header="60 sec" Click="BlockFor60sMenuItem_OnClick"/>
+            <MenuItem Header="120 sec" Click="BlockFor120sMenuItem_OnClick"/>
+        </MenuItem>
     </ContextMenu>
     <DataTemplate x:Key="ResultTemplate" DataType="result:ResultObject">
         <Grid x:Name="ResultObjectTpl" Margin="2" ContextMenu="{DynamicResource EntryContextMenu}" Visibility="{Binding HiddenProp, Converter={StaticResource VisibilityConverter}, ConverterParameter=true}">

@@ -162,6 +162,10 @@
       <Project>{add36afd-5e81-40e7-93f8-381cf03c5fd2}</Project>
       <Name>TiqUtils</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TiQWpfUtils\TiQWpfUtils\TiQWpfUtils.csproj">
+      <Project>{b03903ae-cb73-4dab-91d8-439f4aad4806}</Project>
+      <Name>TiQWpfUtils</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="FodyWeavers.xml" />

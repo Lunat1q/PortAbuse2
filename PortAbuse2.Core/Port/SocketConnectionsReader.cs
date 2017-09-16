@@ -380,7 +380,7 @@ namespace PortAbuse2.Core.Port
         private static bool SystemProcess(string name)
         {
             name = name.ToLowerInvariant();
-            return name == "system" || name == "idle" || name == "wininit" || name == "services";
+            return name == "system" || name == "idle" || name == "wininit" || name == "services" || name == "msmpeng";
         }
     }
 
