@@ -12,13 +12,15 @@ namespace PortAbuse2.Core.WindowsFirewall
 {
     public static class Block
     {
+        private const string EndlessBlockSuffix = "-BLOCK_PA_ENDLESS";
+        private const string BlockSuffix = "-BLOCK_PA";
         public static bool ShutAll = false;
         private static readonly List<ExThread> TdList = new List<ExThread>();
-        public static void DoInSecBlock(ResultObject resultObject, int sec = 30, bool onlyOut = false, bool onlyIn = false)
+        public static void DoInSecBlock(ResultObject resultObject, int sec = 30, BlockMode blockMode = BlockMode.BlockAll)
         {
             if (resultObject.ShowIp != "")
             {
-                DoBlock(resultObject, onlyOut, onlyIn);
+                DoBlock(resultObject, false, blockMode);
                 var td = new Thread(() => UnBlockInSeconds(resultObject, sec)) {Name = "UnBlock30"};
                 td.Start();
                 TdList.Add(new ExThread(td, DateTime.Now, sec));
@@ -33,7 +35,7 @@ namespace PortAbuse2.Core.WindowsFirewall
                 Thread.Sleep(500);
                 i++;
             }
-            DoUnBlock(resultObject);
+            DoUnBlock(resultObject, false);
         }
 
         public static async Task Wait()
@@ -65,19 +67,19 @@ namespace PortAbuse2.Core.WindowsFirewall
             firewallPolicy.Rules.Add(firewallRule);
         }
 
-        public static void DoBlock(ResultObject resultObject, bool onlyOut = false, bool onlyIn = false)
+        public static void DoBlock(ResultObject resultObject, bool endlessBlock, BlockMode blockMode)
         {
             if (resultObject == null) return;
             if (resultObject.ShowIp != "")
             {
                 var sRemIp = resultObject.ShowIp;
-                var blockName = sRemIp + "-BLOCK_PA";
+                var blockName = sRemIp + (endlessBlock ? EndlessBlockSuffix : BlockSuffix);
 
-                if (!onlyOut)
+                if (blockMode == BlockMode.BlockAll || blockMode == BlockMode.BlockInput)
                 {
                     AddRule(blockName, sRemIp, NET_FW_RULE_DIRECTION_.NET_FW_RULE_DIR_IN);
                 }
-                if (!onlyIn)
+                if (blockMode == BlockMode.BlockAll || blockMode == BlockMode.BlockOutput)
                 {
                     AddRule(blockName, sRemIp, NET_FW_RULE_DIRECTION_.NET_FW_RULE_DIR_OUT);
                 }
@@ -86,10 +88,10 @@ namespace PortAbuse2.Core.WindowsFirewall
             }
         }
 
-        public static void DoUnBlock(ResultObject resultObject)
+        public static void DoUnBlock(ResultObject resultObject, bool endlessBlock)
         {
             if (resultObject == null) return;
-            var blockName = resultObject.ShowIp + "-BLOCK_PA";
+            var blockName = resultObject.ShowIp + (endlessBlock ? EndlessBlockSuffix : BlockSuffix);
             var firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(
                 Type.GetTypeFromProgID("HNetCfg.FwPolicy2"));
 

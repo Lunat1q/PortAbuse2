@@ -4,3 +4,6 @@
 [submodule "TiqUtils"]
 	path = TiqUtils
 	url = https://github.com/Lunat1q/TiqUtils
+[submodule "TiQWpfUtils"]
+	path = TiQWpfUtils
+	url = https://github.com/Lunat1q/TiQWpfUtils
