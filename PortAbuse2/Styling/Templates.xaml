@@ -156,10 +156,12 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger
+                Binding="{Binding Path=(result:ResultObject.HiddenProp)}"
                 Value="True">
                 <Setter Property="Visibility" Value="Collapsed" />
             </DataTrigger>
             <DataTrigger
+                Binding="{Binding Path=(result:ResultObject.Old)}"
                 Value="True">
                 <Setter Property="Visibility" Value="Collapsed" />
             </DataTrigger>
