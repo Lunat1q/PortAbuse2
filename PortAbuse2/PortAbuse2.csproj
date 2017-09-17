@@ -78,6 +78,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Controls\BlockInOutMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\SettingsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -96,6 +100,10 @@
     <Compile Include="Common\Admin.cs" />
     <Compile Include="Common\Converters.cs" />
     <Compile Include="Common\Images.cs" />
+    <Compile Include="Controls\BlockEventArgs.cs" />
+    <Compile Include="Controls\BlockInOutMenu.xaml.cs">
+      <DependentUpon>BlockInOutMenu.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\BlockTimeContainer.cs" />
     <Compile Include="Controls\SettingsPage.xaml.cs">
       <DependentUpon>SettingsPage.xaml</DependentUpon>
@@ -116,6 +124,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Styling\Templates.xaml.cs">
       <DependentUpon>Templates.xaml</DependentUpon>
       <Generator>MSBuild:Compile</Generator>

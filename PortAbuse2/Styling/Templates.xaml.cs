@@ -35,13 +35,13 @@ namespace PortAbuse2.Styling
 
         private void Block30Sec_Click(object sender, RoutedEventArgs e)
         {
-            BlockFromControl(sender, BlockTimeContainer.CurrentBlockTime);
+            BlockFromControl(sender, BlockTimeContainer.CurrentBlockTime, Block.DefaultBlockMode);
         }
 
-        private static void BlockFromControl(object sender, int sec)
+        private static void BlockFromControl(object sender, int sec, BlockMode mode)
         {
-            if (!TryGetResultObject(sender, out ResultObject obj, out BlockMode blockDirection)) return;
-            Block.DoInSecBlock(obj, sec, blockDirection);
+            if (!TryGetResultObject(sender, out ResultObject obj)) return;
+            Block.DoInSecBlock(obj, sec, mode);
         }
 
         private void HideThisIpMenuItem_OnClick(object sender, RoutedEventArgs e)
@@ -78,50 +78,21 @@ namespace PortAbuse2.Styling
             return resultList;
         }
 
-        private void BlockFor5sMenuItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            BlockFromControl(sender, 5);
-        }
-
-        private void BlockFor10sMenuItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            BlockFromControl(sender, 10);
-        }
-
-        private void BlockFor15sMenuItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            BlockFromControl(sender, 15);
-        }
-
-        private void BlockFor30sMenuItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            BlockFromControl(sender, 30);
-        }
-
-        private void BlockFor60sMenuItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            BlockFromControl(sender, 60);
-        }
-
-        private void BlockFor120sMenuItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            BlockFromControl(sender, 120);
-        }
-
-        private static bool TryGetResultObject(object sender, out ResultObject obj, out BlockMode blockDirection)
+        private static bool TryGetResultObject(object sender, out ResultObject obj)
         {
             var control = sender as Control;
-            obj = control?.DataContext as ResultObject;
-            blockDirection = default(BlockMode);
-            if (obj == null) return false;
-            var parentMenu = control.Parent as MenuItem;
-            if (int.TryParse(parentMenu?.Tag as string, out int mode))
-                blockDirection = (BlockMode) mode;
-            else
-                blockDirection = Block.DefaultBlockMode;
+            obj = null;
+            while (obj == null && control?.Parent != null)
+            {
+                obj = control.DataContext as ResultObject;
+                control = control.Parent as Control;
+            }
+            return obj != null;
+        }
 
-
-            return true;
+        private void BlockClicked(object sender, BlockEventArgs args)
+        {
+            BlockFromControl(sender, args.Time, args.Mode);
         }
     }
 }

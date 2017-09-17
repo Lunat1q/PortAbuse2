@@ -21,8 +21,12 @@ namespace PortAbuse2.Core.Listener
     public class CoreReceiver
     {
         private bool _hideOld;
+
         // ReSharper disable once FieldCanBeMadeReadOnly.Global
         public ObservableCollection<ResultObject> ResultObjects = new ObservableCollection<ResultObject>();
+
+        private int _collectionAccessRead = 0;
+        private int _collectionAccessWrite = 0;
         public bool ContinueCapturing { get; private set; } //A flag to check if packets are to be captured or not
         public AppEntry SelectedAppEntry;
         private string _interfaceLocalIp;
@@ -83,7 +87,7 @@ namespace PortAbuse2.Core.Listener
         {
             _hideOld = false;
             Task.Delay(RegularActionsDelay);
-            foreach (var ro in ResultObjects)
+            foreach (var ro in TryGetAccessToCollection())
             {
                 ro.Old = false;
             }
@@ -93,7 +97,7 @@ namespace PortAbuse2.Core.Listener
         {
             _minimizeHostname = true;
             Task.Delay(RegularActionsDelay);
-            foreach (var ro in ResultObjects)
+            foreach (var ro in TryGetAccessToCollection())
             {
                 ro.Hostname = DnsHost.MinimizeHostname(ro.DetectedHostname);
             }
@@ -103,7 +107,7 @@ namespace PortAbuse2.Core.Listener
         {
             _forceShowHiddenIps = forceShow;
             Task.Delay(RegularActionsDelay);
-            foreach (var ro in ResultObjects)
+            foreach (var ro in TryGetAccessToCollection())
             {
                 ro.ForceShow = _forceShowHiddenIps;
             }
@@ -113,7 +117,7 @@ namespace PortAbuse2.Core.Listener
         {
             _minimizeHostname = false;
             Task.Delay(RegularActionsDelay);
-            foreach (var ro in ResultObjects)
+            foreach (var ro in TryGetAccessToCollection())
             {
                 ro.Hostname = ro.DetectedHostname;
             }
@@ -123,6 +127,7 @@ namespace PortAbuse2.Core.Listener
         {
             while (ContinueCapturing)
             {
+                StartWrite();
                 var dupes = ResultObjects.GroupBy(x => x.ShowIp).Where(x => x.Count() > 1);
                 foreach (var dupe in dupes)
                 {
@@ -132,12 +137,13 @@ namespace PortAbuse2.Core.Listener
 
                     if (main == null) continue;
 
-                    foreach (var second in dupe.Where(x=>x != main))
+                    foreach (var second in dupe.Where(x => x != main))
                     {
                         main.PackagesReceived += second.PackagesReceived;
                         ResultObjects.Remove(second);
                     }
                 }
+                EndWrite();
                 await Task.Delay(5000);
             }
         }
@@ -148,8 +154,8 @@ namespace PortAbuse2.Core.Listener
             {
                 if (_hideOld)
                 {
-                    var nowMinusShift = DateTime.UtcNow.ToUnixTime() - OldTimeLimitSeconds*1000;
-                    foreach (var ro in ResultObjects)
+                    var nowMinusShift = DateTime.UtcNow.ToUnixTime() - OldTimeLimitSeconds * 1000;
+                    foreach (var ro in TryGetAccessToCollection())
                     {
                         if (ro != null)
                         {
@@ -170,7 +176,19 @@ namespace PortAbuse2.Core.Listener
 
         public void Clear()
         {
+            StartWrite();
             ResultObjects.Clear();
+            EndWrite();
+        }
+
+        private void EndWrite()
+        {
+            _collectionAccessWrite--;
+        }
+
+        private void StartWrite()
+        {
+            _collectionAccessWrite++;
         }
 
         private void InitExtensions()
@@ -187,8 +205,9 @@ namespace PortAbuse2.Core.Listener
         public void StartListener(string ipInterface)
         {
             ContinueCapturing = true;
-
+            StartWrite();
             ResultObjects.Clear();
+            EndWrite();
             Task.Run(HideOldTask);
             Task.Run(CleanupDupes);
             InitExtensions();
@@ -232,7 +251,8 @@ namespace PortAbuse2.Core.Listener
 
         private async Task ParsePacket(Packet packet)
         {
-            var port = PackageHelper.GetPorts(packet, out IpPacket ipPacket, out TcpPacket tcpPacket, out UdpPacket udpPacket);
+            var port = PackageHelper.GetPorts(packet, out IpPacket ipPacket, out TcpPacket tcpPacket,
+                out UdpPacket udpPacket);
 
             var portsMatch =
                 SelectedAppEntry.AppPort.Any(
@@ -259,12 +279,29 @@ namespace PortAbuse2.Core.Listener
             OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,
                 ro, port);
 
-            if (ResultObjects.Any(x => x.ShowIp == ro.ShowIp))
+
+
+            if (TryGetAccessToCollection().Any(x => x.ShowIp == ro.ShowIp))
+            {
                 return;
+            }
+
 
             await AddToResult(ro);
 
             PostProcess(ro);
+        }
+
+        private IReadOnlyCollection<ResultObject> TryGetAccessToCollection()
+        {
+            while (_collectionAccessWrite > 0 || _collectionAccessRead > 100)
+            {
+                Task.Delay(1);
+            }
+            _collectionAccessRead++;
+            var res = ResultObjects.ToArray();
+            _collectionAccessRead--;
+            return res;
         }
 
         private async Task AddToResult(ResultObject ro)
@@ -276,7 +313,7 @@ namespace PortAbuse2.Core.Listener
             }
             else
             {
-                if (ResultObjects.All(x => x.ShowIp != ro.ShowIp))
+                if (TryGetAccessToCollection().All(x => x.ShowIp != ro.ShowIp))
                     ResultObjects.Add(ro);
             }
         }
@@ -310,29 +347,30 @@ namespace PortAbuse2.Core.Listener
         private ResultObject GetExistedDetection(bool fromMe, IpPacket ipPacket)
         {
             ResultObject detection;
+
             try
             {
                 detection = (fromMe
-                    ? ResultObjects.Where(
+                    ? TryGetAccessToCollection().Where(
                         x =>
                             Equals(x.SourceAddress, ipPacket.DestinationAddress) ||
                             Equals(x.DestinationAddress, ipPacket.DestinationAddress))
-                    : ResultObjects.Where(
+                    : TryGetAccessToCollection().Where(
                         x =>
                             Equals(x.DestinationAddress, ipPacket.SourceAddress) ||
                             Equals(x.SourceAddress, ipPacket.SourceAddress))).FirstOrDefault();
             }
-            catch(Exception)
+            catch (Exception)
             {
-                Debugger.Log(1,"","Get RO crushed.");
+                Debugger.Log(1, "", "Get RO crushed.");
                 detection = GetExistedDetection(fromMe, ipPacket);
             }
-            
 
             return detection;
         }
 
-        private void OnReceived(IPAddress ipdest, IPAddress ipsource, byte[] data, bool direction, ResultObject resultobject, IEnumerable<Tuple<Protocol, ushort>> protocol)
+        private void OnReceived(IPAddress ipdest, IPAddress ipsource, byte[] data, bool direction,
+            ResultObject resultobject, IEnumerable<Tuple<Protocol, ushort>> protocol)
         {
             Received?.Invoke(ipdest, ipsource, data, direction, resultobject, protocol);
         }

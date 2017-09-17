@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace PortAbuse2.Controls
 {
-    public static class BlockTimeContainer
+    public class BlockTimeContainer
     {
         public static event EventHandler<PropertyChangedEventArgs> StaticPropertyChanged = delegate { };
         private static int _curTime;

@@ -17,9 +17,19 @@ namespace PortAbuse2.Core.WindowsFirewall
         private const string BlockSuffix = "-BLOCK_PA";
         public static bool ShutAll = false;
         private static readonly List<ExThread> TdList = new List<ExThread>();
+        private static readonly Type RuleType;
+        private static readonly Type PolicyType;
 
         static Block()
         {
+            if (RuleType == null)
+            {
+                RuleType = Type.GetTypeFromProgID("HNetCfg.FWRule");
+            }
+            if (PolicyType == null)
+            {
+                PolicyType = Type.GetTypeFromProgID("HNetCfg.FwPolicy2");
+            }
             UnBlockAllTemporary();
         }
 
@@ -60,8 +70,7 @@ namespace PortAbuse2.Core.WindowsFirewall
 
         private static void AddRule(string name, string ip, NET_FW_RULE_DIRECTION_ direction)
         {
-            var firewallRule = (INetFwRule)Activator.CreateInstance(
-                Type.GetTypeFromProgID("HNetCfg.FWRule"));
+            var firewallRule = (INetFwRule)Activator.CreateInstance(RuleType);
             firewallRule.Action = NET_FW_ACTION_.NET_FW_ACTION_BLOCK;
             firewallRule.Description = $"Used to block all internet access for IP:{ip}";
             firewallRule.RemoteAddresses = ip;
@@ -69,8 +78,7 @@ namespace PortAbuse2.Core.WindowsFirewall
             firewallRule.Enabled = true;
             firewallRule.InterfaceTypes = "All";
             firewallRule.Name = name;
-            var firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(
-                Type.GetTypeFromProgID("HNetCfg.FwPolicy2"));
+            var firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(PolicyType);
             firewallPolicy.Rules.Add(firewallRule);
         }
 
@@ -90,7 +98,6 @@ namespace PortAbuse2.Core.WindowsFirewall
                 {
                     AddRule(blockName, sRemIp, NET_FW_RULE_DIRECTION_.NET_FW_RULE_DIR_OUT);
                 }
-
                 resultObject.Blocked = true;
             }
         }
@@ -99,8 +106,7 @@ namespace PortAbuse2.Core.WindowsFirewall
         {
             if (resultObject == null) return;
             var blockName = resultObject.ShowIp + (endlessBlock ? EndlessBlockSuffix : BlockSuffix);
-            var firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(
-                Type.GetTypeFromProgID("HNetCfg.FwPolicy2"));
+            var firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(PolicyType);
 
             try
             {
@@ -129,10 +135,9 @@ namespace PortAbuse2.Core.WindowsFirewall
             resultObject.Blocked = false;
         }
 
-        public static void UnBlockAllTemporary()
+        private static void UnBlockAllTemporary()
         {
-            var firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(
-                Type.GetTypeFromProgID("HNetCfg.FwPolicy2"));
+            var firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(PolicyType);
 
             try
             {

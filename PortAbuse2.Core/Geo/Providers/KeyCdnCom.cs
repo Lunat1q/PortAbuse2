@@ -41,7 +41,7 @@ namespace PortAbuse2.Core.Geo.Providers
                         {
                             var geoData = data.data.geo;
                             loc.Isp = geoData.isp;
-                            loc.CountryCode = geoData.country_code.ToLower();
+                            loc.CountryCode = geoData.country_code?.ToLower();
                             loc.City = string.IsNullOrWhiteSpace(geoData.city)
                                 ? "Unknown"
                                 : $"{geoData.city}";
