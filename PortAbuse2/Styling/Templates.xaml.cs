@@ -57,14 +57,13 @@ namespace PortAbuse2.Styling
                 {
                     if (!ro.Hidden)
                     {
-                        IpHider.Add(ro.Application.Name, ro.ShowIp);
-                        ro.Application.HiddenCount = IpHider.CountHidden(ro.Application.Name);
+                        CustomSettings.Instance.AddHiddenIp(ro.Application.Name, ro.ShowIp);
                     }
                     else
                     {
-                        IpHider.Remove(ro.Application.Name, ro.ShowIp);
-                        ro.Application.HiddenCount = IpHider.CountHidden(ro.Application.Name);
+                        CustomSettings.Instance.RemoveHiddenIp(ro.Application.Name, ro.ShowIp);
                     }
+                    ro.Application.HiddenCount = CustomSettings.Instance.CountHiddenIpForApp(ro.Application.Name);
                 }
                 ro.Hidden = !ro.Hidden;
             }

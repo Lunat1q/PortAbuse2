@@ -28,7 +28,7 @@ namespace PortAbuse2.Applications
                             Title = item.Title,
                             AppPort = item.AppPort,
                             FullName = item.FullName,
-                            HiddenCount = IpHider.CountHidden(item.Name)
+                            HiddenCount = CustomSettings.Instance.CountHiddenIpForApp(item.Name)
                         });
                     }
                 }

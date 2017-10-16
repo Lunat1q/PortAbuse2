@@ -1,8 +1,5 @@
 ﻿using System.IO;
 using System.Text.RegularExpressions;
-using System.IO.Compression;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace PortAbuse2.Core.Common
 {

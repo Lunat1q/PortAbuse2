@@ -1,5 +1,4 @@
 ﻿using TiQWpfUtils.AbstractClasses.Attributes;
-using TiQWpfUtils.Controls.Extensions.DataGrid;
 
 namespace PortAbuse2.Core.Common
 {

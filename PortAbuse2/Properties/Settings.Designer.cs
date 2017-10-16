@@ -94,5 +94,17 @@ namespace PortAbuse2.Properties {
                 this["BlockType"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string CustomSettings {
+            get {
+                return ((string)(this["CustomSettings"]));
+            }
+            set {
+                this["CustomSettings"] = value;
+            }
+        }
     }
 }

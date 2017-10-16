@@ -240,8 +240,15 @@ namespace PortAbuse2.Core.Listener
         private void Receiver_OnPacketArrival(object sender, CaptureEventArgs e)
         {
             // парсинг всего пакета
-            var packet = Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
-            Task.Run(() => ParsePacket(packet));
+            try
+            {
+                var packet = Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
+                Task.Run(() => ParsePacket(packet));
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         private static byte[] GetData(TcpPacket tcp, UdpPacket udp)
@@ -294,7 +301,7 @@ namespace PortAbuse2.Core.Listener
 
         private IReadOnlyCollection<ResultObject> TryGetAccessToCollection()
         {
-            while (_collectionAccessWrite > 0 || _collectionAccessRead > 100)
+            while (_collectionAccessWrite > 0)
             {
                 Task.Delay(1);
             }
@@ -340,7 +347,7 @@ namespace PortAbuse2.Core.Listener
                 DataTransfered = ipPacket.PayloadLength,
                 ForceShow = _forceShowHiddenIps
             };
-            ro.Hidden = IpHider.Check(SelectedAppEntry.Name, ro.ShowIp);
+            ro.Hidden = CustomSettings.Instance.CheckIpHidden(SelectedAppEntry.Name, ro.ShowIp);
             return ro;
         }
 

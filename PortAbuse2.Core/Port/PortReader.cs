@@ -26,7 +26,7 @@ namespace PortAbuse2.Core.Port
                             Name = tcp.ProcessName,
                             Title = tcp.Title,
                             FullName = tcp.FullName,
-                            HiddenCount = IpHider.CountHidden(tcp.ProcessName)
+                            HiddenCount = CustomSettings.Instance.CountHiddenIpForApp(tcp.ProcessName)
                         };
                         //newEntry.AddNewPort(tcp.RemotePort, tcp.Protocol);
                         newEntry.AddNewPort(tcp.LocalPort, tcp.Protocol);
@@ -50,7 +50,7 @@ namespace PortAbuse2.Core.Port
                             Name = udp.ProcessName,
                             Title = udp.Title,
                             FullName = udp.FullName,
-                            HiddenCount = IpHider.CountHidden(udp.ProcessName)
+                            HiddenCount = CustomSettings.Instance.CountHiddenIpForApp(udp.ProcessName)
                         };
                         newEntry.AddNewPort(udp.LocalPort, udp.Protocol);
                         apps.Add(newEntry);

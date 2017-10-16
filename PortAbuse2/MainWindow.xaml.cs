@@ -14,6 +14,7 @@ using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
 using PortAbuse2.KeyCapture;
 using PortAbuse2.Listener;
+using TiqUtils.TypeSpeccific;
 using Admin = PortAbuse2.Common.Admin;
 
 namespace PortAbuse2
@@ -40,7 +41,7 @@ namespace PortAbuse2
 
             Admin.CheckAdmin();
 
-            IpHider.Load();
+            CustomSettings.Load(Properties.Settings.Default.CustomSettings);
 
             LoadInterfaces();
 
@@ -150,7 +151,16 @@ namespace PortAbuse2
             {
                 Receiver.Clear();
                 btn.Content = "Stop";
-                Receiver.StartListener(InterfaceBox.SelectedItem.ToString());
+                if (InterfaceBox.SelectedItem == null && CustomSettings.Instance.PreviousInterface.Empty())
+                {
+                    InterfaceBox.SelectedIndex = 0;
+                }
+                else if (!CustomSettings.Instance.PreviousInterface.Empty())
+                {
+                    InterfaceBox.SelectedItem = CustomSettings.Instance.PreviousInterface;
+                }
+                Receiver.StartListener(InterfaceBox.SelectedItem?.ToString());
+                CustomSettings.Instance.PreviousInterface = InterfaceBox.SelectedItem?.ToString();
                 var red = FindResource("PaLightRed") as SolidColorBrush;
                 btn.Background = red;
             }
@@ -166,11 +176,12 @@ namespace PortAbuse2
         
         private async void MetroWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            IpHider.Save();
+            Properties.Settings.Default.CustomSettings = CustomSettings.SaveToString();
             Receiver.Stop();
             _keyEventsHandling.Stop();
             Block.ShutAll = true;
             await Block.Wait();
+            Properties.Settings.Default.Save();
         }
 
         private void AppListComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
