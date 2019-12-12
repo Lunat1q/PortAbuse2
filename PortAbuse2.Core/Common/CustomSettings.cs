@@ -5,7 +5,6 @@ namespace PortAbuse2.Core.Common
 {
     public class CustomSettings
     {
-
         public static CustomSettings Instance { get; set; }
         public Dictionary<string, List<string>> HiddenIps { get; }
         public string PreviousInterface { get; set; }

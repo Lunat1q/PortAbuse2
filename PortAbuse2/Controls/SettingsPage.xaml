@@ -16,7 +16,7 @@
             </Grid.RowDefinitions>
             <ScrollViewer Margin="10,0,10,10" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <controls:ToggleSwitch x:Name="BlockNewSwitch" Margin="0" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Click="BlockNewSwitch_Click" Header="Block all new connections?"/>
+                    <controls:ToggleSwitch IsChecked="{Binding BlockNew}" x:Name="BlockNewSwitch" Margin="0" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Header="Block all new connections?"/>
                     <controls:ToggleSwitch x:Name="HideOldRecords" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Click="HideOldRecords_OnClickSwitch_Click" Header="Hide old connections (older than 30 seconds)?" Margin="0" Grid.Row="1"/>
                     <controls:ToggleSwitch x:Name="MinimizeHostnames" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Click="MinimizeHostnames_OnClickSwitch_Click" Header="Minimize Hostnames (strip numbers and useless chars from it)?" Margin="0" Grid.Row="2"/>
                     <controls:ToggleSwitch x:Name="HideSmallPackets" OnLabel="Yes" OffLabel="No" VerticalAlignment="Center" Click="HideSmallPackets_OnClickSwitch_Click" Header="Skip small packets in counter (smaller than 32 bytes)?" Margin="0" Grid.Row="3"/>

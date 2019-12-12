@@ -1,9 +1,13 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using MahApps.Metro;
 using MahApps.Metro.Controls;
+using PortAbuse2.Annotations;
 using PortAbuse2.Core.Geo;
 using PortAbuse2.Core.WindowsFirewall;
 using TiqUtils.Conversion;
@@ -15,10 +19,23 @@ namespace PortAbuse2.Controls
     /// <summary>
     /// Interaction logic for SettingsPage.xaml
     /// </summary>
-    public partial class SettingsPage
+    public partial class SettingsPage : INotifyPropertyChanged
     {
         private MainWindow _main;
         public BlockMode SelectedBlockSate => Block.DefaultBlockMode;
+
+        public bool? BlockNew
+        {
+            get => _main?.Receiver.BlockNew;
+            set
+            {
+                if (_main != null && value != null)
+                {
+                    _main.Receiver.BlockNew = (bool)value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public SettingsPage()
         {
@@ -48,11 +65,11 @@ namespace PortAbuse2.Controls
             VersionNumberBlock.Text = $"Lunatiq© - v{Assembly.GetExecutingAssembly().GetName().Version}";
         }
 
-        private void BlockNewSwitch_Click(object sender, RoutedEventArgs e)
+        public void ToggleBlock()
         {
-            var tgl = sender as ToggleSwitch;
-            if (tgl?.IsChecked != null)
-                _main.Receiver.BlockNew = (bool)tgl.IsChecked;
+            BlockNew = !BlockNew;
+            var accent = ThemeManager.GetAccent((bool) BlockNew ? "Red" : "Steel");
+            ThemeManager.ChangeAppStyle(Application.Current, accent, ThemeManager.GetAppTheme("BaseLight"));
         }
 
         private void HideOldRecords_OnClickSwitch_Click(object sender, RoutedEventArgs e)
@@ -144,6 +161,14 @@ namespace PortAbuse2.Controls
             Properties.Settings.Default.BlockType = Convert.ToInt32(item.Value);
             Block.DefaultBlockMode = (BlockMode)item.Value;
             Properties.Settings.Default.Save();
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

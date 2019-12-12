@@ -8,6 +8,10 @@ namespace PortAbuse2.KeyCapture
     {
         private bool _onTop = Application.Current.MainWindow.Topmost;
 
+        internal delegate void KeyActionHandler(KeyActionType actionType);
+
+        internal event KeyActionHandler KeyAction;
+
         private void HandleEvent(KeyPressEvent eve)
         {
             //MessageBox.Show($"KPr, mod:{eve.Keys.Modifiers}, k: {eve.Keys.KeyPressed}, k_char{eve.Key}");
@@ -16,18 +20,25 @@ namespace PortAbuse2.KeyCapture
 
         private void HandleEvent(KeyDownEvent eve)
         {
-            if (eve.Keys.Modifiers.HasFlag(KeyModifier.Ctrl) && eve.Keys.KeyPressed == 80)
+            if (eve.Keys.Modifiers.HasFlag(KeyModifier.Ctrl))
             {
-                _onTop = !_onTop;
-                //MessageBox.Show($"TopMost {Application.Current.MainWindow.Topmost}");
-                Application.Current.MainWindow.Topmost = _onTop;
-                if (!_onTop)
+                if (eve.Keys.KeyPressed == 80)
                 {
-                    WindowHandler.SendWpfWindowBack(Application.Current.MainWindow);
+                    _onTop = !_onTop;
+                    //MessageBox.Show($"TopMost {Application.Current.MainWindow.Topmost}");
+                    Application.Current.MainWindow.Topmost = _onTop;
+                    if (!_onTop)
+                    {
+                        WindowHandler.SendWpfWindowBack(Application.Current.MainWindow);
+                    }
+                    else
+                    {
+                        Application.Current.MainWindow.Focus();
+                    }
                 }
-                else
+                else if (eve.Keys.KeyPressed == 66)
                 {
-                    Application.Current.MainWindow.Focus();
+                    OnKeyAction(KeyActionType.BlockAllToggle);
                 }
             }
             //MessageBox.Show($"KDw, mod:{eve.Keys.Modifiers}, k: {eve.Keys.KeyPressed}");
@@ -50,5 +61,15 @@ namespace PortAbuse2.KeyCapture
                 // ignored
             }
         }
+
+        protected virtual void OnKeyAction(KeyActionType actiontype)
+        {
+            KeyAction?.Invoke(actiontype);
+        }
+    }
+
+    public enum KeyActionType
+    {
+        BlockAllToggle
     }
 }

@@ -6,11 +6,22 @@
     <common:HugeNumbersConverter  x:Key="HugeNumbersConverter" />
     <common:ByteSizeConverter  x:Key="ByteSizeConverter" />
     <SolidColorBrush x:Key="PaLightGreen" Color="#FFE4FFEF"/>
+    
     <SolidColorBrush x:Key="PaLightRed" Color="#FFFFE4E4"/>
     <SolidColorBrush x:Key="BlockColor" Color="#FFFF5E5E"/>
     <SolidColorBrush x:Key="Block30Color" Color="#FF96DEFF"/>
     <SolidColorBrush x:Key="UnblockColor" Color="#FF5EFF99"/>
     <SolidColorBrush x:Key="HiddenRowColor" Color="#FF5D002E"/>
     <common:ShowBlockTime x:Key="ShowBlockTime" />
+    <LinearGradientBrush x:Key="BackgroundMain" EndPoint="0.5,1" StartPoint="0.5,0">
+        <GradientStop Color="#FF83919F" Offset="0"/>
+        <GradientStop Color="White" Offset="1"/>
+        <GradientStop Color="White" Offset="0.3"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="BackgroundRed" EndPoint="0.5,1" StartPoint="0.5,0">
+        <GradientStop Color="#E94333" Offset="0"/>
+        <GradientStop Color="White" Offset="1"/>
+        <GradientStop Color="White" Offset="0.3"/>
+    </LinearGradientBrush>
 
 </ResourceDictionary>

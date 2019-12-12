@@ -8,13 +8,18 @@
         mc:Ignorable="d"
         Title="PortAbuse 2" Height="600" Width="600" MinWidth="500" MinHeight="500" Closing="MetroWindow_Closing" Icon="portAbuseLogo.ico">
     <Grid>
-        <Grid.Background>
-            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                <GradientStop Color="#FF83919F" Offset="0"/>
-                <GradientStop Color="White" Offset="1"/>
-                <GradientStop Color="White" Offset="0.3"/>
-            </LinearGradientBrush>
-        </Grid.Background>
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding BlockNew, ElementName=SettingPage}" Value="True">
+                        <Setter Value="{StaticResource BackgroundRed}" Property="Background"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding BlockNew, ElementName=SettingPage}" Value="False">
+                        <Setter Value="{StaticResource BackgroundMain}" Property="Background"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
         <Grid Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

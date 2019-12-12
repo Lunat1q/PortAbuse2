@@ -1,6 +1,8 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -55,11 +57,14 @@ namespace PortAbuse2
 
             _keyEventsHandling = new KeyEventsHandling();
 
+            _keyEventsHandling.SignForKeyAction(KeyActionType.BlockAllToggle, SettingPage.ToggleBlock);
+
 #if DEBUG
             FillDummyData();
 #endif
         }
 
+        // ReSharper disable once UnusedMember.Local
         private void FillDummyData()
         {
             Receiver.ResultObjects.Add(new ResultObject
@@ -136,41 +141,63 @@ namespace PortAbuse2
         private void SwitchButton_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
+            try
+            {
+                if (Receiver.SelectedAppEntry == null)
+                {
+                    var wfApp = _allAppWithPorts.FirstOrDefault(x => x.Name.ToLower().Contains("warframe"));
+                    if (wfApp != null)
+                    {
+                        AppListComboBox.SelectedItem = wfApp;
+                    }
+                }
 
-            if (Receiver.SelectedAppEntry == null)
-            {
-                var wfApp = _allAppWithPorts.FirstOrDefault(x => x.Name.ToLower().Contains("warframe"));
-                if (wfApp != null)
+                if (btn == null || Receiver.SelectedAppEntry == null) return;
+                if (!Receiver.ContinueCapturing)
                 {
-                    AppListComboBox.SelectedItem = wfApp;
+                    Receiver.Clear();
+                    btn.Content = "Stop";
+                    if (InterfaceBox.SelectedItem == null)
+                    {
+                        if (CustomSettings.Instance.PreviousInterface.Empty())
+                            InterfaceBox.SelectedIndex = 0;
+                        else
+                            InterfaceBox.SelectedItem = CustomSettings.Instance.PreviousInterface;
+                    }
+                    Receiver.StartListener(InterfaceBox.SelectedItem?.ToString());
+                    CustomSettings.Instance.PreviousInterface = InterfaceBox.SelectedItem?.ToString();
+                    var red = FindResource("PaLightRed") as SolidColorBrush;
+                    btn.Background = red;
                 }
+                else
+                {
+                    btn.Content = "Start";
+                    Receiver.Stop();
+                    var green = FindResource("PaLightGreen") as SolidColorBrush;
+                    btn.Background = green;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Start failed, reason:\r\n{GetTextFromException(ex)}");
+            }
+        }
+
+        private string GetTextFromException(Exception ex)
+        {
+            var sb = new StringBuilder();
+
+            while (ex != null)
+            {
+                sb.AppendLine("------------------------");
+                sb.AppendLine($"Message: {ex.Message}");
+                sb.AppendLine($"StackTrace: {ex.StackTrace}");
+                sb.AppendLine("------------------------");
+
+                ex = ex.InnerException;
             }
 
-            if (btn == null || Receiver.SelectedAppEntry == null) return;
-            if (!Receiver.ContinueCapturing)
-            {
-                Receiver.Clear();
-                btn.Content = "Stop";
-                if (InterfaceBox.SelectedItem == null && CustomSettings.Instance.PreviousInterface.Empty())
-                {
-                    InterfaceBox.SelectedIndex = 0;
-                }
-                else if (!CustomSettings.Instance.PreviousInterface.Empty())
-                {
-                    InterfaceBox.SelectedItem = CustomSettings.Instance.PreviousInterface;
-                }
-                Receiver.StartListener(InterfaceBox.SelectedItem?.ToString());
-                CustomSettings.Instance.PreviousInterface = InterfaceBox.SelectedItem?.ToString();
-                var red = FindResource("PaLightRed") as SolidColorBrush;
-                btn.Background = red;
-            }
-            else
-            {
-                btn.Content = "Start";
-                Receiver.Stop();
-                var green = FindResource("PaLightGreen") as SolidColorBrush;
-                btn.Background = green;
-            }
+            return sb.ToString();
         }
        
         
