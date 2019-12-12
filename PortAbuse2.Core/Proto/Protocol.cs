@@ -2,8 +2,8 @@
 {
     public enum Protocol
     {
+        Unknown = 0,
         Tcp = 6,
         Udp = 17,
-        Unknown = -1
     }
 }

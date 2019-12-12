@@ -36,7 +36,7 @@ namespace PortAbuse2.Core.Geo.Providers
                         if (geoData != null)
                         {
                             loc.Isp = geoData.Org;
-                            loc.CountryCode = geoData.Country.ToLower();
+                            loc.CountryCode = geoData.Country?.ToLower();
                             loc.City = string.IsNullOrWhiteSpace(geoData.City) ? "Unknown" : $"{geoData.City}-{geoData.Region}";
                             loc.Country = string.IsNullOrWhiteSpace(geoData.Country) ? "Unknown" : geoData.Country;
                             loc.Index = geoData.Postal == "" ? "" : geoData.Postal;

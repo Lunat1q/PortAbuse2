@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.NetworkInformation;
 using PortAbuse2.Core.Win32;
 using SharpPcap;
 using SharpPcap.Npcap;
-using SharpPcap.WinPcap;
 
 namespace PortAbuse2.Core.Ip
 {
@@ -24,23 +22,15 @@ namespace PortAbuse2.Core.Ip
             return devices.Select(x => new IpInterface(x.Name, x.Interface.FriendlyName ?? GetFriendlyName(x, adapters)));
         }
 
-        private static string GetFriendlyName(NpcapDevice npcapDevice, IList<IpHlpApi.IP_ADAPTER_ADDRESSES> adapters)
+        private static string GetFriendlyName(ICaptureDevice nPCapDevice, IEnumerable<IpHlpApi.IP_ADAPTER_ADDRESSES> adapters)
         {
-            var name = npcapDevice.Name.Substring(@"\Device\NPF_".Length);
-            var matchedAdapter = adapters.Where(x => x.AdapterName.Equals(name, StringComparison.OrdinalIgnoreCase));
-            if (matchedAdapter.Any())
-            {
-                return matchedAdapter.First().FriendlyName;
-            }
-
-            return npcapDevice.Description;
+            var name = nPCapDevice.Name.Substring(@"\Device\NPF_".Length);
+            var matchedAdapter = adapters.FirstOrDefault(x => x.AdapterName.Equals(name, StringComparison.OrdinalIgnoreCase));
+            return string.IsNullOrWhiteSpace(matchedAdapter.FriendlyName) ? nPCapDevice.Description : matchedAdapter.FriendlyName;
         }
 
         public string FriendlyName { get; set; }
 
         public string HwName { get; set; }
-
-
-
     }
 }

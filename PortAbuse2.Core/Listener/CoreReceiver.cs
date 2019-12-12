@@ -15,6 +15,7 @@ using PortAbuse2.Core.Proto;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
 using SharpPcap;
+using SharpPcap.Npcap;
 using SharpPcap.WinPcap;
 
 namespace PortAbuse2.Core.Listener
@@ -45,7 +46,7 @@ namespace PortAbuse2.Core.Listener
             byte[] data,
             bool direction,
             ResultObject resultObject,
-            IEnumerable<Tuple<Protocol, ushort>> protocol
+            PortInformation portInfo
         );
 
         public void Stop()
@@ -221,7 +222,7 @@ namespace PortAbuse2.Core.Listener
             CaptureDeviceList deviceList = CaptureDeviceList.Instance;
             foreach (var device in deviceList)
             {
-                if (!(device is WinPcapDevice pCapDevice)) continue;
+                if (!(device is NpcapDevice pCapDevice)) continue;
                 var winDevice = pCapDevice;
                 if (winDevice.Name == selectedIpInterface?.HwName)
                 {
@@ -269,12 +270,12 @@ namespace PortAbuse2.Core.Listener
                 out UdpPacket udpPacket);
 
             var portsMatch = this.SelectedAppEntry.AppPort.Any(
-                    x => port != null && port.Any(v => v.Item2 == x.UPortNumber && x.Protocol == v.Item1));
+                    x => port.Protocol == x.Protocol && (port.SourcePort == x.UPortNumber || port.DestinationPort == x.UPortNumber));
             if (!portsMatch) return;
 
-            var fromMe = true; //TODO: ipPacket.SourceAddress.ToString() == this._interfaceLocalIp;
+            var fromMe = true; //TODO: Check if it's possible to cheap check if package is from or to me.
             var existedDetection = this.GetExistedDetection(fromMe, ipPacket);
-
+            //tcpPacket.
             if (existedDetection != null)
             {
                 this.OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,
@@ -381,9 +382,9 @@ namespace PortAbuse2.Core.Listener
         }
 
         private void OnReceived(IPAddress ipdest, IPAddress ipsource, byte[] data, bool direction,
-            ResultObject resultobject, IEnumerable<Tuple<Protocol, ushort>> protocol)
+            ResultObject resultobject, PortInformation portInfo)
         {
-            this.Received?.Invoke(ipdest, ipsource, data, direction, resultobject, protocol);
+            this.Received?.Invoke(ipdest, ipsource, data, direction, resultobject, portInfo);
         }
     }
 }

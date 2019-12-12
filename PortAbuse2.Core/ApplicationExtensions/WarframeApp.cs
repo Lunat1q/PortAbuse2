@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using PortAbuse2.Core.Common;
-using PortAbuse2.Core.Proto;
+using PortAbuse2.Core.Parser;
 using PortAbuse2.Core.Result;
 
 namespace PortAbuse2.Core.ApplicationExtensions
@@ -13,14 +13,14 @@ namespace PortAbuse2.Core.ApplicationExtensions
     public sealed class WarframeApp : IApplicationExtension
     {
         public IEnumerable<string> AppNames => new[] {"Warframe.x64", "Warframe"};
-        private readonly Regex _nameSessionPotention = new Regex("([a-zA-z0-9]{3,64})[\\s]+([a-zA-z0-9]{20,27})");
+        private readonly Regex _nameSessionPattern = new Regex("([a-zA-z0-9]{3,64})[\\s]+([a-zA-z0-9]{20,27})");
         private readonly Regex _warframeName = new Regex("(\\/Lotus\\/Powersuits\\/)(\\w+\\/\\w+)");
         private ConcurrentDictionary<string, WarframePlayerData> _sniffedSessions;
         private ConcurrentDictionary<string, ResultObject> _connectionPackageCollection;
 
         public bool Active { get; set; }
 
-        public IEnumerable<ResultObject> ResultObjectRef { private get; set; }
+        public IEnumerable<ResultObject> ResultObjectRef { get; set; }
 
         public void Stop()
         {
@@ -30,7 +30,7 @@ namespace PortAbuse2.Core.ApplicationExtensions
         }
 
         public void PackageReceived(IPAddress ipDest, IPAddress ipSource, byte[] data, bool direction,
-            ResultObject resultobject, IEnumerable<Tuple<Protocol, ushort>> protocol)
+            ResultObject resultobject, PortInformation portInfo)
         {
             if (!this.Active) return;
             if (!resultobject.Resolved)
@@ -92,7 +92,7 @@ namespace PortAbuse2.Core.ApplicationExtensions
                 if (match.Success)
                 {
                     var warframeName = match.Groups[2].Value.Split('/').Skip(1).FirstOrDefault();
-                    match = this._nameSessionPotention.Match(strData);
+                    match = this._nameSessionPattern.Match(strData);
                     if (match.Success)
                     {
                         var sessionHash = match.Groups[2].Value;
