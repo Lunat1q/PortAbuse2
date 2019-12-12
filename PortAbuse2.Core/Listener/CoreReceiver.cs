@@ -25,8 +25,7 @@ namespace PortAbuse2.Core.Listener
         // ReSharper disable once FieldCanBeMadeReadOnly.Global
         public ObservableCollection<ResultObject> ResultObjects = new ObservableCollection<ResultObject>();
 
-        private int _collectionAccessRead = 0;
-        private int _collectionAccessWrite = 0;
+        private int _collectionAccessWrite;
         public bool ContinueCapturing { get; private set; } //A flag to check if packets are to be captured or not
         public AppEntry SelectedAppEntry;
         private string _interfaceLocalIp;
@@ -51,13 +50,13 @@ namespace PortAbuse2.Core.Listener
 
         public void Stop()
         {
-            ContinueCapturing = false;
-            _captureDevice?.StopCapture();
-            if (_currentExtensions != null)
+            this.ContinueCapturing = false;
+            this._captureDevice?.StopCapture();
+            if (this._currentExtensions != null)
             {
-                foreach (var ext in _currentExtensions)
+                foreach (var ext in this._currentExtensions)
                 {
-                    Received -= ext.PackageReceived;
+                    this.Received -= ext.PackageReceived;
                     ext.Stop();
                 }
             }
@@ -73,21 +72,21 @@ namespace PortAbuse2.Core.Listener
 
         protected CoreReceiver(bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false)
         {
-            _minimizeHostname = minimizeHostname;
-            _hideOld = hideOld;
-            HideSmallPackets = hideSmall;
+            this._minimizeHostname = minimizeHostname;
+            this._hideOld = hideOld;
+            this.HideSmallPackets = hideSmall;
         }
 
         public void HideOld()
         {
-            _hideOld = true;
+            this._hideOld = true;
         }
 
         public void ShowOld()
         {
-            _hideOld = false;
+            this._hideOld = false;
             Task.Delay(RegularActionsDelay);
-            foreach (var ro in TryGetAccessToCollection())
+            foreach (var ro in this.TryGetAccessToCollection())
             {
                 ro.Old = false;
             }
@@ -95,9 +94,9 @@ namespace PortAbuse2.Core.Listener
 
         public void MinimizeHostnames()
         {
-            _minimizeHostname = true;
+            this._minimizeHostname = true;
             Task.Delay(RegularActionsDelay);
-            foreach (var ro in TryGetAccessToCollection())
+            foreach (var ro in this.TryGetAccessToCollection())
             {
                 ro.Hostname = DnsHost.MinimizeHostname(ro.DetectedHostname);
             }
@@ -105,19 +104,19 @@ namespace PortAbuse2.Core.Listener
 
         public void SetForceShowHiddenIps(bool forceShow = true)
         {
-            _forceShowHiddenIps = forceShow;
+            this._forceShowHiddenIps = forceShow;
             Task.Delay(RegularActionsDelay);
-            foreach (var ro in TryGetAccessToCollection())
+            foreach (var ro in this.TryGetAccessToCollection())
             {
-                ro.ForceShow = _forceShowHiddenIps;
+                ro.ForceShow = this._forceShowHiddenIps;
             }
         }
 
         public void UnminimizeHostnames()
         {
-            _minimizeHostname = false;
+            this._minimizeHostname = false;
             Task.Delay(RegularActionsDelay);
-            foreach (var ro in TryGetAccessToCollection())
+            foreach (var ro in this.TryGetAccessToCollection())
             {
                 ro.Hostname = ro.DetectedHostname;
             }
@@ -125,10 +124,10 @@ namespace PortAbuse2.Core.Listener
 
         private async Task CleanupDupes() //TODO: Test if its needed at all
         {
-            while (ContinueCapturing)
+            while (this.ContinueCapturing)
             {
-                StartWrite();
-                var dupes = ResultObjects.GroupBy(x => x.ShowIp).Where(x => x.Count() > 1);
+                this.StartWrite();
+                var dupes = this.ResultObjects.GroupBy(x => x.ShowIp).Where(x => x.Count() > 1);
                 foreach (var dupe in dupes)
                 {
                     if (dupe.Count() <= 1) continue;
@@ -140,22 +139,23 @@ namespace PortAbuse2.Core.Listener
                     foreach (var second in dupe.Where(x => x != main))
                     {
                         main.PackagesReceived += second.PackagesReceived;
-                        ResultObjects.Remove(second);
+                        this.ResultObjects.Remove(second);
                     }
                 }
-                EndWrite();
+
+                this.EndWrite();
                 await Task.Delay(5000);
             }
         }
 
         private async Task HideOldTask()
         {
-            while (ContinueCapturing)
+            while (this.ContinueCapturing)
             {
-                if (_hideOld)
+                if (this._hideOld)
                 {
                     var nowMinusShift = DateTime.UtcNow.ToUnixTime() - OldTimeLimitSeconds * 1000;
-                    foreach (var ro in TryGetAccessToCollection())
+                    foreach (var ro in this.TryGetAccessToCollection())
                     {
                         if (ro != null)
                         {
@@ -176,65 +176,64 @@ namespace PortAbuse2.Core.Listener
 
         public void Clear()
         {
-            StartWrite();
-            ResultObjects.Clear();
-            EndWrite();
+            this.StartWrite();
+            this.ResultObjects.Clear();
+            this.EndWrite();
         }
 
         private void EndWrite()
         {
-            _collectionAccessWrite--;
+            this._collectionAccessWrite--;
         }
 
         private void StartWrite()
         {
-            _collectionAccessWrite++;
+            this._collectionAccessWrite++;
         }
 
         private void InitExtensions()
         {
-            _currentExtensions = ExtensionsRepository.GetExtensionsForApp(SelectedAppEntry.Name);
-            foreach (var ext in _currentExtensions)
+            this._currentExtensions = ExtensionsRepository.GetExtensionsForApp(this.SelectedAppEntry.Name);
+            foreach (var ext in this._currentExtensions)
             {
-                Received += ext.PackageReceived;
-                ext.ResultObjectRef = ResultObjects;
+                this.Received += ext.PackageReceived;
+                ext.ResultObjectRef = this.ResultObjects;
                 ext.Start();
             }
         }
 
         public void StartListener(string ipInterface)
         {
-            ContinueCapturing = true;
-            StartWrite();
-            ResultObjects.Clear();
-            EndWrite();
-            Task.Run(HideOldTask);
-            Task.Run(CleanupDupes);
-            InitExtensions();
+            this.ContinueCapturing = true;
+            this.StartWrite();
+            this.ResultObjects.Clear();
+            this.EndWrite();
+            Task.Run(this.HideOldTask);
+            Task.Run(this.CleanupDupes);
+            this.InitExtensions();
 
 
-            _interfaceLocalIp = ipInterface;
+            this._interfaceLocalIp = ipInterface;
             // метод для получения списка устройств
             CaptureDeviceList deviceList = CaptureDeviceList.Instance;
             foreach (var device in deviceList)
             {
-                var pcapDevice = device as WinPcapDevice;
-                if (pcapDevice == null) continue;
-                var winDevice = pcapDevice;
-                if (winDevice.Addresses.Any(x => x.Addr.ToString() == _interfaceLocalIp))
+                if (!(device is WinPcapDevice pCapDevice)) continue;
+                var winDevice = pCapDevice;
+                if (winDevice.Addresses.Any(x => x.Addr.ToString() == this._interfaceLocalIp))
                 {
-                    _captureDevice = winDevice;
+                    this._captureDevice = winDevice;
                     break;
                 }
             }
-            if (_captureDevice == null) //просрали девайс, берем первый и молимся
-                _captureDevice = deviceList[0];
+            if (this._captureDevice == null) //просрали девайс, берем первый и молимся
+                this._captureDevice = deviceList[0];
             // регистрируем событие, которое срабатывает, когда пришел новый пакет
-            _captureDevice.OnPacketArrival += Receiver_OnPacketArrival;
+            this._captureDevice.OnPacketArrival += this.Receiver_OnPacketArrival;
             // открываем в режиме promiscuous, поддерживается также нормальный режим
-            _captureDevice.Open(DeviceMode.Promiscuous, 1000);
+            this._captureDevice.Open(DeviceMode.Promiscuous, 1000);
             // начинаем захват пакетов
-            _captureDevice.StartCapture();
+            this._captureDevice.StartCapture();
         }
 
         private void Receiver_OnPacketArrival(object sender, CaptureEventArgs e)
@@ -243,7 +242,7 @@ namespace PortAbuse2.Core.Listener
             try
             {
                 var packet = Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
-                Task.Run(() => ParsePacket(packet));
+                Task.Run(() => this.ParsePacket(packet));
             }
             catch
             {
@@ -261,75 +260,72 @@ namespace PortAbuse2.Core.Listener
             var port = PackageHelper.GetPorts(packet, out IpPacket ipPacket, out TcpPacket tcpPacket,
                 out UdpPacket udpPacket);
 
-            var portsMatch =
-                SelectedAppEntry.AppPort.Any(
+            var portsMatch = this.SelectedAppEntry.AppPort.Any(
                     x => port != null && port.Any(v => v.Item2 == x.UPortNumber && x.Protocol == v.Item1));
             if (!portsMatch) return;
 
-            var fromMe = ipPacket.SourceAddress.ToString() == _interfaceLocalIp;
-            var existedDetection = GetExistedDetection(fromMe, ipPacket);
+            var fromMe = ipPacket.SourceAddress.ToString() == this._interfaceLocalIp;
+            var existedDetection = this.GetExistedDetection(fromMe, ipPacket);
 
             if (existedDetection != null)
             {
-                OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,
+                this.OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,
                     existedDetection, port);
 
                 existedDetection.DataTransfered += ipPacket.PayloadLength;
-                if (ipPacket.PayloadLength > 32 || !HideSmallPackets)
+                if (ipPacket.PayloadLength > 32 || !this.HideSmallPackets)
                 {
                     existedDetection.PackagesReceived++;
                 }
                 return;
             }
 
-            var ro = CreateNewResultObject(ipPacket, fromMe);
-            OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,
+            var ro = this.CreateNewResultObject(ipPacket, fromMe);
+            this.OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,
                 ro, port);
 
 
 
-            if (TryGetAccessToCollection().Any(x => x.ShowIp == ro.ShowIp))
+            if (this.TryGetAccessToCollection().Any(x => x.ShowIp == ro.ShowIp))
             {
                 return;
             }
 
 
-            await AddToResult(ro);
+            await this.AddToResult(ro);
 
-            PostProcess(ro);
+            this.PostProcess(ro);
         }
 
         private IReadOnlyCollection<ResultObject> TryGetAccessToCollection()
         {
-            while (_collectionAccessWrite > 0)
+            while (this._collectionAccessWrite > 0)
             {
                 Task.Delay(1);
             }
-            _collectionAccessRead++;
-            var res = ResultObjects.ToArray();
-            _collectionAccessRead--;
+
+            var res = this.ResultObjects.ToArray();
             return res;
         }
 
         private async Task AddToResult(ResultObject ro)
         {
-            if (InvokedAdd != null)
+            if (this.InvokedAdd != null)
             {
-                InvokedAdd(ro);
+                this.InvokedAdd(ro);
                 await Task.Delay(0);
             }
             else
             {
-                if (TryGetAccessToCollection().All(x => x.ShowIp != ro.ShowIp))
-                    ResultObjects.Add(ro);
+                if (this.TryGetAccessToCollection().All(x => x.ShowIp != ro.ShowIp)) this.ResultObjects.Add(ro);
             }
         }
 
         private void PostProcess(ResultObject ro)
         {
             GeoWorker.InsertGeoDataQueue(ro);
-            DnsHost.FillIpHost(ro, _minimizeHostname);
-            if (BlockNew)
+            DnsHost.FillIpHost(ro, this._minimizeHostname);
+            if (this.BlockNew)
             {
                 Block.DoInSecBlock(ro);
             }
@@ -343,11 +339,11 @@ namespace PortAbuse2.Core.Listener
                 DestinationAddress = ipPacket.DestinationAddress,
                 From = fromMe,
                 PackagesReceived = 1,
-                Application = SelectedAppEntry,
+                Application = this.SelectedAppEntry,
                 DataTransfered = ipPacket.PayloadLength,
-                ForceShow = _forceShowHiddenIps
+                ForceShow = this._forceShowHiddenIps
             };
-            ro.Hidden = CustomSettings.Instance.CheckIpHidden(SelectedAppEntry.Name, ro.ShowIp);
+            ro.Hidden = CustomSettings.Instance.CheckIpHidden(this.SelectedAppEntry.Name, ro.ShowIp);
             return ro;
         }
 
@@ -358,11 +354,11 @@ namespace PortAbuse2.Core.Listener
             try
             {
                 detection = (fromMe
-                    ? TryGetAccessToCollection().Where(
+                    ? this.TryGetAccessToCollection().Where(
                         x =>
                             Equals(x.SourceAddress, ipPacket.DestinationAddress) ||
                             Equals(x.DestinationAddress, ipPacket.DestinationAddress))
-                    : TryGetAccessToCollection().Where(
+                    : this.TryGetAccessToCollection().Where(
                         x =>
                             Equals(x.DestinationAddress, ipPacket.SourceAddress) ||
                             Equals(x.SourceAddress, ipPacket.SourceAddress))).FirstOrDefault();
@@ -370,7 +366,7 @@ namespace PortAbuse2.Core.Listener
             catch (Exception)
             {
                 Debugger.Log(1, "", "Get RO crushed.");
-                detection = GetExistedDetection(fromMe, ipPacket);
+                detection = this.GetExistedDetection(fromMe, ipPacket);
             }
 
             return detection;
@@ -379,7 +375,7 @@ namespace PortAbuse2.Core.Listener
         private void OnReceived(IPAddress ipdest, IPAddress ipsource, byte[] data, bool direction,
             ResultObject resultobject, IEnumerable<Tuple<Protocol, ushort>> protocol)
         {
-            Received?.Invoke(ipdest, ipsource, data, direction, resultobject, protocol);
+            this.Received?.Invoke(ipdest, ipsource, data, direction, resultobject, protocol);
         }
     }
 }

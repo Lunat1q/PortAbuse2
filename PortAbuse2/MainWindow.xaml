@@ -5,8 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:controls1="clr-namespace:PortAbuse2.Controls"
+        xmlns:viewModels="clr-namespace:PortAbuse2.ViewModels"
         mc:Ignorable="d"
-        Title="PortAbuse 2" Height="600" Width="600" MinWidth="500" MinHeight="500" Closing="MetroWindow_Closing" Icon="portAbuseLogo.ico">
+        Title="PortAbuse 2" Height="600" Width="600" MinWidth="500" MinHeight="500" Closing="MetroWindow_Closing" Icon="portAbuseLogo.ico"
+        d:DataContext="{viewModels:MainPageViewModel}">
     <Grid>
         <Grid.Style>
             <Style TargetType="Grid">
@@ -35,7 +37,7 @@
                 <Button x:Name="RefreshButton" Content="Refresh" Grid.Column="1" Margin="5,0,0,0" VerticalAlignment="Center" Click="RefreshButton_Click"/>
                 <ComboBox Grid.Column="0" x:Name="AppListComboBox" Margin="5,0" VerticalAlignment="Center" ItemTemplate="{DynamicResource AppTemplate}" SelectionChanged="AppListComboBox_SelectionChanged"/>
             </Grid>
-            <Grid Margin="105,4,80,5" Grid.Row="2" VerticalAlignment="Center">
+            <Grid Margin="105,4,80,5" Grid.Row="2" VerticalAlignment="Center" IsEnabled="{Binding IsRunning, Converter={StaticResource InverseBooleanConverter}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition/>

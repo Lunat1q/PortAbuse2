@@ -7,12 +7,10 @@ namespace PortAbuse2.Core.Common
     {
         public Thread Td { get; }
         public DateTime TdTime { get; }
-        private int TdLiveTime { get; }
-        public ExThread(Thread td, DateTime tdTime = new DateTime(), int tdLiveTime = 0)
+        public ExThread(Thread td, DateTime tdTime = new DateTime())
         {
-            Td = td;
-            TdTime = tdTime;
-            TdLiveTime = tdLiveTime;
+            this.Td = td;
+            this.TdTime = tdTime;
         }
 
     }

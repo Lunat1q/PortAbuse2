@@ -12,9 +12,9 @@ namespace PortAbuse2.Applications
         {
             get
             {
-                return _icon ?? Images.LoadImageSourceFromResource("empty.png");
+                return this._icon ?? Images.LoadImageSourceFromResource("empty.png");
             }
-            set { _icon = value; }
+            set { this._icon = value; }
         }
     }
 }

@@ -10,20 +10,20 @@ namespace PortAbuse2.Controls
 
         public BlockEventArgs(int time, BlockMode mode)
         {
-            Time = time;
-            Mode = mode;
+            this.Time = time;
+            this.Mode = mode;
         }
 
         public BlockEventArgs(RoutedEvent routedEvent, int time, BlockMode mode) : base(routedEvent)
         {
-            Time = time;
-            Mode = mode;
+            this.Time = time;
+            this.Mode = mode;
         }
 
         public BlockEventArgs(RoutedEvent routedEvent, object source, int time, BlockMode mode) : base(routedEvent, source)
         {
-            Time = time;
-            Mode = mode;
+            this.Time = time;
+            this.Mode = mode;
         }
     }
 }

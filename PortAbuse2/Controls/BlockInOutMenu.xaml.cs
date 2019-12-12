@@ -17,8 +17,8 @@ namespace PortAbuse2.Controls
 
         public event BlockClickHandler BlockButtonClicked
         {
-            add => AddHandler(BlockButtonClickedEvent, value);
-            remove => RemoveHandler(BlockButtonClickedEvent, value);
+            add => this.AddHandler(BlockButtonClickedEvent, value);
+            remove => this.RemoveHandler(BlockButtonClickedEvent, value);
         }
 
         private static readonly RoutedEvent BlockButtonClickedEvent = EventManager.RegisterRoutedEvent("BlockButtonClicked",
@@ -26,25 +26,25 @@ namespace PortAbuse2.Controls
 
         public int SecondsToBlock
         {
-            get => _secondsToBlock;
+            get => this._secondsToBlock;
             set
             {
-                _secondsToBlock = value; 
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(ItemText));
+                this._secondsToBlock = value;
+                this.OnPropertyChanged();
+                this.OnPropertyChanged(nameof(this.ItemText));
             }
         }
 
-        public string ItemText => $"{SecondsToBlock} sec";
+        public string ItemText => $"{this.SecondsToBlock} sec";
 
         public BlockInOutMenu()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         private void BlockClicked(object sender, RoutedEventArgs e)
         {
-            OnBlockButtonClicked(SecondsToBlock, BlockMode.BlockAll);
+            this.OnBlockButtonClicked(this.SecondsToBlock, BlockMode.BlockAll);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -52,23 +52,23 @@ namespace PortAbuse2.Controls
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         protected virtual void OnBlockButtonClicked(int sec, BlockMode direction)
         {
             var newEvent = new BlockEventArgs(BlockButtonClickedEvent, this, sec, direction);
-            RaiseEvent(newEvent);
+            this.RaiseEvent(newEvent);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            OnBlockButtonClicked(SecondsToBlock, BlockMode.BlockInput);
+            this.OnBlockButtonClicked(this.SecondsToBlock, BlockMode.BlockInput);
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            OnBlockButtonClicked(SecondsToBlock, BlockMode.BlockOutput);
+            this.OnBlockButtonClicked(this.SecondsToBlock, BlockMode.BlockOutput);
         }
     }
 }

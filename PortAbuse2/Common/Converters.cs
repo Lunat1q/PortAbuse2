@@ -12,8 +12,7 @@ namespace PortAbuse2.Common
         private static readonly BitmapSource EmptyFlag = (Properties.Resources.ResourceManager.GetObject("empty", Properties.Resources.Culture) as Bitmap).LoadBitmap();
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var imageName = value as string;
-            if (imageName == null)
+            if (!(value is string imageName))
                 return EmptyFlag;
             var bm = Properties.Resources.ResourceManager.GetObject(imageName, Properties.Resources.Culture) as Bitmap;
             

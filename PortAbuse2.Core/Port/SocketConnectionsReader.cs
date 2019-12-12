@@ -295,8 +295,9 @@ namespace PortAbuse2.Core.Port
         // DWORD is System.UInt32 in C#
         UInt32 localAddr;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        byte[] localPort;
-        UInt32 owningPid;
+        private byte[] localPort;
+
+        private UInt32 owningPid;
 
         public int PID => (int)owningPid;
 

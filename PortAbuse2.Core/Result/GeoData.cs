@@ -13,81 +13,83 @@ namespace PortAbuse2.Core.Result
 
         public bool GeoRequestEnqueued
         {
-            get => _geoRequestEnqueued;
+            get => this._geoRequestEnqueued;
             set
             {
-                _geoRequestEnqueued = value; 
-                OnPropertyChanged();
+                this._geoRequestEnqueued = value;
+                this.OnPropertyChanged();
             }
         }
 
         public string Isp
         {
-            get => _isp;
-            set { _isp = value; OnPropertyChanged(); }
+            get => this._isp;
+            set {
+                this._isp = value;
+                this.OnPropertyChanged(); }
         }
 
         public string Country
         {
-            get => _country;
+            get => this._country;
             set
             {
-                _country = value;
-                OnPropertyChanged();
+                this._country = value;
+                this.OnPropertyChanged();
             }
         }
 
         public string City
         {
-            get => _city;
+            get => this._city;
             set
             {
-                _city = value;
-                OnPropertyChanged();
+                this._city = value;
+                this.OnPropertyChanged();
             }
         }
 
         public string Index
         {
-            get => _index;
+            get => this._index;
             set
             {
-                _index = value;
-                OnPropertyChanged();
+                this._index = value;
+                this.OnPropertyChanged();
             }
         }
 
         public string CountryCode
         {
-            get => _countryCode;
+            get => this._countryCode;
             set
             {
-                _countryCode = value;
-                OnPropertyChanged();
+                this._countryCode = value;
+                this.OnPropertyChanged();
             }
         }
 
-        public string Result => $"{(string.IsNullOrEmpty(Index)?"" : $"[{Index}] - ")}{(string.IsNullOrEmpty(Country)? "" : $"{Country}")}{(string.IsNullOrEmpty(City)?"":$" - {City}")}{(string.IsNullOrEmpty(Isp) ? "" : $" [{Isp}]")}";
+        public string Result => $"{(string.IsNullOrEmpty(this.Index)?"" : $"[{this.Index}] - ")}{(string.IsNullOrEmpty(this.Country)? "" : $"{this.Country}")}{(string.IsNullOrEmpty(this.City)?"":$" - {this.City}")}{(string.IsNullOrEmpty(this.Isp) ? "" : $" [{this.Isp}]")}";
 
         public void Merge(GeoData geo)
         {
-            City = geo.City;
-            CountryCode = geo.CountryCode;
-            Country = geo.Country;
-            Index = geo.Index;
-            Isp = geo.Isp;
-            OnPropertyChangedByName(nameof(Result));
+            this.City = geo.City;
+            this.CountryCode = geo.CountryCode;
+            this.Country = geo.Country;
+            this.Index = geo.Index;
+            this.Isp = geo.Isp;
+            this.OnPropertyChangedByName(nameof(this.Result));
         }
 
         public void Reset()
         {
-            City = string.Empty;
-            CountryCode = string.Empty;
-            Country = string.Empty;
-            Index = string.Empty;
-            Isp = string.Empty;
-            GeoRequestEnqueued = false;
-            OnPropertyChangedByName(nameof(Result));
+            this.City = string.Empty;
+            this.CountryCode = string.Empty;
+            this.Country = string.Empty;
+            this.Index = string.Empty;
+            this.Isp = string.Empty;
+            this.GeoRequestEnqueued = false;
+            this.OnPropertyChangedByName(nameof(this.Result));
         }
     }
 }

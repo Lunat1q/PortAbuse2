@@ -24,21 +24,21 @@ namespace PortAbuse2.Core.ApplicationExtensions
 
         public void Stop()
         {
-            Active = false;
-            _sniffedSessions = new ConcurrentDictionary<string, WarframePlayerData>();
-            _connectionPackageCollection = new ConcurrentDictionary<string, ResultObject>();
+            this.Active = false;
+            this._sniffedSessions = new ConcurrentDictionary<string, WarframePlayerData>();
+            this._connectionPackageCollection = new ConcurrentDictionary<string, ResultObject>();
         }
 
         public void PackageReceived(IPAddress ipDest, IPAddress ipSource, byte[] data, bool direction,
             ResultObject resultobject, IEnumerable<Tuple<Protocol, ushort>> protocol)
         {
-            if (!Active) return;
+            if (!this.Active) return;
             if (!resultobject.Resolved)
             {
-                TryToDetermineSessionHash(resultobject, data);
+                this.TryToDetermineSessionHash(resultobject, data);
             }
             var strData = BytesParser.BytesToStringConverted(data, true);
-            TryHandleWfData(strData, resultobject);
+            this.TryHandleWfData(strData, resultobject);
         }
 
         private static bool ContainsIgnoreCase(string str, string contains)
@@ -48,7 +48,7 @@ namespace PortAbuse2.Core.ApplicationExtensions
 
         private void TryHandleWfData(string strData, ResultObject ro)
         {
-            if (TryGetWfData(strData) && !ro.Resolved)
+            if (this.TryGetWfData(strData) && !ro.Resolved)
             {
                 ro.Resolved = true;
                 ro.ExtraInfo = "DE Server";
@@ -73,12 +73,12 @@ namespace PortAbuse2.Core.ApplicationExtensions
 
         private void IdentifyAttempt(string sessionKey)
         {
-            if (_connectionPackageCollection.ContainsKey(sessionKey))
+            if (this._connectionPackageCollection.ContainsKey(sessionKey))
             {
-                var ro = _connectionPackageCollection[sessionKey];
-                if (_sniffedSessions.ContainsKey(sessionKey))
+                var ro = this._connectionPackageCollection[sessionKey];
+                if (this._sniffedSessions.ContainsKey(sessionKey))
                 {
-                    var wfData = _sniffedSessions[sessionKey];
+                    var wfData = this._sniffedSessions[sessionKey];
                     ro.ExtraInfo = $"{wfData.Name} - {wfData.Warframe}";
                 }
             }
@@ -88,17 +88,17 @@ namespace PortAbuse2.Core.ApplicationExtensions
         {
             try
             {
-                var match = _warframeName.Match(strData);
+                var match = this._warframeName.Match(strData);
                 if (match.Success)
                 {
                     var warframeName = match.Groups[2].Value.Split('/').Skip(1).FirstOrDefault();
-                    match = _nameSessionPotention.Match(strData);
+                    match = this._nameSessionPotention.Match(strData);
                     if (match.Success)
                     {
                         var sessionHash = match.Groups[2].Value;
                         var wfData = new WarframePlayerData(match.Groups[1].Value) {Warframe = warframeName};
-                        AddOrUpdateSession(wfData, sessionHash);
-                        IdentifyAttempt(sessionHash);
+                        this.AddOrUpdateSession(wfData, sessionHash);
+                        this.IdentifyAttempt(sessionHash);
                         return true;
 
                     }
@@ -117,16 +117,16 @@ namespace PortAbuse2.Core.ApplicationExtensions
             {
                 var sessionKey = GetSessionFromInitialPacket(data);
                 if (sessionKey == string.Empty) return;
-                if (_connectionPackageCollection.ContainsKey(sessionKey))
+                if (this._connectionPackageCollection.ContainsKey(sessionKey))
                 {
-                    _connectionPackageCollection[sessionKey] = resultobject;
+                    this._connectionPackageCollection[sessionKey] = resultobject;
                 }
                 else
                 {
-                    _connectionPackageCollection.TryAdd(sessionKey, resultobject);
+                    this._connectionPackageCollection.TryAdd(sessionKey, resultobject);
                 }
                 resultobject.Resolved = true;
-                IdentifyAttempt(sessionKey);
+                this.IdentifyAttempt(sessionKey);
             }
             catch (Exception)
             {
@@ -145,21 +145,21 @@ namespace PortAbuse2.Core.ApplicationExtensions
         private void AddOrUpdateSession(WarframePlayerData wfData, string sessionKey)
         {
             if (wfData == null) return;
-            if (_sniffedSessions.ContainsKey(sessionKey))
+            if (this._sniffedSessions.ContainsKey(sessionKey))
             {
-                _sniffedSessions[sessionKey] = wfData;
+                this._sniffedSessions[sessionKey] = wfData;
             }
             else
             {
-                _sniffedSessions.TryAdd(sessionKey, wfData);
+                this._sniffedSessions.TryAdd(sessionKey, wfData);
             }
         }
 
         public void Start()
         {
-            _sniffedSessions = new ConcurrentDictionary<string, WarframePlayerData>();
-            _connectionPackageCollection = new ConcurrentDictionary<string, ResultObject>();
-            Active = true;
+            this._sniffedSessions = new ConcurrentDictionary<string, WarframePlayerData>();
+            this._connectionPackageCollection = new ConcurrentDictionary<string, ResultObject>();
+            this.Active = true;
             //Task.Run(Worker);
         }
 
@@ -167,14 +167,14 @@ namespace PortAbuse2.Core.ApplicationExtensions
         {
             public WarframePlayerData(string name)
             {
-                Name = name;
+                this.Name = name;
             }
 
             public string Name { get; }
             public string Warframe { get; set; }
             public override string ToString()
             {
-                return $"{Name} - {Warframe}";
+                return $"{this.Name} - {this.Warframe}";
             }
         }
     }

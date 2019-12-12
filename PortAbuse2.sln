@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortAbuse2.Tests", "PortAbu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiqUtils", "TiqUtils\TiqUtils\TiqUtils.csproj", "{ADD36AFD-5E81-40E7-93F8-381CF03C5FD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiQWpfUtils", "TiQWpfUtils\TiQWpfUtils\TiQWpfUtils.csproj", "{B03903AE-CB73-4DAB-91D8-439F4AAD4806}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiQWpfUtils", "TiQWpfUtils\TiqUtils.Wpf\TiqUtils.Wpf.csproj", "{B03903AE-CB73-4DAB-91D8-439F4AAD4806}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

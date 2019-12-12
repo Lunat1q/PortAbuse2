@@ -18,79 +18,79 @@ namespace PortAbuse2.Core.Result
         private GeoData _geo;
         private bool _from;
 
-        public string SourceIp => SourceAddress.ToString();
-        public string DestIp => DestinationAddress.ToString();
+        public string SourceIp => this.SourceAddress.ToString();
+        public string DestIp => this.DestinationAddress.ToString();
 
         public bool Resolved { get; set; } = false;
 
 
         public bool ForceShow
         {
-            get => _forceShow;
+            get => this._forceShow;
             set
             {
-                _forceShow = value;
-                OnPropertyChanged();
-                OnPropertyChangedByName(nameof(Hidden));
-                OnPropertyChangedByName(nameof(ForseShown));
-                OnPropertyChangedByName(nameof(HiddenProp));
+                this._forceShow = value;
+                this.OnPropertyChanged();
+                this.OnPropertyChangedByName(nameof(this.Hidden));
+                this.OnPropertyChangedByName(nameof(this.ForseShown));
+                this.OnPropertyChangedByName(nameof(this.HiddenProp));
             }
         }
 
-        public bool ForseShown => _forceShow && _hidden;
+        public bool ForseShown => this._forceShow && this._hidden;
 
         public int PackagesReceived
         {
-            get => _packagesReceived;
+            get => this._packagesReceived;
             set
             {
-                _packagesReceived = value;
-                LastReceivedTime = DateTime.UtcNow.ToUnixTime();
-                OnPropertyChanged();
+                this._packagesReceived = value;
+                this.LastReceivedTime = DateTime.UtcNow.ToUnixTime();
+                this.OnPropertyChanged();
             }
         }
 
         public long DataTransfered
         {
-            get => _dataTransfered;
+            get => this._dataTransfered;
             set
             {
-                _dataTransfered = value;
-                OnPropertyChanged();
+                this._dataTransfered = value;
+                this.OnPropertyChanged();
             }
         }
 
         public bool Old
         {
-            get => _old;
+            get => this._old;
             set
             {
-                _old = value;
-                OnPropertyChanged();
+                this._old = value;
+                this.OnPropertyChanged();
             }
         }
 
         public bool HiddenProp
         {
-            get => _hidden && !_forceShow;
+            get => this._hidden && !this._forceShow;
             set
             {
-                _hidden = value;
-                OnPropertyChanged();
-                OnPropertyChangedByName(nameof(Hidden));
-                OnPropertyChangedByName(nameof(ForseShown));
+                this._hidden = value;
+                this.OnPropertyChanged();
+                this.OnPropertyChangedByName(nameof(this.Hidden));
+                this.OnPropertyChangedByName(nameof(this.ForseShown));
             }
         }
 
         public bool Hidden
         {
-            get => _hidden;
+            get => this._hidden;
             set
             {
-                _hidden = value;
-                OnPropertyChanged();
-                OnPropertyChangedByName(nameof(HiddenProp));
-                OnPropertyChangedByName(nameof(ForseShown));
+                this._hidden = value;
+                this.OnPropertyChanged();
+                this.OnPropertyChangedByName(nameof(this.HiddenProp));
+                this.OnPropertyChangedByName(nameof(this.ForseShown));
             }
         }
 
@@ -98,26 +98,26 @@ namespace PortAbuse2.Core.Result
 
         public long DetectionStamp { get; set; }
 
-        public string ShowIp => From ? DestIp : SourceIp;
+        public string ShowIp => this.From ? this.DestIp : this.SourceIp;
 
         public string ExtraInfo
         {
-            get => _extraInfo;
+            get => this._extraInfo;
             set
             {
-                HaveExtraInfo = !string.IsNullOrEmpty(value);
-                _extraInfo = value;
-                OnPropertyChanged();
+                this.HaveExtraInfo = !string.IsNullOrEmpty(value);
+                this._extraInfo = value;
+                this.OnPropertyChanged();
             }
         }
 
         public bool HaveExtraInfo
         {
-            get => _haveExtraInfo;
+            get => this._haveExtraInfo;
             set
             {
-                _haveExtraInfo = value;
-                OnPropertyChanged(); 
+                this._haveExtraInfo = value;
+                this.OnPropertyChanged(); 
                 
             }
         }
@@ -128,11 +128,11 @@ namespace PortAbuse2.Core.Result
 
         public string Hostname
         {
-            get => _hostname;
+            get => this._hostname;
             set
             {
-                _hostname = value;
-                OnPropertyChanged();
+                this._hostname = value;
+                this.OnPropertyChanged();
             }
         }
 
@@ -140,11 +140,11 @@ namespace PortAbuse2.Core.Result
 
         public GeoData Geo
         {
-            get => _geo ?? (_geo = new GeoData());
+            get => this._geo ?? (this._geo = new GeoData());
             set
             {
-                _geo = value;
-                OnPropertyChanged();
+                this._geo = value;
+                this.OnPropertyChanged();
             }
         }
 
@@ -152,31 +152,31 @@ namespace PortAbuse2.Core.Result
 
         public bool From
         {
-            get => _from;
+            get => this._from;
             set
             {
-                _from = value;
-                OnPropertyChanged();
+                this._from = value;
+                this.OnPropertyChanged();
             }
         }
 
         public bool Blocked
         {
-            get => _blocked;
+            get => this._blocked;
             set
             {
-                _blocked = value;
-                OnPropertyChanged();
+                this._blocked = value;
+                this.OnPropertyChanged();
             }
         }
 
         public bool ReverseEnabled
         {
-            get => _reverseEnabled;
+            get => this._reverseEnabled;
             set
             {
-                _reverseEnabled = value;
-                OnPropertyChanged();
+                this._reverseEnabled = value;
+                this.OnPropertyChanged();
             }
         }
 
@@ -184,13 +184,13 @@ namespace PortAbuse2.Core.Result
 
         public override string ToString()
         {
-            return ShowIp;
+            return this.ShowIp;
         }
 
         public ResultObject()
         {
-            LastReceivedTime = DateTime.UtcNow.ToUnixTime();
-            DetectionStamp = LastReceivedTime;
+            this.LastReceivedTime = DateTime.UtcNow.ToUnixTime();
+            this.DetectionStamp = this.LastReceivedTime;
         }
     }
 }

@@ -15,8 +15,7 @@ namespace PortAbuse2.Styling
         private void Block_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
-            var obj = btn?.DataContext as ResultObject;
-            if (obj == null) return;
+            if (!(btn?.DataContext is ResultObject obj)) return;
             if (!obj.Blocked)
             {
                 Block.DoBlock(obj, true, Block.DefaultBlockMode);

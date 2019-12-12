@@ -12,7 +12,7 @@ using PortAbuse2.Core.Geo;
 using PortAbuse2.Core.WindowsFirewall;
 using TiqUtils.Conversion;
 using TiqUtils.Events.Controls;
-using TiQWpfUtils.Helpers;
+using TiqUtils.Wpf.Helpers;
 
 namespace PortAbuse2.Controls
 {
@@ -26,49 +26,49 @@ namespace PortAbuse2.Controls
 
         public bool? BlockNew
         {
-            get => _main?.Receiver.BlockNew;
+            get => this._main?.Receiver.BlockNew;
             set
             {
-                if (_main != null && value != null)
+                if (this._main != null && value != null)
                 {
-                    _main.Receiver.BlockNew = (bool)value;
-                    OnPropertyChanged();
+                    this._main.Receiver.BlockNew = (bool)value;
+                    this.OnPropertyChanged();
                 }
             }
         }
 
         public SettingsPage()
         {
-            InitializeComponent();
-            GeoProviderBox.ItemsSource = GeoWorker.GeoProviders;
+            this.InitializeComponent();
+            this.GeoProviderBox.ItemsSource = GeoWorker.GeoProviders;
         }
 
         public void SetMainWindow(MainWindow main)
         {
-            _main = main;
-            LoadSettings();
+            this._main = main;
+            this.LoadSettings();
         }
 
         private void LoadSettings()
         {
-            MinimizeHostnames.IsChecked = Properties.Settings.Default.MinimizeHostname;
-            HideOldRecords.IsChecked = Properties.Settings.Default.HideOldConnections;
-            HideSmallPackets.IsChecked = Properties.Settings.Default.HideSmallPackets;
-            SecondsBlockBox.Text = Properties.Settings.Default.BlockSeconds.ToString();
-            
-            GeoProviderBox.SelectedItem = GeoWorker.SelectProviderByName(Properties.Settings.Default.GeoProvider);
-            BlockDirectionBox.SelectedValue = (BlockMode)Properties.Settings.Default.BlockType;
+            this.MinimizeHostnames.IsChecked = Properties.Settings.Default.MinimizeHostname;
+            this.HideOldRecords.IsChecked = Properties.Settings.Default.HideOldConnections;
+            this.HideSmallPackets.IsChecked = Properties.Settings.Default.HideSmallPackets;
+            this.SecondsBlockBox.Text = Properties.Settings.Default.BlockSeconds.ToString();
+
+            this.GeoProviderBox.SelectedItem = GeoWorker.SelectProviderByName(Properties.Settings.Default.GeoProvider);
+            this.BlockDirectionBox.SelectedValue = (BlockMode)Properties.Settings.Default.BlockType;
             Block.DefaultBlockMode = (BlockMode)Properties.Settings.Default.BlockType;
 
             BlockTimeContainer.CurrentBlockTime = Properties.Settings.Default.BlockSeconds;
 
-            VersionNumberBlock.Text = $"Lunatiq© - v{Assembly.GetExecutingAssembly().GetName().Version}";
+            this.VersionNumberBlock.Text = $"Lunatiq© - v{Assembly.GetExecutingAssembly().GetName().Version}";
         }
 
         public void ToggleBlock()
         {
-            BlockNew = !BlockNew;
-            var accent = ThemeManager.GetAccent((bool) BlockNew ? "Red" : "Steel");
+            this.BlockNew = !this.BlockNew;
+            var accent = ThemeManager.GetAccent((bool) this.BlockNew ? "Red" : "Steel");
             ThemeManager.ChangeAppStyle(Application.Current, accent, ThemeManager.GetAppTheme("BaseLight"));
         }
 
@@ -81,9 +81,9 @@ namespace PortAbuse2.Controls
             Properties.Settings.Default.Save();
 
             if ((bool)tgl.IsChecked)
-                _main.Receiver.HideOld();
+                this._main.Receiver.HideOld();
             else
-                _main.Receiver.ShowOld();
+                this._main.Receiver.ShowOld();
         }
 
         private void MinimizeHostnames_OnClickSwitch_Click(object sender, RoutedEventArgs e)
@@ -95,9 +95,9 @@ namespace PortAbuse2.Controls
             Properties.Settings.Default.Save();
 
             if ((bool)tgl.IsChecked)
-                _main.Receiver.MinimizeHostnames();
+                this._main.Receiver.MinimizeHostnames();
             else
-                _main.Receiver.UnminimizeHostnames();
+                this._main.Receiver.UnminimizeHostnames();
         }
 
         private void HideSmallPackets_OnClickSwitch_Click(object sender, RoutedEventArgs e)
@@ -108,7 +108,7 @@ namespace PortAbuse2.Controls
             Properties.Settings.Default.HideSmallPackets = (bool)tgl.IsChecked;
             Properties.Settings.Default.Save();
 
-            _main.Receiver.HideSmallPackets = (bool)tgl.IsChecked;
+            this._main.Receiver.HideSmallPackets = (bool)tgl.IsChecked;
         }
 
         private void ShowAllHiddenIps_OnClick(object sender, RoutedEventArgs e)
@@ -117,9 +117,9 @@ namespace PortAbuse2.Controls
             if (tgl?.IsChecked == null) return;
 
             if ((bool)tgl.IsChecked)
-                _main.Receiver.SetForceShowHiddenIps();
+                this._main.Receiver.SetForceShowHiddenIps();
             else
-                _main.Receiver.SetForceShowHiddenIps(false);
+                this._main.Receiver.SetForceShowHiddenIps(false);
         }
 
         private void SecondsBlockBox_OnKeyDown(object sender, KeyEventArgs e)
@@ -135,16 +135,15 @@ namespace PortAbuse2.Controls
             if (!int.TryParse(tb.Text, out int amount)) return;
             Properties.Settings.Default.BlockSeconds = amount;
             Properties.Settings.Default.Save();
-            _main.RemapBlockButtons(amount);
+            this._main.RemapBlockButtons(amount);
         }
 
         private void GeoProviderBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var cb = sender as ComboBox;
-            var item = cb?.SelectedItem as IGeoService;
-            if (item == null) return;
+            if (!(cb?.SelectedItem is IGeoService item)) return;
             GeoWorker.SelectProviderByObject(item);
-            foreach (var ro in _main.Receiver.ResultObjects)
+            foreach (var ro in this._main.Receiver.ResultObjects)
             {
                 ro.Geo.Reset();
                 GeoWorker.InsertGeoDataQueue(ro);
@@ -156,8 +155,7 @@ namespace PortAbuse2.Controls
         private void BlockDirectionBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var cb = sender as ComboBox;
-            var item = cb?.SelectedItem as ValueDescription;
-            if (item == null) return;
+            if (!(cb?.SelectedItem is ValueDescription item)) return;
             Properties.Settings.Default.BlockType = Convert.ToInt32(item.Value);
             Block.DefaultBlockMode = (BlockMode)item.Value;
             Properties.Settings.Default.Save();
@@ -168,7 +166,7 @@ namespace PortAbuse2.Controls
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

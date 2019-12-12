@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using GlobalHook.Event;
 
@@ -14,7 +15,7 @@ namespace PortAbuse2.KeyCapture
 
         private void HandleEvent(KeyPressEvent eve)
         {
-            //MessageBox.Show($"KPr, mod:{eve.Keys.Modifiers}, k: {eve.Keys.KeyPressed}, k_char{eve.Key}");
+            Debug.WriteLine($"KPr, mod:{eve.Keys.Modifiers}, k: {eve.Keys.KeyPressed}, k_char{eve.Key}");
             //Application.Current.MainWindow.Topmost = true;
         }
 
@@ -24,10 +25,10 @@ namespace PortAbuse2.KeyCapture
             {
                 if (eve.Keys.KeyPressed == 80)
                 {
-                    _onTop = !_onTop;
+                    this._onTop = !this._onTop;
                     //MessageBox.Show($"TopMost {Application.Current.MainWindow.Topmost}");
-                    Application.Current.MainWindow.Topmost = _onTop;
-                    if (!_onTop)
+                    Application.Current.MainWindow.Topmost = this._onTop;
+                    if (!this._onTop)
                     {
                         WindowHandler.SendWpfWindowBack(Application.Current.MainWindow);
                     }
@@ -38,7 +39,7 @@ namespace PortAbuse2.KeyCapture
                 }
                 else if (eve.Keys.KeyPressed == 66)
                 {
-                    OnKeyAction(KeyActionType.BlockAllToggle);
+                    this.OnKeyAction(KeyActionType.BlockAllToggle);
                 }
             }
             //MessageBox.Show($"KDw, mod:{eve.Keys.Modifiers}, k: {eve.Keys.KeyPressed}");
@@ -46,7 +47,7 @@ namespace PortAbuse2.KeyCapture
 
         private void HandleEvent(KeyUpEvent eve)
         {
-            //MessageBox.Show($"KUp, mod:{eve.Keys.Modifiers}, k: {eve.Keys.KeyPressed}");
+            Debug.Write($"KUp, mod:{eve.Keys.Modifiers}, k: {eve.Keys.KeyPressed}");
         }
 
         public void Listen(IEvent evt)
@@ -64,7 +65,7 @@ namespace PortAbuse2.KeyCapture
 
         protected virtual void OnKeyAction(KeyActionType actiontype)
         {
-            KeyAction?.Invoke(actiontype);
+            this.KeyAction?.Invoke(actiontype);
         }
     }
 

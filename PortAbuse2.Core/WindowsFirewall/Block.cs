@@ -38,9 +38,12 @@ namespace PortAbuse2.Core.WindowsFirewall
             if (resultObject.ShowIp != "")
             {
                 DoBlock(resultObject, false, blockMode);
-                var td = new Thread(() => UnBlockInSeconds(resultObject, sec)) {Name = "UnBlock30"};
+                var td = new Thread(() => UnBlockInSeconds(resultObject, sec))
+                {
+                    Name = "UnBlock30"
+                };
                 td.Start();
-                TdList.Add(new ExThread(td, DateTime.Now, sec));
+                TdList.Add(new ExThread(td, DateTime.Now));
             }
         }
 

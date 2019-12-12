@@ -1,7 +1,9 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:common="clr-namespace:PortAbuse2.Common">
+                    xmlns:common="clr-namespace:PortAbuse2.Common"
+                    xmlns:converters="clr-namespace:TiqUtils.Wpf.Converters;assembly=TiqUtils.Wpf">
     <common:CountryImageConverter x:Key="CountryFlagConverter" />
+    <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
     <common:VisibilityConverter  x:Key="VisibilityConverter" />
     <common:HugeNumbersConverter  x:Key="HugeNumbersConverter" />
     <common:ByteSizeConverter  x:Key="ByteSizeConverter" />

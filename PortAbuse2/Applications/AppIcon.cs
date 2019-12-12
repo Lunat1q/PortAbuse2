@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
+// ReSharper disable IdentifierTypo
 
 namespace PortAbuse2.Applications
 {
@@ -44,17 +47,18 @@ namespace PortAbuse2.Applications
         [StructLayout(LayoutKind.Sequential)]
         private struct SHFILEINFO
         {
-            public IntPtr hIcon;
-            public int iIcon;
-            public uint dwAttributes;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] public string szDisplayName;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)] public string szTypeName;
+            public readonly IntPtr hIcon;
+            public readonly int iIcon;
+            public readonly uint dwAttributes;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] public readonly string szDisplayName;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)] public readonly string szTypeName;
         }
 
         [DllImport("shell32")]
         private static extern int SHGetFileInfo(string pszPath, uint dwFileAttributes, out SHFILEINFO psfi,
             uint cbFileInfo, uint flags);
 
+#pragma warning disable IDE0051 // Remove unused private members
         private const uint FILE_ATTRIBUTE_READONLY = 0x00000001;
         private const uint FILE_ATTRIBUTE_HIDDEN = 0x00000002;
         private const uint FILE_ATTRIBUTE_SYSTEM = 0x00000004;
@@ -80,6 +84,8 @@ namespace PortAbuse2.Applications
         private const uint SHGFI_SYSICONINDEX = 0x000004000; // get system icon index
         private const uint SHGFI_LINKOVERLAY = 0x000008000; // put a link overlay on icon
         private const uint SHGFI_SELECTED = 0x000010000; // show icon in selected state
+
+
         private const uint SHGFI_ATTR_SPECIFIED = 0x000020000; // get only specified attributes
         private const uint SHGFI_LARGEICON = 0x000000000; // get large icon
         private const uint SHGFI_SMALLICON = 0x000000001; // get small icon
@@ -87,5 +93,6 @@ namespace PortAbuse2.Applications
         private const uint SHGFI_SHELLICONSIZE = 0x000000004; // get shell size icon
         private const uint SHGFI_PIDL = 0x000000008; // pszPath is a pidl
         private const uint SHGFI_USEFILEATTRIBUTES = 0x000000010; // use passed dwFileAttribute
+#pragma warning restore IDE0051 // Remove unused private members
     }
 }

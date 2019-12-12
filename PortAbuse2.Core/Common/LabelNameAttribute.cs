@@ -1,4 +1,4 @@
-﻿using TiQWpfUtils.AbstractClasses.Attributes;
+﻿using TiqUtils.Wpf.AbstractClasses.Attributes;
 
 namespace PortAbuse2.Core.Common
 {
@@ -10,7 +10,7 @@ namespace PortAbuse2.Core.Common
 
         public override string GetProperText()
         {
-            return Label;
+            return this.Label;
         }
     }
 }

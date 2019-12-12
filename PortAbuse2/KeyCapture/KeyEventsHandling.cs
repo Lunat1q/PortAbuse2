@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using GlobalHook;
 
@@ -9,19 +8,19 @@ namespace PortAbuse2.KeyCapture
     {
         private readonly KeyboardHook _hook = new KeyboardHook();
         private readonly KeyListener _listener = new KeyListener();
-        private Dictionary<KeyActionType, List<Action>> _subscriptions = new Dictionary<KeyActionType, List<Action>>(); 
+        private readonly Dictionary<KeyActionType, List<Action>> _subscriptions = new Dictionary<KeyActionType, List<Action>>(); 
         public KeyEventsHandling()
         {
-            _hook.EventDispatcher.EventReceived += evt => _listener.Listen(evt);
-            _listener.KeyAction += _listener_KeyAction;
-            _hook.Start();
+            this._hook.EventDispatcher.EventReceived += evt => this._listener.Listen(evt);
+            this._listener.KeyAction += this.ListenerKeyAction;
+            this._hook.Start();
         }
 
-        private void _listener_KeyAction(KeyActionType actionType)
+        private void ListenerKeyAction(KeyActionType actionType)
         {
-            if (!_subscriptions.ContainsKey(actionType)) return;
+            if (!this._subscriptions.ContainsKey(actionType)) return;
 
-            foreach (var action in _subscriptions[actionType])
+            foreach (var action in this._subscriptions[actionType])
             {
                 action();
             }
@@ -29,19 +28,19 @@ namespace PortAbuse2.KeyCapture
 
         public void SignForKeyAction(KeyActionType action, Action callBack)
         {
-            if (_subscriptions.ContainsKey(action))
+            if (this._subscriptions.ContainsKey(action))
             {
-                _subscriptions[action].Add(callBack);
+                this._subscriptions[action].Add(callBack);
             }
             else
             {
-                _subscriptions.Add(action, new List<Action> {callBack});
+                this._subscriptions.Add(action, new List<Action> {callBack});
             }
         }
 
         public void Stop()
         {
-            _hook.Stop();
+            this._hook.Stop();
         }
     }
 }

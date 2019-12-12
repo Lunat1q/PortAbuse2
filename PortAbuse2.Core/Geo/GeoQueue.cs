@@ -4,17 +4,17 @@ namespace PortAbuse2.Core.Geo
 {
     public class GeoQueue
     {
-        public string Ip => Object.ShowIp;
+        public string Ip => this.Object.ShowIp;
         public string GeoProvider { get; }
         public bool RequestDone { get; }
         public bool RequestInProgress { get; }
         public ResultObject Object { get; }
         public GeoQueue(ResultObject obj, string providerName)
         {
-            Object = obj;
-            GeoProvider = providerName;
-            RequestInProgress = true;
-            RequestDone = false;
+            this.Object = obj;
+            this.GeoProvider = providerName;
+            this.RequestInProgress = true;
+            this.RequestDone = false;
         }
     }
 }

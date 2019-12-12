@@ -11,14 +11,13 @@ namespace PortAbuse2.Listener
 
         public Receiver(Window window, bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false) : base (minimizeHostname, hideOld,hideSmall)
         {
-            _window = window;
+            this._window = window;
 
-            InvokedAdd = (ro) =>
+            this.InvokedAdd = (ro) =>
             {
-                _window.Dispatcher.BeginInvoke(new ThreadStart(delegate
+                this._window.Dispatcher.BeginInvoke(new ThreadStart(delegate
                 {
-                    if (ResultObjects.All(x => x.ShowIp != ro.ShowIp))
-                        ResultObjects.Add(ro);
+                    if (this.ResultObjects.All(x => x.ShowIp != ro.ShowIp)) this.ResultObjects.Add(ro);
                 }));
                 return true;
             };

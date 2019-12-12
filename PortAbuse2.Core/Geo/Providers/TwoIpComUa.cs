@@ -57,7 +57,7 @@ namespace PortAbuse2.Core.Geo.Providers
 
         public override string ToString()
         {
-            return Name;
+            return this.Name;
         }
     }
 }

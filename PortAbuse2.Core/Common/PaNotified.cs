@@ -9,12 +9,12 @@ namespace PortAbuse2.Core.Common
 
         internal void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         internal void OnPropertyChangedByName(string propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

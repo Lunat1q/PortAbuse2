@@ -35,11 +35,11 @@ namespace PortAbuse2.Core.Geo.Providers
                         var geoData = Json.DeserializeDataFromString<IpApiCoData>(response2);
                         if (geoData != null)
                         {
-                            loc.Isp = geoData.org;
-                            loc.CountryCode = geoData.country.ToLower();
-                            loc.City = string.IsNullOrWhiteSpace(geoData.city) ? "Unknown" : geoData.city;
-                            loc.Country = string.IsNullOrWhiteSpace(geoData.country_name) ? "Unknown" : geoData.country_name;
-                            loc.Index = geoData.postal == "" ? "" : geoData.postal;
+                            loc.Isp = geoData.Org;
+                            loc.CountryCode = geoData.Country.ToLower();
+                            loc.City = string.IsNullOrWhiteSpace(geoData.City) ? "Unknown" : geoData.City;
+                            loc.Country = string.IsNullOrWhiteSpace(geoData.CountryName) ? "Unknown" : geoData.CountryName;
+                            loc.Index = geoData.Postal == "" ? "" : geoData.Postal;
                         }
                         else
                         {
@@ -57,23 +57,23 @@ namespace PortAbuse2.Core.Geo.Providers
         }
         public override string ToString()
         {
-            return Name;
+            return this.Name;
         }
 
         private class IpApiCoData
         {
-            public string ip { get; set; }
-            public string city { get; set; }
-            public string region { get; set; }
-            public string region_code { get; set; }
-            public string country { get; set; }
-            public string country_name { get; set; }
-            public string postal { get; set; }
-            public double latitude { get; set; }
-            public double longitude { get; set; }
-            public string timezone { get; set; }
-            public string asn { get; set; }
-            public string org { get; set; }
+            public string Ip { get; set; }
+            public string City { get; set; }
+            public string Region { get; set; }
+            public string RegionCode { get; set; }
+            public string Country { get; set; }
+            public string CountryName { get; set; }
+            public string Postal { get; set; }
+            public double Latitude { get; set; }
+            public double Longitude { get; set; }
+            public string Timezone { get; set; }
+            public string Asn { get; set; }
+            public string Org { get; set; }
         }
     }
 }

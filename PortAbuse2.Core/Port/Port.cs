@@ -7,10 +7,10 @@ namespace PortAbuse2.Core.Port
     // ===============================================
     public class Port
     {
-        public string PortNumber => UPortNumber.ToString();
+        public string PortNumber => this.UPortNumber.ToString();
         public uint UPortNumber { get; set; }
         public Protocol Protocol { get; set; }
 
-        public override string ToString() => $"{Protocol} : {PortNumber}";
+        public override string ToString() => $"{this.Protocol} : {this.PortNumber}";
     }
 }

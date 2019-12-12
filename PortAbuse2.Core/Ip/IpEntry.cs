@@ -8,14 +8,14 @@
         public bool Marked { get; set; }
         public IpEntry(string locIp, string remIp, string remHost)
         {
-            LocIp = locIp;
-            RemIp = remIp;
-            RemHost = remHost;
+            this.LocIp = locIp;
+            this.RemIp = remIp;
+            this.RemHost = remHost;
         }
         public IpEntry(string locIp, string remIp)
         {
-            LocIp = locIp;
-            RemIp = remIp;
+            this.LocIp = locIp;
+            this.RemIp = remIp;
         }
     }
 }

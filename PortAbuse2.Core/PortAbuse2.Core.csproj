@@ -117,9 +117,9 @@
       <Project>{add36afd-5e81-40e7-93f8-381cf03c5fd2}</Project>
       <Name>TiqUtils</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TiQWpfUtils\TiQWpfUtils\TiQWpfUtils.csproj">
+    <ProjectReference Include="..\TiQWpfUtils\TiqUtils.Wpf\TiqUtils.Wpf.csproj">
       <Project>{b03903ae-cb73-4dab-91d8-439f4aad4806}</Project>
-      <Name>TiQWpfUtils</Name>
+      <Name>TiqUtils.Wpf</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

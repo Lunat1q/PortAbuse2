@@ -16,7 +16,8 @@ using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
 using PortAbuse2.KeyCapture;
 using PortAbuse2.Listener;
-using TiqUtils.TypeSpeccific;
+using PortAbuse2.ViewModels;
+using TiqUtils.TypeSpecific;
 using Admin = PortAbuse2.Common.Admin;
 
 namespace PortAbuse2
@@ -30,44 +31,46 @@ namespace PortAbuse2
         internal readonly Receiver Receiver;
         private readonly KeyEventsHandling _keyEventsHandling;
 
+        private readonly MainPageViewModel _vm = new MainPageViewModel();
+
         public MainWindow()
         {
-            Receiver = new Receiver(this, Properties.Settings.Default.MinimizeHostname,
+            this.Receiver = new Receiver(this, Properties.Settings.Default.MinimizeHostname,
                 Properties.Settings.Default.HideOldConnections,
                 Properties.Settings.Default.HideSmallPackets);
 
-            InitializeComponent();
+            this.InitializeComponent();
 
             //"hacky" fix of designer glitch
-            FlyOutGrid.Visibility = Visibility.Visible;
+            this.FlyOutGrid.Visibility = Visibility.Visible;
 
             Admin.CheckAdmin();
 
             CustomSettings.Load(Properties.Settings.Default.CustomSettings);
 
-            LoadInterfaces();
+            this.LoadInterfaces();
 
-            AppListComboBox.ItemsSource = _allAppWithPorts;
+            this.AppListComboBox.ItemsSource = this._allAppWithPorts;
 
-            ResultBox.ItemsSource = Receiver.ResultObjects;
+            this.ResultBox.ItemsSource = this.Receiver.ResultObjects;
 
-            Task.Run(RefreshLoadProceses);
+            Task.Run(this.RefreshLoadProcesses);
 
-            SettingPage.SetMainWindow(this);
+            this.SettingPage.SetMainWindow(this);
 
-            _keyEventsHandling = new KeyEventsHandling();
+            this._keyEventsHandling = new KeyEventsHandling();
 
-            _keyEventsHandling.SignForKeyAction(KeyActionType.BlockAllToggle, SettingPage.ToggleBlock);
+            this._keyEventsHandling.SignForKeyAction(KeyActionType.BlockAllToggle, this.SettingPage.ToggleBlock);
 
 #if DEBUG
-            FillDummyData();
+            this.FillDummyData();
 #endif
         }
 
         // ReSharper disable once UnusedMember.Local
         private void FillDummyData()
         {
-            Receiver.ResultObjects.Add(new ResultObject
+            this.Receiver.ResultObjects.Add(new ResultObject
             {
                 SourceAddress = new IPAddress(new byte[]{100,100,100,100}),
                 DestinationAddress = new IPAddress(new byte[] { 100, 100, 100, 100 }),
@@ -75,21 +78,21 @@ namespace PortAbuse2
                 PackagesReceived = 662
             });
 
-            Receiver.ResultObjects.Add(new ResultObject
+            this.Receiver.ResultObjects.Add(new ResultObject
             {
                 SourceAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
                 DestinationAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
                 Hostname = "Test1",
                 PackagesReceived = 32567
             });
-            Receiver.ResultObjects.Add(new ResultObject
+            this.Receiver.ResultObjects.Add(new ResultObject
             {
                 SourceAddress = new IPAddress(new byte[] { 102, 100, 100, 100 }),
                 DestinationAddress = new IPAddress(new byte[] { 102, 100, 100, 100 }),
                 Hostname = "Test1",
                 PackagesReceived = 1000000000
             });
-            Receiver.ResultObjects.Add(new ResultObject
+            this.Receiver.ResultObjects.Add(new ResultObject
             {
                 SourceAddress = new IPAddress(new byte[] { 103, 100, 100, 100 }),
                 DestinationAddress = new IPAddress(new byte[] { 103, 100, 100, 100 }),
@@ -98,20 +101,24 @@ namespace PortAbuse2
             });
         }
 
-        private async Task RefreshLoadProceses()
+        private async Task RefreshLoadProcesses()
         {
             var apps = await AppList.GetRunningApplications();
             if (apps == null) return;
             foreach (var p in apps)
             {
                 if (p == null) continue;
-                if (_allAppWithPorts.All(x => x.InstancePid != p.InstancePid))
+                if (this._allAppWithPorts.All(x => x.InstancePid != p.InstancePid))
                 {
-                    await Dispatcher.BeginInvoke(new ThreadStart(delegate
+                    var dispatcher = this.Dispatcher;
+                    if (dispatcher != null)
                     {
-                        p.Icon = AppIcon.GetIcon(p.FullName, false);
-                        _allAppWithPorts.Add(p);
-                    }));
+                        await dispatcher.BeginInvoke(new ThreadStart(delegate
+                        {
+                            p.Icon = AppIcon.GetIcon(p.FullName, false);
+                            this._allAppWithPorts.Add(p);
+                        }));
+                    }
                 }
             }
         }
@@ -125,56 +132,58 @@ namespace PortAbuse2
         {
             var interfaces = IpInterface.GetIpInterfaces();
             var itemsSource = interfaces as string[] ?? interfaces.ToArray();
-            InterfaceBox.ItemsSource = itemsSource;
+            this.InterfaceBox.ItemsSource = itemsSource;
             if (itemsSource.Length == 1)
             {
-                InterfaceBox.SelectedIndex = 0;
+                this.InterfaceBox.SelectedIndex = 0;
             }
         }
         
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            _allAppWithPorts.Clear();
-            Task.Run(RefreshLoadProceses);
+            this._allAppWithPorts.Clear();
+            Task.Run(this.RefreshLoadProcesses);
         }
 
         private void SwitchButton_Click(object sender, RoutedEventArgs e)
         {
-            var btn = sender as Button;
             try
             {
-                if (Receiver.SelectedAppEntry == null)
+                if (this.Receiver.SelectedAppEntry == null)
                 {
-                    var wfApp = _allAppWithPorts.FirstOrDefault(x => x.Name.ToLower().Contains("warframe"));
+                    var wfApp = this._allAppWithPorts.FirstOrDefault(x => x.Name.Contains("warframe", StringComparison.OrdinalIgnoreCase));
                     if (wfApp != null)
                     {
-                        AppListComboBox.SelectedItem = wfApp;
+                        this.AppListComboBox.SelectedItem = wfApp;
                     }
                 }
 
-                if (btn == null || Receiver.SelectedAppEntry == null) return;
-                if (!Receiver.ContinueCapturing)
+                if (!(sender is Button btn) || this.Receiver.SelectedAppEntry == null) return;
+                if (!this.Receiver.ContinueCapturing)
                 {
-                    Receiver.Clear();
+                    this.Receiver.Clear();
                     btn.Content = "Stop";
-                    if (InterfaceBox.SelectedItem == null)
+                    if (this.InterfaceBox.SelectedItem == null)
                     {
                         if (CustomSettings.Instance.PreviousInterface.Empty())
-                            InterfaceBox.SelectedIndex = 0;
+                            this.InterfaceBox.SelectedIndex = 0;
                         else
-                            InterfaceBox.SelectedItem = CustomSettings.Instance.PreviousInterface;
+                            this.InterfaceBox.SelectedItem = CustomSettings.Instance.PreviousInterface;
                     }
-                    Receiver.StartListener(InterfaceBox.SelectedItem?.ToString());
-                    CustomSettings.Instance.PreviousInterface = InterfaceBox.SelectedItem?.ToString();
-                    var red = FindResource("PaLightRed") as SolidColorBrush;
+
+                    this.Receiver.StartListener(this.InterfaceBox.SelectedItem?.ToString());
+                    CustomSettings.Instance.PreviousInterface = this.InterfaceBox.SelectedItem?.ToString();
+                    var red = this.FindResource("PaLightRed") as SolidColorBrush;
                     btn.Background = red;
+                    this._vm.IsRunning = true;
                 }
                 else
                 {
                     btn.Content = "Start";
-                    Receiver.Stop();
-                    var green = FindResource("PaLightGreen") as SolidColorBrush;
+                    this.Receiver.Stop();
+                    var green = this.FindResource("PaLightGreen") as SolidColorBrush;
                     btn.Background = green;
+                    this._vm.IsRunning = false;
                 }
             }
             catch (Exception ex)
@@ -183,7 +192,7 @@ namespace PortAbuse2
             }
         }
 
-        private string GetTextFromException(Exception ex)
+        private static string GetTextFromException(Exception ex)
         {
             var sb = new StringBuilder();
 
@@ -199,13 +208,12 @@ namespace PortAbuse2
 
             return sb.ToString();
         }
-       
         
         private async void MetroWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             Properties.Settings.Default.CustomSettings = CustomSettings.SaveToString();
-            Receiver.Stop();
-            _keyEventsHandling.Stop();
+            this.Receiver.Stop();
+            this._keyEventsHandling.Stop();
             Block.ShutAll = true;
             await Block.Wait();
             Properties.Settings.Default.Save();
@@ -214,16 +222,13 @@ namespace PortAbuse2
         private void AppListComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var cb = sender as ComboBox;
-            var app = cb?.SelectedItem as AppIconEntry;
-            if (app == null) return;
-            Receiver.SelectedAppEntry = app;
+            if (!(cb?.SelectedItem is AppIconEntry app)) return;
+            this.Receiver.SelectedAppEntry = app;
         }
-
-
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            ExtraOptions.IsOpen = !ExtraOptions.IsOpen;
+            this.ExtraOptions.IsOpen = !this.ExtraOptions.IsOpen;
         }
     }
 }

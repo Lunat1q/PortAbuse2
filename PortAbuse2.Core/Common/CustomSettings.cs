@@ -11,7 +11,7 @@ namespace PortAbuse2.Core.Common
 
         public CustomSettings()
         {
-            HiddenIps = new Dictionary<string, List<string>>();
+            this.HiddenIps = new Dictionary<string, List<string>>();
         }
 
         public static void Load(string data)
@@ -26,30 +26,28 @@ namespace PortAbuse2.Core.Common
 
         public void AddHiddenIp(string appName, string ip)
         {
-            if (!HiddenIps.ContainsKey(appName))
+            if (!this.HiddenIps.ContainsKey(appName))
             {
-                HiddenIps.Add(appName, new List<string>());
+                this.HiddenIps.Add(appName, new List<string>());
             }
-            if (!HiddenIps[appName].Contains(ip))
-                HiddenIps[appName].Add(ip);
+            if (!this.HiddenIps[appName].Contains(ip)) this.HiddenIps[appName].Add(ip);
         }
 
         public void RemoveHiddenIp(string appName, string ip)
         {
-            if (!HiddenIps.ContainsKey(appName)) return;
-            if (HiddenIps[appName].Contains(ip))
-                HiddenIps[appName].Remove(ip);
+            if (!this.HiddenIps.ContainsKey(appName)) return;
+            if (this.HiddenIps[appName].Contains(ip)) this.HiddenIps[appName].Remove(ip);
         }
 
         public bool CheckIpHidden(string appName, string ip)
         {
-            return HiddenIps.ContainsKey(appName) && HiddenIps[appName].Contains(ip);
+            return this.HiddenIps.ContainsKey(appName) && this.HiddenIps[appName].Contains(ip);
         }
 
         public int CountHiddenIpForApp(string appName)
         {
             if (string.IsNullOrEmpty(appName)) return 0;
-            return HiddenIps.ContainsKey(appName) ? HiddenIps[appName].Count : 0;
+            return this.HiddenIps.ContainsKey(appName) ? this.HiddenIps[appName].Count : 0;
         }
     }
 }

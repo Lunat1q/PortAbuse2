@@ -35,11 +35,11 @@ namespace PortAbuse2.Core.Geo.Providers
                         var geoData = Json.DeserializeDataFromString<ProviderGeoData>(response2);
                         if (geoData != null)
                         {
-                            loc.Isp = geoData.org;
-                            loc.CountryCode = geoData.country.ToLower();
-                            loc.City = string.IsNullOrWhiteSpace(geoData.city) ? "Unknown" : $"{geoData.city}-{geoData.region}";
-                            loc.Country = string.IsNullOrWhiteSpace(geoData.country) ? "Unknown" : geoData.country;
-                            loc.Index = geoData.postal == "" ? "" : geoData.postal;
+                            loc.Isp = geoData.Org;
+                            loc.CountryCode = geoData.Country.ToLower();
+                            loc.City = string.IsNullOrWhiteSpace(geoData.City) ? "Unknown" : $"{geoData.City}-{geoData.Region}";
+                            loc.Country = string.IsNullOrWhiteSpace(geoData.Country) ? "Unknown" : geoData.Country;
+                            loc.Index = geoData.Postal == "" ? "" : geoData.Postal;
                         }
                         else
                         {
@@ -56,19 +56,19 @@ namespace PortAbuse2.Core.Geo.Providers
         }
         public override string ToString()
         {
-            return Name;
+            return this.Name;
         }
 
         private class ProviderGeoData
         {
-            public string ip { get; set; }
-            public string hostname { get; set; }
-            public string city { get; set; }
-            public string region { get; set; }
-            public string country { get; set; }
-            public string loc { get; set; }
-            public string org { get; set; }
-            public string postal { get; set; }
+            public string Ip { get; set; }
+            public string Hostname { get; set; }
+            public string City { get; set; }
+            public string Region { get; set; }
+            public string Country { get; set; }
+            public string Loc { get; set; }
+            public string Org { get; set; }
+            public string Postal { get; set; }
         }
     }
 }
