@@ -7,3 +7,6 @@
 [submodule "TiQWpfUtils"]
 	path = TiQWpfUtils
 	url = https://github.com/Lunat1q/TiQWpfUtils
+[submodule "sharppcap"]
+	path = sharppcap
+	url = https://github.com/chmorgan/sharppcap

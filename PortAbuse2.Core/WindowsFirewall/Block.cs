@@ -118,8 +118,7 @@ namespace PortAbuse2.Core.WindowsFirewall
                 {
                     try
                     {
-                        var cur = i.Current as INetFwRule;
-                        if (cur != null && cur.Name == blockName)
+                        if (i.Current is INetFwRule cur && cur.Name == blockName)
                         {
                             firewallPolicy.Rules.Remove(cur.Name);
                         }
@@ -149,8 +148,7 @@ namespace PortAbuse2.Core.WindowsFirewall
                 {
                     try
                     {
-                        var cur = i.Current as INetFwRule;
-                        if (cur != null && cur.Name.EndsWith(BlockSuffix))
+                        if (i.Current is INetFwRule cur && cur.Name.EndsWith(BlockSuffix))
                         {
                             firewallPolicy.Rules.Remove(cur.Name);
                         }

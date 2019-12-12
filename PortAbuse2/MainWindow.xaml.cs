@@ -39,6 +39,8 @@ namespace PortAbuse2
                 Properties.Settings.Default.HideOldConnections,
                 Properties.Settings.Default.HideSmallPackets);
 
+            this.DataContext = this._vm;
+
             this.InitializeComponent();
 
             //"hacky" fix of designer glitch
@@ -131,12 +133,8 @@ namespace PortAbuse2
         private void LoadInterfaces()
         {
             var interfaces = IpInterface.GetIpInterfaces();
-            var itemsSource = interfaces as string[] ?? interfaces.ToArray();
-            this.InterfaceBox.ItemsSource = itemsSource;
-            if (itemsSource.Length == 1)
-            {
-                this.InterfaceBox.SelectedIndex = 0;
-            }
+
+            this._vm.Interfaces = new ObservableCollection<IpInterface>(interfaces);
         }
         
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
@@ -163,16 +161,16 @@ namespace PortAbuse2
                 {
                     this.Receiver.Clear();
                     btn.Content = "Stop";
-                    if (this.InterfaceBox.SelectedItem == null)
+                    if (this._vm.SelectedInterface == null)
                     {
                         if (CustomSettings.Instance.PreviousInterface.Empty())
-                            this.InterfaceBox.SelectedIndex = 0;
+                            this._vm.SelectedInterface = this._vm.Interfaces.FirstOrDefault();
                         else
-                            this.InterfaceBox.SelectedItem = CustomSettings.Instance.PreviousInterface;
+                            this._vm.SelectedInterface = this._vm.Interfaces.FirstOrDefault(x=>x.HwName == CustomSettings.Instance.PreviousInterface);
                     }
 
-                    this.Receiver.StartListener(this.InterfaceBox.SelectedItem?.ToString());
-                    CustomSettings.Instance.PreviousInterface = this.InterfaceBox.SelectedItem?.ToString();
+                    this.Receiver.StartListener(this._vm.SelectedInterface);
+                    CustomSettings.Instance.PreviousInterface = this._vm.SelectedInterface?.HwName;
                     var red = this.FindResource("PaLightRed") as SolidColorBrush;
                     btn.Background = red;
                     this._vm.IsRunning = true;

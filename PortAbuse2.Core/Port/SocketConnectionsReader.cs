@@ -18,7 +18,7 @@ using TiqUtils.Utils;
 
 namespace PortAbuse2.Core.Port
 {
-    static class SocketConnectionsReader
+    internal static class SocketConnectionsReader
     {
         // The version of IP used by the TCP/UDP endpoint. AF_INET is used for IPv4.
         private const int AF_INET = 2;
@@ -293,18 +293,18 @@ namespace PortAbuse2.Core.Port
     public struct MIB_UDPROW_OWNER_PID
     {
         // DWORD is System.UInt32 in C#
-        UInt32 localAddr;
+        private readonly uint localAdr;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        private byte[] localPort;
+        private readonly byte[] localPort;
 
-        private UInt32 owningPid;
+        private readonly uint owningPid;
 
-        public int PID => (int)owningPid;
+        public int PID => (int) this.owningPid;
 
-        public IPAddress LocalAddress => new IPAddress(localAddr);
+        public IPAddress LocalAddress => new IPAddress(this.localAdr);
 
         public ushort LocalPort => BitConverter.ToUInt16(
-            new [] { localPort[1], localPort[0] }, 0);
+            new [] {this.localPort[1], this.localPort[0] }, 0);
     }
 
     ///// <summary>
@@ -325,7 +325,7 @@ namespace PortAbuse2.Core.Port
     public struct MIB_UDPTABLE_OWNER_PID
     {
         public uint dwNumEntries;
-        MIB_UDPROW_OWNER_PID table;
+        private readonly MIB_UDPROW_OWNER_PID table;
     }
 
     /// <summary>
@@ -341,9 +341,9 @@ namespace PortAbuse2.Core.Port
         public TcpProcessRecord(IPAddress localIp, IPAddress remoteIp, ushort localPort,
             ushort remotePort, int pId, MibTcpState state, Process[] processList) : base(localIp, localPort, pId, processList)
         {
-            RemoteAddress = remoteIp;
-            RemotePort = remotePort;
-            State = state;
+            this.RemoteAddress = remoteIp;
+            this.RemotePort = remotePort;
+            this.State = state;
         }
     }
 
@@ -360,17 +360,17 @@ namespace PortAbuse2.Core.Port
 
         protected ProcessRecordBase(IPAddress localAddress, uint localPort, int pId, IEnumerable<Process> processList)
         {
-            LocalAddress = localAddress;
-            LocalPort = localPort;
-            ProcessId = pId;
+            this.LocalAddress = localAddress;
+            this.LocalPort = localPort;
+            this.ProcessId = pId;
             if (processList.All(process => process.Id != pId)) return;
-            var proc = Process.GetProcessById(ProcessId);
-            ProcessName = proc.ProcessName;
-            if (SystemProcess(ProcessName)) return;
+            var proc = Process.GetProcessById(this.ProcessId);
+            this.ProcessName = proc.ProcessName;
+            if (SystemProcess(this.ProcessName)) return;
             try
             {
-                Title = proc.MainWindowTitle;
-                FullName = proc.MainModule.FileName;
+                this.Title = proc.MainWindowTitle;
+                this.FullName = proc.MainModule.FileName;
             }
             catch (Win32Exception)
             {

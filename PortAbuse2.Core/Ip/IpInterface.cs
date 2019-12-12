@@ -1,22 +1,46 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
+using System.Net.NetworkInformation;
+using PortAbuse2.Core.Win32;
+using SharpPcap;
+using SharpPcap.Npcap;
+using SharpPcap.WinPcap;
 
 namespace PortAbuse2.Core.Ip
 {
-    public static class IpInterface
+    public class IpInterface
     {
-        public static IEnumerable<string> GetIpInterfaces()
+        private IpInterface(string hwName, string interfaceName)
         {
-            var ipList = new List<string>();
-            var hosyEntry = Dns.GetHostEntry((Dns.GetHostName()));
-            if (hosyEntry.AddressList.Length <= 0) return ipList;
-            ipList.AddRange(
-                from ip in hosyEntry.AddressList
-                where ip.AddressFamily != AddressFamily.InterNetworkV6
-                select ip.ToString());
-            return ipList;
+            this.HwName = hwName;
+            this.FriendlyName = interfaceName;
         }
+
+        public static IEnumerable<IpInterface> GetIpInterfaces()
+        {
+            var adapters = IpHlpApi.GetIPAdapters(IpHlpApi.FAMILY.AF_UNSPEC);
+            var devices = CaptureDeviceList.Instance.OfType<NpcapDevice>();
+            return devices.Select(x => new IpInterface(x.Name, x.Interface.FriendlyName ?? GetFriendlyName(x, adapters)));
+        }
+
+        private static string GetFriendlyName(NpcapDevice npcapDevice, IList<IpHlpApi.IP_ADAPTER_ADDRESSES> adapters)
+        {
+            var name = npcapDevice.Name.Substring(@"\Device\NPF_".Length);
+            var matchedAdapter = adapters.Where(x => x.AdapterName.Equals(name, StringComparison.OrdinalIgnoreCase));
+            if (matchedAdapter.Any())
+            {
+                return matchedAdapter.First().FriendlyName;
+            }
+
+            return npcapDevice.Description;
+        }
+
+        public string FriendlyName { get; set; }
+
+        public string HwName { get; set; }
+
+
+
     }
 }

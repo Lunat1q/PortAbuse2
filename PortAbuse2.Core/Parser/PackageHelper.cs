@@ -7,9 +7,9 @@ namespace PortAbuse2.Core.Parser
 {
     public static class PackageHelper
     {
-        public static IEnumerable<Tuple<Protocol, ushort>> GetPorts(Packet packet, out IpPacket ipPacket, out TcpPacket tcpPacket, out UdpPacket udpPacket)
+        public static IEnumerable<Tuple<Protocol, ushort>> GetPorts(Packet packet, out IPPacket ipPacket, out TcpPacket tcpPacket, out UdpPacket udpPacket)
         {
-            ipPacket = (IpPacket)packet.Extract(typeof(IpPacket));
+            ipPacket = packet.Extract<IPPacket>();
             udpPacket = null;
             tcpPacket = null;
             if (ipPacket == null) return null;
@@ -20,8 +20,8 @@ namespace PortAbuse2.Core.Parser
 
                 switch (ipPacket.Protocol)
                 {
-                    case IPProtocolType.TCP:
-                        tcpPacket = (TcpPacket) packet.Extract(typeof(TcpPacket));
+                    case ProtocolType.Tcp:
+                        tcpPacket = (TcpPacket) packet.Extract<TcpPacket>();
                         if (tcpPacket == null) return null;
                         return new[]
                         {
@@ -29,8 +29,8 @@ namespace PortAbuse2.Core.Parser
                             Tuple.Create(Protocol.Tcp, tcpPacket.SourcePort)
                         };
 
-                    case IPProtocolType.UDP:
-                        udpPacket = (UdpPacket) packet.Extract(typeof(UdpPacket));
+                    case ProtocolType.Udp:
+                        udpPacket = (UdpPacket) packet.Extract<UdpPacket>();
                         if (udpPacket == null) return null;
                         return new[]
                         {

@@ -29,7 +29,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <Grid Margin="0,0,0,5">
+            <Grid Margin="0,0,0,5" IsEnabled="{Binding IsRunning, Converter={StaticResource InverseBooleanConverter}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="110"/>
@@ -42,8 +42,8 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <ComboBox x:Name="InterfaceBox" Grid.Column="1" Margin="5,0,0,0" VerticalAlignment="Center"/>
                 <TextBlock Grid.Column="0" Margin="0,0,5,0" TextWrapping="Wrap" Text="Interface" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="14"/>
+                <ComboBox Grid.Column="1" Margin="5,0,0,0" VerticalAlignment="Center" ItemsSource="{Binding Interfaces}" SelectedItem="{Binding SelectedInterface}" DisplayMemberPath="FriendlyName"/>
             </Grid>
             <ListBox x:Name="ResultBox" Margin="5,0,0,5" Grid.Row="1" ItemTemplate="{DynamicResource ResultTemplate}" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource HiddenContainer}"/>
             <Button x:Name="SwitchButton" Content="Start" HorizontalAlignment="Left" Margin="0" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="SwitchButton_Click" Background="{DynamicResource PaLightGreen}"/>

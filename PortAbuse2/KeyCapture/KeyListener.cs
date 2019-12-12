@@ -15,7 +15,11 @@ namespace PortAbuse2.KeyCapture
 
         private void HandleEvent(KeyPressEvent eve)
         {
-            Debug.WriteLine($"KPr, mod:{eve.Keys.Modifiers}, k: {eve.Keys.KeyPressed}, k_char{eve.Key}");
+            if (eve.Keys != null)
+            {
+                Debug.WriteLine($"KPr, mod:{eve.Keys.Modifiers}, k: {eve.Keys.KeyPressed}, k_char{eve.Key}");
+            }
+
             //Application.Current.MainWindow.Topmost = true;
         }
 

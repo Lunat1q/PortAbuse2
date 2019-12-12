@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using PortAbuse2.Annotations;
+using PortAbuse2.Core.Ip;
 
 namespace PortAbuse2.ViewModels
 {
     public class MainPageViewModel : INotifyPropertyChanged
     {
         private bool _isRunning;
+        private ObservableCollection<IpInterface> _interfaces;
+        private IpInterface _selectedInterface;
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]
@@ -27,6 +26,28 @@ namespace PortAbuse2.ViewModels
             {
                 if (value == this._isRunning) return;
                 this._isRunning = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<IpInterface> Interfaces
+        {
+            get => this._interfaces;
+            set
+            {
+                if (Equals(value, this._interfaces)) return;
+                this._interfaces = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public IpInterface SelectedInterface
+        {
+            get => this._selectedInterface;
+            set
+            {
+                if (Equals(value, this._selectedInterface)) return;
+                this._selectedInterface = value;
                 this.OnPropertyChanged();
             }
         }

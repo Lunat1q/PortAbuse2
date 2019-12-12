@@ -9,6 +9,7 @@ using PacketDotNet;
 using PortAbuse2.Core.ApplicationExtensions;
 using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Geo;
+using PortAbuse2.Core.Ip;
 using PortAbuse2.Core.Parser;
 using PortAbuse2.Core.Proto;
 using PortAbuse2.Core.Result;
@@ -28,9 +29,8 @@ namespace PortAbuse2.Core.Listener
         private int _collectionAccessWrite;
         public bool ContinueCapturing { get; private set; } //A flag to check if packets are to be captured or not
         public AppEntry SelectedAppEntry;
-        private string _interfaceLocalIp;
         private IEnumerable<IApplicationExtension> _currentExtensions;
-        private ICaptureDevice _captureDevice;
+        private LinkedList<ICaptureDevice> _captureDevices = new LinkedList<ICaptureDevice>();
 
         //private readonly string _logFolder = "raw";
         private const int OldTimeLimitSeconds = 30;
@@ -51,7 +51,11 @@ namespace PortAbuse2.Core.Listener
         public void Stop()
         {
             this.ContinueCapturing = false;
-            this._captureDevice?.StopCapture();
+            foreach (var device in this._captureDevices)
+            {
+                device.StopCapture();
+                device.Close();
+            }
             if (this._currentExtensions != null)
             {
                 foreach (var ext in this._currentExtensions)
@@ -202,7 +206,7 @@ namespace PortAbuse2.Core.Listener
             }
         }
 
-        public void StartListener(string ipInterface)
+        public void StartListener(IpInterface selectedIpInterface)
         {
             this.ContinueCapturing = true;
             this.StartWrite();
@@ -212,28 +216,32 @@ namespace PortAbuse2.Core.Listener
             Task.Run(this.CleanupDupes);
             this.InitExtensions();
 
-
-            this._interfaceLocalIp = ipInterface;
+            this._captureDevices.Clear();
             // метод для получения списка устройств
             CaptureDeviceList deviceList = CaptureDeviceList.Instance;
             foreach (var device in deviceList)
             {
                 if (!(device is WinPcapDevice pCapDevice)) continue;
                 var winDevice = pCapDevice;
-                if (winDevice.Addresses.Any(x => x.Addr.ToString() == this._interfaceLocalIp))
+                if (winDevice.Name == selectedIpInterface?.HwName)
                 {
-                    this._captureDevice = winDevice;
-                    break;
+                    this._captureDevices.AddLast(winDevice);
                 }
             }
-            if (this._captureDevice == null) //просрали девайс, берем первый и молимся
-                this._captureDevice = deviceList[0];
-            // регистрируем событие, которое срабатывает, когда пришел новый пакет
-            this._captureDevice.OnPacketArrival += this.Receiver_OnPacketArrival;
-            // открываем в режиме promiscuous, поддерживается также нормальный режим
-            this._captureDevice.Open(DeviceMode.Promiscuous, 1000);
-            // начинаем захват пакетов
-            this._captureDevice.StartCapture();
+
+            if (!this._captureDevices.Any()) //просрали девайс, берем первый и молимся
+                this._captureDevices = new LinkedList<ICaptureDevice>(deviceList);
+
+            foreach (var device in this._captureDevices)
+            {
+                // регистрируем событие, которое срабатывает, когда пришел новый пакет
+                device.OnPacketArrival += this.Receiver_OnPacketArrival;
+                // открываем в режиме promiscuous, поддерживается также нормальный режим
+                device.Open(DeviceMode.Promiscuous, 1000);
+                // начинаем захват пакетов
+                device.StartCapture();
+            }
+
         }
 
         private void Receiver_OnPacketArrival(object sender, CaptureEventArgs e)
@@ -257,14 +265,14 @@ namespace PortAbuse2.Core.Listener
 
         private async Task ParsePacket(Packet packet)
         {
-            var port = PackageHelper.GetPorts(packet, out IpPacket ipPacket, out TcpPacket tcpPacket,
+            var port = PackageHelper.GetPorts(packet, out IPPacket ipPacket, out TcpPacket tcpPacket,
                 out UdpPacket udpPacket);
 
             var portsMatch = this.SelectedAppEntry.AppPort.Any(
                     x => port != null && port.Any(v => v.Item2 == x.UPortNumber && x.Protocol == v.Item1));
             if (!portsMatch) return;
 
-            var fromMe = ipPacket.SourceAddress.ToString() == this._interfaceLocalIp;
+            var fromMe = true; //TODO: ipPacket.SourceAddress.ToString() == this._interfaceLocalIp;
             var existedDetection = this.GetExistedDetection(fromMe, ipPacket);
 
             if (existedDetection != null)
@@ -331,7 +339,7 @@ namespace PortAbuse2.Core.Listener
             }
         }
 
-        private ResultObject CreateNewResultObject(IpPacket ipPacket, bool fromMe)
+        private ResultObject CreateNewResultObject(IPPacket ipPacket, bool fromMe)
         {
             var ro = new ResultObject
             {
@@ -347,7 +355,7 @@ namespace PortAbuse2.Core.Listener
             return ro;
         }
 
-        private ResultObject GetExistedDetection(bool fromMe, IpPacket ipPacket)
+        private ResultObject GetExistedDetection(bool fromMe, IPPacket ipPacket)
         {
             ResultObject detection;
 
