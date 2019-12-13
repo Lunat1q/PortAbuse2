@@ -28,8 +28,7 @@ namespace PortAbuse2.Core.Geo
                 .Where(p => iExtension.IsAssignableFrom(p) && !p.IsInterface);
             foreach (var type in types)
             {
-                var instance = Activator.CreateInstance(type) as IGeoService;
-                if (instance != null)
+                if (Activator.CreateInstance(type) is IGeoService instance)
                     GeoProviders.Add(instance);
             }
             _selectedGeoService = GeoProviders.First();
@@ -40,7 +39,7 @@ namespace PortAbuse2.Core.Geo
         /// </summary>
         /// <param name="item">result item</param>
         /// <param name="providerName">empty for current selected geo provider</param>
-        public static void InsertGeoDataQueue(ResultObject item, string providerName = "")
+        public static void InsertGeoDataQueue(ConnectionInformation item, string providerName = "")
         {
             if (item.Geo.GeoRequestEnqueued) return;
             item.Geo.GeoRequestEnqueued = true;
@@ -84,7 +83,7 @@ namespace PortAbuse2.Core.Geo
             }
         }
 
-        private static async void GetGeoData(ResultObject obj, string providerName = "")
+        private static async void GetGeoData(ConnectionInformation obj, string providerName = "")
         {
             IGeoService provider;
             if (providerName == string.Empty)

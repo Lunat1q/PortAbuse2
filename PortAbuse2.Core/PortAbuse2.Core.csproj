@@ -87,6 +87,7 @@
     <Compile Include="Common\AppEntry.cs" />
     <Compile Include="Common\LabelNameAttribute.cs" />
     <Compile Include="Listener\CoreReceiver.cs" />
+    <Compile Include="Listener\IResultReceiver.cs" />
     <Compile Include="Parser\Compressor.cs" />
     <Compile Include="Parser\PackageHelper.cs" />
     <Compile Include="Port\Port.cs" />
@@ -95,7 +96,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Proto\Protocol.cs" />
     <Compile Include="Result\GeoData.cs" />
-    <Compile Include="Result\ResultObject.cs" />
+    <Compile Include="Result\ConnectionInformation.cs" />
     <Compile Include="Win32\IpHlpApi.cs" />
     <Compile Include="WindowsFirewall\Block.cs" />
     <Compile Include="WindowsFirewall\BlockMode.cs" />

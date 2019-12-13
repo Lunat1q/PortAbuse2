@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Net;
+using PacketDotNet;
 using PortAbuse2.Core.Common;
 
 namespace PortAbuse2.Core.Result
 {
-    public class ResultObject : PaNotified
+    public class ConnectionInformation : PaNotified
     {
         public IPAddress SourceAddress;
         public IPAddress DestinationAddress;
@@ -187,10 +188,27 @@ namespace PortAbuse2.Core.Result
             return this.ShowIp;
         }
 
-        public ResultObject()
+        public ConnectionInformation()
         {
             this.LastReceivedTime = DateTime.UtcNow.ToUnixTime();
             this.DetectionStamp = this.LastReceivedTime;
+        }
+
+
+        public static ConnectionInformation CreateNewResultObject(IPPacket ipPacket, bool fromMe, AppEntry selectedApp, bool forceShow)
+        {
+            var ro = new ConnectionInformation
+            {
+                SourceAddress = ipPacket.SourceAddress,
+                DestinationAddress = ipPacket.DestinationAddress,
+                From = fromMe,
+                PackagesReceived = 1,
+                Application = selectedApp,
+                DataTransfered = ipPacket.PayloadLength,
+                ForceShow = forceShow
+            };
+            ro.Hidden = CustomSettings.Instance.CheckIpHidden(selectedApp.Name, ro.ShowIp);
+            return ro;
         }
     }
 }

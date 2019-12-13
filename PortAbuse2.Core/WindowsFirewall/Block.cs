@@ -33,12 +33,12 @@ namespace PortAbuse2.Core.WindowsFirewall
             UnBlockAllTemporary();
         }
 
-        public static void DoInSecBlock(ResultObject resultObject, int sec = 30, BlockMode blockMode = BlockMode.BlockAll)
+        public static void DoInSecBlock(ConnectionInformation connectionInformation, int sec = 30, BlockMode blockMode = BlockMode.BlockAll)
         {
-            if (resultObject.ShowIp != "")
+            if (connectionInformation.ShowIp != "")
             {
-                DoBlock(resultObject, false, blockMode);
-                var td = new Thread(() => UnBlockInSeconds(resultObject, sec))
+                DoBlock(connectionInformation, false, blockMode);
+                var td = new Thread(() => UnBlockInSeconds(connectionInformation, sec))
                 {
                     Name = "UnBlock30"
                 };
@@ -47,7 +47,7 @@ namespace PortAbuse2.Core.WindowsFirewall
             }
         }
 
-        private static void UnBlockInSeconds(ResultObject resultObject, int sec)
+        private static void UnBlockInSeconds(ConnectionInformation connectionInformation, int sec)
         {
             var i = 0;
             while (i < sec * 2 && !ShutAll)
@@ -55,7 +55,7 @@ namespace PortAbuse2.Core.WindowsFirewall
                 Thread.Sleep(500);
                 i++;
             }
-            DoUnBlock(resultObject, false);
+            DoUnBlock(connectionInformation, false);
         }
 
         public static async Task Wait()
@@ -85,12 +85,12 @@ namespace PortAbuse2.Core.WindowsFirewall
             firewallPolicy.Rules.Add(firewallRule);
         }
 
-        public static void DoBlock(ResultObject resultObject, bool endlessBlock, BlockMode blockMode)
+        public static void DoBlock(ConnectionInformation connectionInformation, bool endlessBlock, BlockMode blockMode)
         {
-            if (resultObject == null) return;
-            if (resultObject.ShowIp != "")
+            if (connectionInformation == null) return;
+            if (connectionInformation.ShowIp != "")
             {
-                var sRemIp = resultObject.ShowIp;
+                var sRemIp = connectionInformation.ShowIp;
                 var blockName = sRemIp + (endlessBlock ? EndlessBlockSuffix : BlockSuffix);
 
                 if (blockMode == BlockMode.BlockAll || blockMode == BlockMode.BlockInput)
@@ -101,14 +101,14 @@ namespace PortAbuse2.Core.WindowsFirewall
                 {
                     AddRule(blockName, sRemIp, NET_FW_RULE_DIRECTION_.NET_FW_RULE_DIR_OUT);
                 }
-                resultObject.Blocked = true;
+                connectionInformation.Blocked = true;
             }
         }
 
-        public static void DoUnBlock(ResultObject resultObject, bool endlessBlock)
+        public static void DoUnBlock(ConnectionInformation connectionInformation, bool endlessBlock)
         {
-            if (resultObject == null) return;
-            var blockName = resultObject.ShowIp + (endlessBlock ? EndlessBlockSuffix : BlockSuffix);
+            if (connectionInformation == null) return;
+            var blockName = connectionInformation.ShowIp + (endlessBlock ? EndlessBlockSuffix : BlockSuffix);
             var firewallPolicy = (INetFwPolicy2)Activator.CreateInstance(PolicyType);
 
             try
@@ -134,7 +134,7 @@ namespace PortAbuse2.Core.WindowsFirewall
                 Console.WriteLine(e);
                 throw;
             }
-            resultObject.Blocked = false;
+            connectionInformation.Blocked = false;
         }
 
         private static void UnBlockAllTemporary()

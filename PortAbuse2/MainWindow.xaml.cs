@@ -28,16 +28,20 @@ namespace PortAbuse2
     public partial class MainWindow
     {
         private readonly ObservableCollection<AppIconEntry> _allAppWithPorts = new ObservableCollection<AppIconEntry>();
-        internal readonly Receiver Receiver;
         private readonly KeyEventsHandling _keyEventsHandling;
 
-        private readonly MainPageViewModel _vm = new MainPageViewModel();
+        private readonly MainLogicViewModel _vm ;
 
         public MainWindow()
         {
-            this.Receiver = new Receiver(this, Properties.Settings.Default.MinimizeHostname,
+            this._vm = new MainLogicViewModel();
+
+            this._vm.InitNewReceiver(
+                this.Dispatcher, 
+                Properties.Settings.Default.MinimizeHostname,
                 Properties.Settings.Default.HideOldConnections,
-                Properties.Settings.Default.HideSmallPackets);
+                Properties.Settings.Default.HideSmallPackets
+            );
 
             this.DataContext = this._vm;
 
@@ -54,11 +58,9 @@ namespace PortAbuse2
 
             this.AppListComboBox.ItemsSource = this._allAppWithPorts;
 
-            this.ResultBox.ItemsSource = this.Receiver.ResultObjects;
-
             Task.Run(this.RefreshLoadProcesses);
 
-            this.SettingPage.SetMainWindow(this);
+            this.SettingPage.SetViewModel(this._vm);
 
             this._keyEventsHandling = new KeyEventsHandling();
 
@@ -72,7 +74,7 @@ namespace PortAbuse2
         // ReSharper disable once UnusedMember.Local
         private void FillDummyData()
         {
-            this.Receiver.ResultObjects.Add(new ResultObject
+            this._vm.Add(new ConnectionInformation
             {
                 SourceAddress = new IPAddress(new byte[]{100,100,100,100}),
                 DestinationAddress = new IPAddress(new byte[] { 100, 100, 100, 100 }),
@@ -80,21 +82,21 @@ namespace PortAbuse2
                 PackagesReceived = 662
             });
 
-            this.Receiver.ResultObjects.Add(new ResultObject
+            this._vm.Add(new ConnectionInformation
             {
                 SourceAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
                 DestinationAddress = new IPAddress(new byte[] { 101, 100, 100, 100 }),
                 Hostname = "Test1",
                 PackagesReceived = 32567
             });
-            this.Receiver.ResultObjects.Add(new ResultObject
+            this._vm.Add(new ConnectionInformation
             {
                 SourceAddress = new IPAddress(new byte[] { 102, 100, 100, 100 }),
                 DestinationAddress = new IPAddress(new byte[] { 102, 100, 100, 100 }),
                 Hostname = "Test1",
                 PackagesReceived = 1000000000
             });
-            this.Receiver.ResultObjects.Add(new ResultObject
+            this._vm.Add(new ConnectionInformation
             {
                 SourceAddress = new IPAddress(new byte[] { 103, 100, 100, 100 }),
                 DestinationAddress = new IPAddress(new byte[] { 103, 100, 100, 100 }),
@@ -125,11 +127,6 @@ namespace PortAbuse2
             }
         }
 
-        public void RemapBlockButtons(int amount)
-        {
-            BlockTimeContainer.CurrentBlockTime = amount;
-        }
-
         private void LoadInterfaces()
         {
             var interfaces = IpInterface.GetIpInterfaces();
@@ -147,7 +144,7 @@ namespace PortAbuse2
         {
             try
             {
-                if (this.Receiver.SelectedAppEntry == null)
+                if (this._vm.Receiver.SelectedAppEntry == null)
                 {
                     var wfApp = this._allAppWithPorts.FirstOrDefault(x => x.Name.Contains("warframe", StringComparison.OrdinalIgnoreCase));
                     if (wfApp != null)
@@ -156,10 +153,10 @@ namespace PortAbuse2
                     }
                 }
 
-                if (!(sender is Button btn) || this.Receiver.SelectedAppEntry == null) return;
-                if (!this.Receiver.ContinueCapturing)
+                if (!(sender is Button btn) || this._vm.Receiver.SelectedAppEntry == null) return;
+                if (!this._vm.Receiver.ContinueCapturing)
                 {
-                    this.Receiver.Clear();
+                    this._vm.Receiver.Clear();
                     btn.Content = "Stop";
                     if (this._vm.SelectedInterface == null)
                     {
@@ -169,7 +166,7 @@ namespace PortAbuse2
                             this._vm.SelectedInterface = this._vm.Interfaces.FirstOrDefault(x=>x.HwName == CustomSettings.Instance.PreviousInterface);
                     }
 
-                    this.Receiver.StartListener(this._vm.SelectedInterface);
+                    this._vm.Receiver.StartListener(this._vm.SelectedInterface);
                     CustomSettings.Instance.PreviousInterface = this._vm.SelectedInterface?.HwName;
                     var red = this.FindResource("PaLightRed") as SolidColorBrush;
                     btn.Background = red;
@@ -178,7 +175,7 @@ namespace PortAbuse2
                 else
                 {
                     btn.Content = "Start";
-                    this.Receiver.Stop();
+                    this._vm.Receiver.Stop();
                     var green = this.FindResource("PaLightGreen") as SolidColorBrush;
                     btn.Background = green;
                     this._vm.IsRunning = false;
@@ -210,7 +207,7 @@ namespace PortAbuse2
         private async void MetroWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             Properties.Settings.Default.CustomSettings = CustomSettings.SaveToString();
-            this.Receiver.Stop();
+            this._vm.Receiver.Stop();
             this._keyEventsHandling.Stop();
             Block.ShutAll = true;
             await Block.Wait();
@@ -221,7 +218,7 @@ namespace PortAbuse2
         {
             var cb = sender as ComboBox;
             if (!(cb?.SelectedItem is AppIconEntry app)) return;
-            this.Receiver.SelectedAppEntry = app;
+            this._vm.Receiver.SelectedAppEntry = app;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

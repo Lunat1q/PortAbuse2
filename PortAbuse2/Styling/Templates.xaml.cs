@@ -15,7 +15,7 @@ namespace PortAbuse2.Styling
         private void Block_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
-            if (!(btn?.DataContext is ResultObject obj)) return;
+            if (!(btn?.DataContext is ConnectionInformation obj)) return;
             if (!obj.Blocked)
             {
                 Block.DoBlock(obj, true, Block.DefaultBlockMode);
@@ -39,7 +39,7 @@ namespace PortAbuse2.Styling
 
         private static void BlockFromControl(object sender, int sec, BlockMode mode)
         {
-            if (!TryGetResultObject(sender, out ResultObject obj)) return;
+            if (!TryGetResultObject(sender, out ConnectionInformation obj)) return;
             Block.DoInSecBlock(obj, sec, mode);
         }
 
@@ -48,7 +48,7 @@ namespace PortAbuse2.Styling
             var mi = sender as MenuItem;
             var listBox = (mi?.Parent as ContextMenu)?.Tag as ListBox;
             if (listBox?.SelectedIndex == -1) return;
-            var selectedItems = GetMultipleSelectedItem<ResultObject>(listBox);
+            var selectedItems = GetMultipleSelectedItem<ConnectionInformation>(listBox);
             if (selectedItems == null) return;
             foreach (var ro in selectedItems)
             {
@@ -76,13 +76,13 @@ namespace PortAbuse2.Styling
             return resultList;
         }
 
-        private static bool TryGetResultObject(object sender, out ResultObject obj)
+        private static bool TryGetResultObject(object sender, out ConnectionInformation obj)
         {
             var control = sender as Control;
             obj = null;
             while (obj == null && control?.Parent != null)
             {
-                obj = control.DataContext as ResultObject;
+                obj = control.DataContext as ConnectionInformation;
                 control = control.Parent as Control;
             }
             return obj != null;

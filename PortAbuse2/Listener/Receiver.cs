@@ -1,26 +1,32 @@
-﻿using System.Linq;
+﻿using System;
 using System.Threading;
-using System.Windows;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 using PortAbuse2.Core.Listener;
+using PortAbuse2.Core.Result;
 
 namespace PortAbuse2.Listener
 {
     internal class Receiver : CoreReceiver
     {
-        private readonly Window _window;
+        private readonly IResultReceiver _receiver;
+        private readonly Dispatcher _dispatcher;
 
-        public Receiver(Window window, bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false) : base (minimizeHostname, hideOld,hideSmall)
+        public Receiver(IResultReceiver receiver, Dispatcher dispatcher, bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false) : base (receiver, minimizeHostname, hideOld,hideSmall)
         {
-            this._window = window;
+            this._receiver = receiver;
+            this._dispatcher = dispatcher;
+            this.InvokedAdd = this.Add;
+        }
 
-            this.InvokedAdd = (ro) =>
-            {
-                this._window.Dispatcher.BeginInvoke(new ThreadStart(delegate
-                {
-                    if (this.ResultObjects.All(x => x.ShowIp != ro.ShowIp)) this.ResultObjects.Add(ro);
-                }));
-                return true;
-            };
+        private async Task<bool> Add(ConnectionInformation info)
+        {
+            await this._dispatcher.BeginInvoke(
+                DispatcherPriority.Background,
+                new ThreadStart(delegate { this._receiver.AddAsync(info); })
+            );
+            
+            return true;
         }
     }
 }

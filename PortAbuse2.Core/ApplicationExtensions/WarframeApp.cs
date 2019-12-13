@@ -16,21 +16,19 @@ namespace PortAbuse2.Core.ApplicationExtensions
         private readonly Regex _nameSessionPattern = new Regex("([a-zA-z0-9]{3,64})[\\s]+([a-zA-z0-9]{20,27})");
         private readonly Regex _warframeName = new Regex("(\\/Lotus\\/Powersuits\\/)(\\w+\\/\\w+)");
         private ConcurrentDictionary<string, WarframePlayerData> _sniffedSessions;
-        private ConcurrentDictionary<string, ResultObject> _connectionPackageCollection;
+        private ConcurrentDictionary<string, ConnectionInformation> _connectionPackageCollection;
 
         public bool Active { get; set; }
-
-        public IEnumerable<ResultObject> ResultObjectRef { get; set; }
-
+        
         public void Stop()
         {
             this.Active = false;
             this._sniffedSessions = new ConcurrentDictionary<string, WarframePlayerData>();
-            this._connectionPackageCollection = new ConcurrentDictionary<string, ResultObject>();
+            this._connectionPackageCollection = new ConcurrentDictionary<string, ConnectionInformation>();
         }
 
         public void PackageReceived(IPAddress ipDest, IPAddress ipSource, byte[] data, bool direction,
-            ResultObject resultobject, PortInformation portInfo)
+            ConnectionInformation resultobject, PortInformation portInfo)
         {
             if (!this.Active) return;
             if (!resultobject.Resolved)
@@ -46,7 +44,7 @@ namespace PortAbuse2.Core.ApplicationExtensions
             return str.IndexOf(contains, StringComparison.CurrentCultureIgnoreCase) >= 0;
         }
 
-        private void TryHandleWfData(string strData, ResultObject ro)
+        private void TryHandleWfData(string strData, ConnectionInformation ro)
         {
             if (this.TryGetWfData(strData) && !ro.Resolved)
             {
@@ -111,7 +109,7 @@ namespace PortAbuse2.Core.ApplicationExtensions
             return false;
         }
 
-        private void TryToDetermineSessionHash(ResultObject resultobject, byte[] data)
+        private void TryToDetermineSessionHash(ConnectionInformation resultobject, byte[] data)
         {
             try
             {
@@ -158,7 +156,7 @@ namespace PortAbuse2.Core.ApplicationExtensions
         public void Start()
         {
             this._sniffedSessions = new ConcurrentDictionary<string, WarframePlayerData>();
-            this._connectionPackageCollection = new ConcurrentDictionary<string, ResultObject>();
+            this._connectionPackageCollection = new ConcurrentDictionary<string, ConnectionInformation>();
             this.Active = true;
             //Task.Run(Worker);
         }

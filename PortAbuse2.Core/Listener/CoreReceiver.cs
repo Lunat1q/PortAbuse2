@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -11,12 +11,10 @@ using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Geo;
 using PortAbuse2.Core.Ip;
 using PortAbuse2.Core.Parser;
-using PortAbuse2.Core.Proto;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
 using SharpPcap;
 using SharpPcap.Npcap;
-using SharpPcap.WinPcap;
 
 namespace PortAbuse2.Core.Listener
 {
@@ -25,13 +23,15 @@ namespace PortAbuse2.Core.Listener
         private bool _hideOld;
 
         // ReSharper disable once FieldCanBeMadeReadOnly.Global
-        public ObservableCollection<ResultObject> ResultObjects = new ObservableCollection<ResultObject>();
 
-        private int _collectionAccessWrite;
+        private readonly IResultReceiver _resultReceiver;
+
+        private readonly ConcurrentDictionary<string, PushableInfo> _resultDictionary = new ConcurrentDictionary<string, PushableInfo>();
+        
         public bool ContinueCapturing { get; private set; } //A flag to check if packets are to be captured or not
         public AppEntry SelectedAppEntry;
         private IEnumerable<IApplicationExtension> _currentExtensions;
-        private LinkedList<ICaptureDevice> _captureDevices = new LinkedList<ICaptureDevice>();
+        private readonly LinkedList<ICaptureDevice> _captureDevices = new LinkedList<ICaptureDevice>();
 
         //private readonly string _logFolder = "raw";
         private const int OldTimeLimitSeconds = 30;
@@ -45,9 +45,16 @@ namespace PortAbuse2.Core.Listener
             IPAddress ipSource,
             byte[] data,
             bool direction,
-            ResultObject resultObject,
+            ConnectionInformation connectionInformation,
             PortInformation portInfo
         );
+        protected CoreReceiver(IResultReceiver receiver, bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false)
+        {
+            this._resultReceiver = receiver;
+            this._minimizeHostname = minimizeHostname;
+            this._hideOld = hideOld;
+            this.HideSmallPackets = hideSmall;
+        }
 
         public void Stop()
         {
@@ -69,18 +76,12 @@ namespace PortAbuse2.Core.Listener
 
         public event MessageDetectedEventHandler Received;
 
-        protected Func<ResultObject, bool> InvokedAdd { get; set; }
+        protected Func<ConnectionInformation, Task<bool>> InvokedAdd { get; set; }
 
         public bool BlockNew = false;
         public bool HideSmallPackets;
         private bool _forceShowHiddenIps;
 
-        protected CoreReceiver(bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false)
-        {
-            this._minimizeHostname = minimizeHostname;
-            this._hideOld = hideOld;
-            this.HideSmallPackets = hideSmall;
-        }
 
         public void HideOld()
         {
@@ -91,9 +92,9 @@ namespace PortAbuse2.Core.Listener
         {
             this._hideOld = false;
             Task.Delay(RegularActionsDelay);
-            foreach (var ro in this.TryGetAccessToCollection())
+            foreach (var ro in this._resultDictionary.Values)
             {
-                ro.Old = false;
+                ro.Data.Old = false;
             }
         }
 
@@ -101,9 +102,9 @@ namespace PortAbuse2.Core.Listener
         {
             this._minimizeHostname = true;
             Task.Delay(RegularActionsDelay);
-            foreach (var ro in this.TryGetAccessToCollection())
+            foreach (var ro in this._resultDictionary.Values)
             {
-                ro.Hostname = DnsHost.MinimizeHostname(ro.DetectedHostname);
+                ro.Data.Hostname = DnsHost.MinimizeHostname(ro.Data.DetectedHostname);
             }
         }
 
@@ -111,45 +112,35 @@ namespace PortAbuse2.Core.Listener
         {
             this._forceShowHiddenIps = forceShow;
             Task.Delay(RegularActionsDelay);
-            foreach (var ro in this.TryGetAccessToCollection())
+            foreach (var ro in this._resultDictionary.Values)
             {
-                ro.ForceShow = this._forceShowHiddenIps;
+                ro.Data.ForceShow = this._forceShowHiddenIps;
             }
         }
 
-        public void UnminimizeHostnames()
+        public void MaximizeHostnames()
         {
             this._minimizeHostname = false;
             Task.Delay(RegularActionsDelay);
-            foreach (var ro in this.TryGetAccessToCollection())
+            foreach (var ro in this._resultDictionary.Values)
             {
-                ro.Hostname = ro.DetectedHostname;
+                ro.Data.Hostname = ro.Data.DetectedHostname;
             }
         }
 
-        private async Task CleanupDupes() //TODO: Test if its needed at all
+        private async Task PushNewToReceiver()
         {
             while (this.ContinueCapturing)
             {
-                this.StartWrite();
-                var dupes = this.ResultObjects.GroupBy(x => x.ShowIp).Where(x => x.Count() > 1);
-                foreach (var dupe in dupes)
+                var newObjects = this._resultDictionary.Where(x => !x.Value.IsPushed);
+
+                foreach (var n in newObjects)
                 {
-                    if (dupe.Count() <= 1) continue;
-
-                    var main = dupe.FirstOrDefault();
-
-                    if (main == null) continue;
-
-                    foreach (var second in dupe.Where(x => x != main))
-                    {
-                        main.PackagesReceived += second.PackagesReceived;
-                        this.ResultObjects.Remove(second);
-                    }
+                    n.Value.IsPushed = true;
+                    await this.InvokedAdd(n.Value.Data);
                 }
 
-                this.EndWrite();
-                await Task.Delay(5000);
+                await Task.Delay(500);
             }
         }
 
@@ -160,7 +151,7 @@ namespace PortAbuse2.Core.Listener
                 if (this._hideOld)
                 {
                     var nowMinusShift = DateTime.UtcNow.ToUnixTime() - OldTimeLimitSeconds * 1000;
-                    foreach (var ro in this.TryGetAccessToCollection())
+                    foreach (var ro in this._resultDictionary.Values.Select(x => x.Data))
                     {
                         if (ro != null)
                         {
@@ -181,28 +172,16 @@ namespace PortAbuse2.Core.Listener
 
         public void Clear()
         {
-            this.StartWrite();
-            this.ResultObjects.Clear();
-            this.EndWrite();
+            this._resultReceiver.Reset();
+            this._resultDictionary.Clear();
         }
-
-        private void EndWrite()
-        {
-            this._collectionAccessWrite--;
-        }
-
-        private void StartWrite()
-        {
-            this._collectionAccessWrite++;
-        }
-
+        
         private void InitExtensions()
         {
             this._currentExtensions = ExtensionsRepository.GetExtensionsForApp(this.SelectedAppEntry.Name);
             foreach (var ext in this._currentExtensions)
             {
                 this.Received += ext.PackageReceived;
-                ext.ResultObjectRef = this.ResultObjects;
                 ext.Start();
             }
         }
@@ -210,11 +189,9 @@ namespace PortAbuse2.Core.Listener
         public void StartListener(IpInterface selectedIpInterface)
         {
             this.ContinueCapturing = true;
-            this.StartWrite();
-            this.ResultObjects.Clear();
-            this.EndWrite();
+            this.Clear();
             Task.Run(this.HideOldTask);
-            Task.Run(this.CleanupDupes);
+            Task.Run(this.PushNewToReceiver);
             this.InitExtensions();
 
             this._captureDevices.Clear();
@@ -231,14 +208,14 @@ namespace PortAbuse2.Core.Listener
             }
 
             if (!this._captureDevices.Any()) //просрали девайс, берем первый и молимся
-                this._captureDevices = new LinkedList<ICaptureDevice>(deviceList);
+                this._captureDevices.AddLast(deviceList.First()); // if we take all -> huge perf fckup
 
             foreach (var device in this._captureDevices)
             {
                 // регистрируем событие, которое срабатывает, когда пришел новый пакет
                 device.OnPacketArrival += this.Receiver_OnPacketArrival;
                 // открываем в режиме promiscuous, поддерживается также нормальный режим
-                device.Open(DeviceMode.Promiscuous, 1000);
+                device.Open(DeviceMode.Normal, 1000);
                 // начинаем захват пакетов
                 device.StartCapture();
             }
@@ -259,15 +236,15 @@ namespace PortAbuse2.Core.Listener
             }
         }
 
-        private static byte[] GetData(TcpPacket tcp, UdpPacket udp)
+        private static byte[] GetData(Packet tcp, Packet udp)
         {
             return tcp?.PayloadData ?? udp.PayloadData;
         }
 
-        private async Task ParsePacket(Packet packet)
+        private void ParsePacket(Packet packet)
         {
-            var port = PackageHelper.GetPorts(packet, out IPPacket ipPacket, out TcpPacket tcpPacket,
-                out UdpPacket udpPacket);
+            var port = PackageHelper.GetPorts(packet, out var ipPacket, out var tcpPacket,
+                out var udpPacket);
 
             var portsMatch = this.SelectedAppEntry.AppPort.Any(
                     x => port.Protocol == x.Protocol && (port.SourcePort == x.UPortNumber || port.DestinationPort == x.UPortNumber));
@@ -289,48 +266,21 @@ namespace PortAbuse2.Core.Listener
                 return;
             }
 
-            var ro = this.CreateNewResultObject(ipPacket, fromMe);
+            var ro = ConnectionInformation.CreateNewResultObject(ipPacket, fromMe, this.SelectedAppEntry, this._forceShowHiddenIps);
             this.OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,
                 ro, port);
 
-
-
-            if (this.TryGetAccessToCollection().Any(x => x.ShowIp == ro.ShowIp))
-            {
-                return;
-            }
-
-
-            await this.AddToResult(ro);
+            this.AddToResult(ro);
 
             this.PostProcess(ro);
         }
-
-        private IReadOnlyCollection<ResultObject> TryGetAccessToCollection()
+        
+        private void AddToResult(ConnectionInformation ro)
         {
-            while (this._collectionAccessWrite > 0)
-            {
-                Task.Delay(1);
-            }
-
-            var res = this.ResultObjects.ToArray();
-            return res;
+            this._resultDictionary.TryAdd(ro.ShowIp, new PushableInfo(ro));
         }
 
-        private async Task AddToResult(ResultObject ro)
-        {
-            if (this.InvokedAdd != null)
-            {
-                this.InvokedAdd(ro);
-                await Task.Delay(0);
-            }
-            else
-            {
-                if (this.TryGetAccessToCollection().All(x => x.ShowIp != ro.ShowIp)) this.ResultObjects.Add(ro);
-            }
-        }
-
-        private void PostProcess(ResultObject ro)
+        private void PostProcess(ConnectionInformation ro)
         {
             GeoWorker.InsertGeoDataQueue(ro);
             DnsHost.FillIpHost(ro, this._minimizeHostname);
@@ -340,51 +290,43 @@ namespace PortAbuse2.Core.Listener
             }
         }
 
-        private ResultObject CreateNewResultObject(IPPacket ipPacket, bool fromMe)
-        {
-            var ro = new ResultObject
-            {
-                SourceAddress = ipPacket.SourceAddress,
-                DestinationAddress = ipPacket.DestinationAddress,
-                From = fromMe,
-                PackagesReceived = 1,
-                Application = this.SelectedAppEntry,
-                DataTransfered = ipPacket.PayloadLength,
-                ForceShow = this._forceShowHiddenIps
-            };
-            ro.Hidden = CustomSettings.Instance.CheckIpHidden(this.SelectedAppEntry.Name, ro.ShowIp);
-            return ro;
-        }
 
-        private ResultObject GetExistedDetection(bool fromMe, IPPacket ipPacket)
+        private ConnectionInformation GetExistedDetection(bool fromMe, IPPacket ipPacket)
         {
-            ResultObject detection;
+            var showIp = fromMe ? ipPacket.DestinationAddress.ToString() : ipPacket.SourceAddress.ToString();
 
             try
             {
-                detection = (fromMe
-                    ? this.TryGetAccessToCollection().Where(
-                        x =>
-                            Equals(x.SourceAddress, ipPacket.DestinationAddress) ||
-                            Equals(x.DestinationAddress, ipPacket.DestinationAddress))
-                    : this.TryGetAccessToCollection().Where(
-                        x =>
-                            Equals(x.DestinationAddress, ipPacket.SourceAddress) ||
-                            Equals(x.SourceAddress, ipPacket.SourceAddress))).FirstOrDefault();
+                if (this._resultDictionary.TryGetValue(showIp, out var result))
+                {
+                    return result.Data;
+                }
             }
             catch (Exception)
             {
                 Debugger.Log(1, "", "Get RO crushed.");
-                detection = this.GetExistedDetection(fromMe, ipPacket);
+                return this.GetExistedDetection(fromMe, ipPacket);
             }
 
-            return detection;
+            return null;
         }
 
         private void OnReceived(IPAddress ipdest, IPAddress ipsource, byte[] data, bool direction,
-            ResultObject resultobject, PortInformation portInfo)
+            ConnectionInformation resultobject, PortInformation portInfo)
         {
             this.Received?.Invoke(ipdest, ipsource, data, direction, resultobject, portInfo);
+        }
+
+        private class PushableInfo
+        {
+            public PushableInfo(ConnectionInformation ro)
+            {
+                this.Data = ro;
+            }
+
+            public bool IsPushed { get; set; }
+
+            public ConnectionInformation Data { get; set; }
         }
     }
 }

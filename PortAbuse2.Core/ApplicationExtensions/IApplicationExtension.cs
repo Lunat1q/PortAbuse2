@@ -9,7 +9,6 @@ namespace PortAbuse2.Core.ApplicationExtensions
 {
     public interface IApplicationExtension
     {
-        IEnumerable<ResultObject> ResultObjectRef { set; }
         bool Active { get; set; }
 
         /// <summary>
@@ -22,6 +21,6 @@ namespace PortAbuse2.Core.ApplicationExtensions
         void Stop();
 
         void PackageReceived(IPAddress ipDest, IPAddress ipSource, byte[] data, bool direction,
-            ResultObject resultobject, PortInformation portInfo);
+            ConnectionInformation resultobject, PortInformation portInfo);
     }
 }

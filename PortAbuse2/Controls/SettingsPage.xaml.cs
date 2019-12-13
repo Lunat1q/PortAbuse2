@@ -10,6 +10,7 @@ using MahApps.Metro.Controls;
 using PortAbuse2.Annotations;
 using PortAbuse2.Core.Geo;
 using PortAbuse2.Core.WindowsFirewall;
+using PortAbuse2.ViewModels;
 using TiqUtils.Conversion;
 using TiqUtils.Events.Controls;
 using TiqUtils.Wpf.Helpers;
@@ -21,17 +22,17 @@ namespace PortAbuse2.Controls
     /// </summary>
     public partial class SettingsPage : INotifyPropertyChanged
     {
-        private MainWindow _main;
+        private MainLogicViewModel _vm;
         public BlockMode SelectedBlockSate => Block.DefaultBlockMode;
 
         public bool? BlockNew
         {
-            get => this._main?.Receiver.BlockNew;
+            get => this._vm?.Receiver.BlockNew;
             set
             {
-                if (this._main != null && value != null)
+                if (this._vm != null && value != null)
                 {
-                    this._main.Receiver.BlockNew = (bool)value;
+                    this._vm.Receiver.BlockNew = (bool)value;
                     this.OnPropertyChanged();
                 }
             }
@@ -43,9 +44,9 @@ namespace PortAbuse2.Controls
             this.GeoProviderBox.ItemsSource = GeoWorker.GeoProviders;
         }
 
-        public void SetMainWindow(MainWindow main)
+        public void SetViewModel(MainLogicViewModel vm)
         {
-            this._main = main;
+            this._vm = vm;
             this.LoadSettings();
         }
 
@@ -81,9 +82,9 @@ namespace PortAbuse2.Controls
             Properties.Settings.Default.Save();
 
             if ((bool)tgl.IsChecked)
-                this._main.Receiver.HideOld();
+                this._vm.Receiver.HideOld();
             else
-                this._main.Receiver.ShowOld();
+                this._vm.Receiver.ShowOld();
         }
 
         private void MinimizeHostnames_OnClickSwitch_Click(object sender, RoutedEventArgs e)
@@ -95,9 +96,9 @@ namespace PortAbuse2.Controls
             Properties.Settings.Default.Save();
 
             if ((bool)tgl.IsChecked)
-                this._main.Receiver.MinimizeHostnames();
+                this._vm.Receiver.MinimizeHostnames();
             else
-                this._main.Receiver.UnminimizeHostnames();
+                this._vm.Receiver.MaximizeHostnames();
         }
 
         private void HideSmallPackets_OnClickSwitch_Click(object sender, RoutedEventArgs e)
@@ -108,7 +109,7 @@ namespace PortAbuse2.Controls
             Properties.Settings.Default.HideSmallPackets = (bool)tgl.IsChecked;
             Properties.Settings.Default.Save();
 
-            this._main.Receiver.HideSmallPackets = (bool)tgl.IsChecked;
+            this._vm.Receiver.HideSmallPackets = (bool)tgl.IsChecked;
         }
 
         private void ShowAllHiddenIps_OnClick(object sender, RoutedEventArgs e)
@@ -117,9 +118,9 @@ namespace PortAbuse2.Controls
             if (tgl?.IsChecked == null) return;
 
             if ((bool)tgl.IsChecked)
-                this._main.Receiver.SetForceShowHiddenIps();
+                this._vm.Receiver.SetForceShowHiddenIps();
             else
-                this._main.Receiver.SetForceShowHiddenIps(false);
+                this._vm.Receiver.SetForceShowHiddenIps(false);
         }
 
         private void SecondsBlockBox_OnKeyDown(object sender, KeyEventArgs e)
@@ -135,7 +136,7 @@ namespace PortAbuse2.Controls
             if (!int.TryParse(tb.Text, out int amount)) return;
             Properties.Settings.Default.BlockSeconds = amount;
             Properties.Settings.Default.Save();
-            this._main.RemapBlockButtons(amount);
+            this._vm.BlockAmount = amount;
         }
 
         private void GeoProviderBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -143,7 +144,7 @@ namespace PortAbuse2.Controls
             var cb = sender as ComboBox;
             if (!(cb?.SelectedItem is IGeoService item)) return;
             GeoWorker.SelectProviderByObject(item);
-            foreach (var ro in this._main.Receiver.ResultObjects)
+            foreach (var ro in this._vm.DetectedConnections)
             {
                 ro.Geo.Reset();
                 GeoWorker.InsertGeoDataQueue(ro);

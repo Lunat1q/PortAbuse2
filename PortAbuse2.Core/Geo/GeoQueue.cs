@@ -8,8 +8,8 @@ namespace PortAbuse2.Core.Geo
         public string GeoProvider { get; }
         public bool RequestDone { get; }
         public bool RequestInProgress { get; }
-        public ResultObject Object { get; }
-        public GeoQueue(ResultObject obj, string providerName)
+        public ConnectionInformation Object { get; }
+        public GeoQueue(ConnectionInformation obj, string providerName)
         {
             this.Object = obj;
             this.GeoProvider = providerName;

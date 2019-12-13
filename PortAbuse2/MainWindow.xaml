@@ -8,7 +8,7 @@
         xmlns:viewModels="clr-namespace:PortAbuse2.ViewModels"
         mc:Ignorable="d"
         Title="PortAbuse 2" Height="600" Width="600" MinWidth="500" MinHeight="500" Closing="MetroWindow_Closing" Icon="portAbuseLogo.ico"
-        d:DataContext="{viewModels:MainPageViewModel}">
+        d:DataContext="{viewModels:MainLogicViewModel}">
     <Grid>
         <Grid.Style>
             <Style TargetType="Grid">
@@ -45,7 +45,7 @@
                 <TextBlock Grid.Column="0" Margin="0,0,5,0" TextWrapping="Wrap" Text="Interface" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="14"/>
                 <ComboBox Grid.Column="1" Margin="5,0,0,0" VerticalAlignment="Center" ItemsSource="{Binding Interfaces}" SelectedItem="{Binding SelectedInterface}" DisplayMemberPath="FriendlyName"/>
             </Grid>
-            <ListBox x:Name="ResultBox" Margin="5,0,0,5" Grid.Row="1" ItemTemplate="{DynamicResource ResultTemplate}" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource HiddenContainer}"/>
+            <ListBox x:Name="ResultBox" Margin="5,0,0,5" Grid.Row="1" ItemTemplate="{DynamicResource ResultTemplate}" ItemsSource="{Binding DetectedConnections}" HorizontalContentAlignment="Stretch" ItemContainerStyle="{DynamicResource HiddenContainer}"/>
             <Button x:Name="SwitchButton" Content="Start" HorizontalAlignment="Left" Margin="0" Grid.Row="2" VerticalAlignment="Center" Width="100" Click="SwitchButton_Click" Background="{DynamicResource PaLightGreen}"/>
             <Button x:Name="ShowOptionsButton" Content="Options" HorizontalAlignment="Right" Margin="5,0,0,0" Grid.Row="2" VerticalAlignment="Center" Click="Button_Click" Width="75"/>
         </Grid>

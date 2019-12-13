@@ -42,7 +42,7 @@
         </MenuItem>
     </ContextMenu>
     <controls:BlockTimeContainer x:Key="BlockTimeContainerClass" />
-    <DataTemplate x:Key="ResultTemplate" DataType="result:ResultObject">
+    <DataTemplate x:Key="ResultTemplate" DataType="result:ConnectionInformation">
         <Grid x:Name="ResultObjectTpl" Margin="2" ContextMenu="{DynamicResource EntryContextMenu}"
               Visibility="{Binding HiddenProp, ConverterParameter=true, Converter={StaticResource VisibilityConverter}}">
             <Rectangle x:Name="ResultBg" Fill="Transparent" Stroke="#FFD1D0D0" />
@@ -156,12 +156,12 @@
         </Setter>
         <Style.Triggers>
             <DataTrigger
-                Binding="{Binding Path=(result:ResultObject.HiddenProp)}"
+                Binding="{Binding Path=(result:ConnectionInformation.HiddenProp)}"
                 Value="True">
                 <Setter Property="Visibility" Value="Collapsed" />
             </DataTrigger>
             <DataTrigger
-                Binding="{Binding Path=(result:ResultObject.Old)}"
+                Binding="{Binding Path=(result:ConnectionInformation.Old)}"
                 Value="True">
                 <Setter Property="Visibility" Value="Collapsed" />
             </DataTrigger>

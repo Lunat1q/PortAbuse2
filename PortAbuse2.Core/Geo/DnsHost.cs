@@ -8,7 +8,7 @@ namespace PortAbuse2.Core.Geo
 {
     public static class DnsHost
     {
-        public static async void FillIpHost(ResultObject obj, bool minimize)
+        public static async void FillIpHost(ConnectionInformation obj, bool minimize)
         {
             var ip = IPAddress.Parse(obj.ShowIp);
             string hostName;

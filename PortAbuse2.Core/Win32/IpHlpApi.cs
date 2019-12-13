@@ -261,8 +261,10 @@ namespace PortAbuse2.Core.Win32
         {
             List<IP_ADAPTER_ADDRESSES> adapters = new List<IP_ADAPTER_ADDRESSES>();
             uint outBufLen = 0;
-            ERROR err = GetAdaptersAddresses((uint) family,
-                (uint) (FLAGS.IncludeAllInterfaces | FLAGS.IncludeGateways | FLAGS.IncludeWins), IntPtr.Zero,
+            ERROR err = GetAdaptersAddresses(
+                (uint) family,
+                (uint) (FLAGS.IncludeAllInterfaces | FLAGS.IncludeGateways | FLAGS.IncludeWins | FLAGS.GAA_FLAG_INCLUDE_PREFIX), 
+                IntPtr.Zero,
                 IntPtr.Zero, ref outBufLen);
 
             if (ERROR.ERROR_BUFFER_OVERFLOW == err)
