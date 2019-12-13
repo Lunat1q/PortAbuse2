@@ -250,9 +250,9 @@ namespace PortAbuse2.Core.Listener
                     x => port.Protocol == x.Protocol && (port.SourcePort == x.UPortNumber || port.DestinationPort == x.UPortNumber));
             if (!portsMatch) return;
 
-            var fromMe = true; //TODO: Check if it's possible to cheap check if package is from or to me.
+            var fromMe = ipPacket.TimeToLive % 64 == 0; //TODO: Check if it's possible to cheap check if package is from or to me.
             var existedDetection = this.GetExistedDetection(fromMe, ipPacket);
-            //tcpPacket.
+
             if (existedDetection != null)
             {
                 this.OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,

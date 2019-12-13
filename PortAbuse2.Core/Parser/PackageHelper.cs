@@ -11,8 +11,8 @@ namespace PortAbuse2.Core.Parser
             ipPacket = packet.Extract<IPPacket>();
             udpPacket = null;
             tcpPacket = null;
-            if (ipPacket == null) return new PortInformation();
 
+            if (ipPacket == null) return new PortInformation();
             try
             {
                 switch (ipPacket.Protocol)

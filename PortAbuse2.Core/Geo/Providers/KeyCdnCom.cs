@@ -41,11 +41,11 @@ namespace PortAbuse2.Core.Geo.Providers
                         {
                             var geoData = data.Data.Geo;
                             loc.Isp = geoData.Isp;
-                            loc.CountryCode = geoData.CountryCode?.ToLower();
+                            loc.CountryCode = geoData.Country_Code?.ToLower();
                             loc.City = string.IsNullOrWhiteSpace(geoData.City)
                                 ? "Unknown"
                                 : $"{geoData.City}";
-                            loc.Country = string.IsNullOrWhiteSpace(geoData.CountryName) ? "Unknown" : geoData.CountryName;
+                            loc.Country = string.IsNullOrWhiteSpace(geoData.Country_Name) ? "Unknown" : geoData.Country_Name;
                             loc.Index = geoData.PostalCode == "" ? "" : geoData.PostalCode;
                         }
                         else
@@ -79,8 +79,8 @@ namespace PortAbuse2.Core.Geo.Providers
             public string Rdns { get; set; }
             public string Asn { get; set; }
             public string Isp { get; set; }
-            public string CountryName { get; set; }
-            public string CountryCode { get; set; }
+            public string Country_Name { get; set; }
+            public string Country_Code { get; set; }
             public string Region { get; set; }
             public string City { get; set; }
             public string PostalCode { get; set; }
