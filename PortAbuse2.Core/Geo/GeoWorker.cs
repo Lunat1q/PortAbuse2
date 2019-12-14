@@ -94,13 +94,13 @@ namespace PortAbuse2.Core.Geo
             {
                 provider = GeoProviders.FirstOrDefault(x => x.Name == providerName) ?? _selectedGeoService;
             }
-            var loc = await provider.GetLocationByIp(obj.ShowIp);
+            var loc = await provider.GetLocationByIp(obj.ShowIp.ToString());
 
             if (loc == null)
             {
                 foreach (var prov in GeoProviders.Where(x => x != provider))
                 {
-                    loc = await prov.GetLocationByIp(obj.ShowIp);
+                    loc = await prov.GetLocationByIp(obj.ShowIp.ToString());
                     if (loc != null) break;
                 }
             }

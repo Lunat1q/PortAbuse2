@@ -18,10 +18,7 @@ namespace PortAbuse2.Core.Result
         private long _dataTransfered;
         private GeoData _geo;
         private bool _from;
-
-        public string SourceIp => this.SourceAddress.ToString();
-        public string DestIp => this.DestinationAddress.ToString();
-
+        
         public bool Resolved { get; set; } = false;
 
 
@@ -99,7 +96,7 @@ namespace PortAbuse2.Core.Result
 
         public long DetectionStamp { get; set; }
 
-        public string ShowIp => this.From ? this.DestIp : this.SourceIp;
+        public IPAddress ShowIp => this.From ? this.DestinationAddress : this.SourceAddress;
 
         public string ExtraInfo
         {
@@ -185,7 +182,7 @@ namespace PortAbuse2.Core.Result
 
         public override string ToString()
         {
-            return this.ShowIp;
+            return this.ShowIp.ToString();
         }
 
         public ConnectionInformation()
@@ -207,7 +204,7 @@ namespace PortAbuse2.Core.Result
                 DataTransfered = ipPacket.PayloadLength,
                 ForceShow = forceShow
             };
-            ro.Hidden = CustomSettings.Instance.CheckIpHidden(selectedApp.Name, ro.ShowIp);
+            ro.Hidden = CustomSettings.Instance.CheckIpHidden(selectedApp.Name, ro.ShowIp.ToString());
             return ro;
         }
     }

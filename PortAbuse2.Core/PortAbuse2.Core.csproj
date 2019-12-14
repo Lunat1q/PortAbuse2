@@ -86,6 +86,7 @@
     <Compile Include="Ip\IpInterface.cs" />
     <Compile Include="Common\AppEntry.cs" />
     <Compile Include="Common\LabelNameAttribute.cs" />
+    <Compile Include="Listener\CaptureDevicesInfo.cs" />
     <Compile Include="Listener\CoreReceiver.cs" />
     <Compile Include="Listener\IResultReceiver.cs" />
     <Compile Include="Parser\Compressor.cs" />

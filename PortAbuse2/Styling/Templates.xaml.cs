@@ -56,11 +56,11 @@ namespace PortAbuse2.Styling
                 {
                     if (!ro.Hidden)
                     {
-                        CustomSettings.Instance.AddHiddenIp(ro.Application.Name, ro.ShowIp);
+                        CustomSettings.Instance.AddHiddenIp(ro.Application.Name, ro.ShowIp.ToString());
                     }
                     else
                     {
-                        CustomSettings.Instance.RemoveHiddenIp(ro.Application.Name, ro.ShowIp);
+                        CustomSettings.Instance.RemoveHiddenIp(ro.Application.Name, ro.ShowIp.ToString());
                     }
                     ro.Application.HiddenCount = CustomSettings.Instance.CountHiddenIpForApp(ro.Application.Name);
                 }

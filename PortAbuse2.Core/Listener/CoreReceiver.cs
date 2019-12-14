@@ -14,7 +14,6 @@ using PortAbuse2.Core.Parser;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
 using SharpPcap;
-using SharpPcap.Npcap;
 
 namespace PortAbuse2.Core.Listener
 {
@@ -26,12 +25,11 @@ namespace PortAbuse2.Core.Listener
 
         private readonly IResultReceiver _resultReceiver;
 
-        private readonly ConcurrentDictionary<string, PushableInfo> _resultDictionary = new ConcurrentDictionary<string, PushableInfo>();
-        
+        private readonly ConcurrentDictionary<IPAddress, PushableInfo> _resultDictionary = new ConcurrentDictionary<IPAddress, PushableInfo>();
         public bool ContinueCapturing { get; private set; } //A flag to check if packets are to be captured or not
         public AppEntry SelectedAppEntry;
         private IEnumerable<IApplicationExtension> _currentExtensions;
-        private readonly LinkedList<ICaptureDevice> _captureDevices = new LinkedList<ICaptureDevice>();
+        private readonly CaptureDevicesInfo _captureDevices = new CaptureDevicesInfo();
 
         //private readonly string _logFolder = "raw";
         private const int OldTimeLimitSeconds = 30;
@@ -194,29 +192,13 @@ namespace PortAbuse2.Core.Listener
             Task.Run(this.PushNewToReceiver);
             this.InitExtensions();
 
-            this._captureDevices.Clear();
-            // метод для получения списка устройств
-            CaptureDeviceList deviceList = CaptureDeviceList.Instance;
-            foreach (var device in deviceList)
-            {
-                if (!(device is NpcapDevice pCapDevice)) continue;
-                var winDevice = pCapDevice;
-                if (winDevice.Name == selectedIpInterface?.HwName)
-                {
-                    this._captureDevices.AddLast(winDevice);
-                }
-            }
 
-            if (!this._captureDevices.Any()) //просрали девайс, берем первый и молимся
-                this._captureDevices.AddLast(deviceList.First()); // if we take all -> huge perf fckup
+            this._captureDevices.SelectedCaptureDevice(selectedIpInterface);
 
             foreach (var device in this._captureDevices)
             {
-                // регистрируем событие, которое срабатывает, когда пришел новый пакет
                 device.OnPacketArrival += this.Receiver_OnPacketArrival;
-                // открываем в режиме promiscuous, поддерживается также нормальный режим
                 device.Open(DeviceMode.Normal, 1000);
-                // начинаем захват пакетов
                 device.StartCapture();
             }
 
@@ -224,7 +206,6 @@ namespace PortAbuse2.Core.Listener
 
         private void Receiver_OnPacketArrival(object sender, CaptureEventArgs e)
         {
-            // парсинг всего пакета
             try
             {
                 var packet = Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
@@ -250,9 +231,8 @@ namespace PortAbuse2.Core.Listener
                     x => port.Protocol == x.Protocol && (port.SourcePort == x.UPortNumber || port.DestinationPort == x.UPortNumber));
             if (!portsMatch) return;
 
-            var fromMe = ipPacket.TimeToLive % 64 == 0; //TODO: Check if it's possible to cheap check if package is from or to me.
+            var fromMe = this.IsPacketSentFromMe(packet, ipPacket);
             var existedDetection = this.GetExistedDetection(fromMe, ipPacket);
-
             if (existedDetection != null)
             {
                 this.OnReceived(ipPacket.DestinationAddress, ipPacket.SourceAddress, GetData(tcpPacket, udpPacket), fromMe,
@@ -274,7 +254,22 @@ namespace PortAbuse2.Core.Listener
 
             this.PostProcess(ro);
         }
-        
+
+        private bool IsPacketSentFromMe(Packet packet, IPPacket ipPacket)
+        {
+            if (packet is EthernetPacket ethPacket)
+            {
+                if (this._captureDevices.HavePhysicalAddressesInitialized())
+                {
+                    return this._captureDevices.IsSelectedDeviceAddress(ethPacket.SourceHardwareAddress);
+                }
+
+                return this._captureDevices.IsLocalDeviceAddress(ethPacket.SourceHardwareAddress) && ipPacket.TimeToLive % 64 == 0;
+            }
+
+            return ipPacket.TimeToLive % 64 == 0;
+        }
+
         private void AddToResult(ConnectionInformation ro)
         {
             this._resultDictionary.TryAdd(ro.ShowIp, new PushableInfo(ro));
@@ -293,7 +288,7 @@ namespace PortAbuse2.Core.Listener
 
         private ConnectionInformation GetExistedDetection(bool fromMe, IPPacket ipPacket)
         {
-            var showIp = fromMe ? ipPacket.DestinationAddress.ToString() : ipPacket.SourceAddress.ToString();
+            var showIp = fromMe ? ipPacket.DestinationAddress : ipPacket.SourceAddress;
 
             try
             {
@@ -311,10 +306,10 @@ namespace PortAbuse2.Core.Listener
             return null;
         }
 
-        private void OnReceived(IPAddress ipdest, IPAddress ipsource, byte[] data, bool direction,
-            ConnectionInformation resultobject, PortInformation portInfo)
+        private void OnReceived(IPAddress ipDest, IPAddress ipSource, byte[] data, bool direction,
+            ConnectionInformation resultObject, PortInformation portInfo)
         {
-            this.Received?.Invoke(ipdest, ipsource, data, direction, resultobject, portInfo);
+            this.Received?.Invoke(ipDest, ipSource, data, direction, resultObject, portInfo);
         }
 
         private class PushableInfo
@@ -326,7 +321,7 @@ namespace PortAbuse2.Core.Listener
 
             public bool IsPushed { get; set; }
 
-            public ConnectionInformation Data { get; set; }
+            public ConnectionInformation Data { get; }
         }
     }
 }

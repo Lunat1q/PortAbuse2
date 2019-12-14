@@ -35,7 +35,7 @@ namespace PortAbuse2.Core.WindowsFirewall
 
         public static void DoInSecBlock(ConnectionInformation connectionInformation, int sec = 30, BlockMode blockMode = BlockMode.BlockAll)
         {
-            if (connectionInformation.ShowIp != "")
+            if (connectionInformation.ShowIp.ToString() != "")
             {
                 DoBlock(connectionInformation, false, blockMode);
                 var td = new Thread(() => UnBlockInSeconds(connectionInformation, sec))
@@ -88,9 +88,9 @@ namespace PortAbuse2.Core.WindowsFirewall
         public static void DoBlock(ConnectionInformation connectionInformation, bool endlessBlock, BlockMode blockMode)
         {
             if (connectionInformation == null) return;
-            if (connectionInformation.ShowIp != "")
+            var sRemIp = connectionInformation.ShowIp.ToString();
+            if (sRemIp != "")
             {
-                var sRemIp = connectionInformation.ShowIp;
                 var blockName = sRemIp + (endlessBlock ? EndlessBlockSuffix : BlockSuffix);
 
                 if (blockMode == BlockMode.BlockAll || blockMode == BlockMode.BlockInput)

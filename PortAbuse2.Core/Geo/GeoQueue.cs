@@ -4,7 +4,7 @@ namespace PortAbuse2.Core.Geo
 {
     public class GeoQueue
     {
-        public string Ip => this.Object.ShowIp;
+        public string Ip => this.Object.ShowIp.ToString();
         public string GeoProvider { get; }
         public bool RequestDone { get; }
         public bool RequestInProgress { get; }

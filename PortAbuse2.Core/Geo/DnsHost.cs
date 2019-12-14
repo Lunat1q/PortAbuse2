@@ -10,7 +10,7 @@ namespace PortAbuse2.Core.Geo
     {
         public static async void FillIpHost(ConnectionInformation obj, bool minimize)
         {
-            var ip = IPAddress.Parse(obj.ShowIp);
+            var ip = obj.ShowIp;
             string hostName;
             try
             {
@@ -18,7 +18,7 @@ namespace PortAbuse2.Core.Geo
             }
             catch (SocketException)
             {
-                hostName = obj.ShowIp.Replace('.', '-') + ".NoHost";
+                hostName = obj.ShowIp.ToString().Replace('.', '-') + ".NoHost";
             }
             obj.DetectedHostname = hostName;
             obj.Hostname = !minimize ? hostName : MinimizeHostname(hostName);
