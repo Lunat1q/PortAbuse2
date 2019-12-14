@@ -18,7 +18,7 @@ namespace PortAbuse2.Applications
             if (smallIcon)
                 flags |= SHGFI_SMALLICON;
 
-            uint attributes = FILE_ATTRIBUTE_NORMAL;
+            uint attributes = FILE_ATTRIBUTE_TEMPORARY;
             if (isDirectory)
                 attributes |= FILE_ATTRIBUTE_DIRECTORY;
 
@@ -31,10 +31,16 @@ namespace PortAbuse2.Applications
                         (uint) Marshal.SizeOf(typeof(SHFILEINFO)),
                         flags))
                 {
-                    return System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
+                    var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
                         shfi.hIcon,
-                        Int32Rect.Empty,
-                        BitmapSizeOptions.FromEmptyOptions());
+                        new Int32Rect(0, 0, 32, 32),
+                        BitmapSizeOptions.FromEmptyOptions()
+                    ).Clone();
+
+                    DestroyIcon(shfi.hIcon);
+
+                    return img;
+
                 }
                 return null;
             }
@@ -57,6 +63,9 @@ namespace PortAbuse2.Applications
         [DllImport("shell32")]
         private static extern int SHGetFileInfo(string pszPath, uint dwFileAttributes, out SHFILEINFO psfi,
             uint cbFileInfo, uint flags);
+
+        [DllImport("User32.dll")]
+        public static extern int DestroyIcon(IntPtr hIcon);
 
 #pragma warning disable IDE0051 // Remove unused private members
         private const uint FILE_ATTRIBUTE_READONLY = 0x00000001;

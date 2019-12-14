@@ -48,7 +48,7 @@ namespace PortAbuse2.Core.Common
 
         public override string ToString()
         {
-            return $"{Name} P: {string.Join(", ", this.AppPort.Select(x => x.ToString()))}";
+            return $"{this.Name} P: {string.Join(", ", this.AppPort.Select(x => x.ToString()))}";
         }
     }
 }

@@ -10,11 +10,13 @@ namespace PortAbuse2.Applications
 
         public ImageSource Icon
         {
-            get
-            {
-                return this._icon ?? Images.LoadImageSourceFromResource("empty.png");
-            }
-            set { this._icon = value; }
+            get => this._icon ?? Images.LoadImageSourceFromResource("empty.png");
+            set => this._icon = value;
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
         }
     }
 }
