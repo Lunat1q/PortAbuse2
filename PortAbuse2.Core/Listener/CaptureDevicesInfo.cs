@@ -29,7 +29,6 @@ namespace PortAbuse2.Core.Listener
 
         private void Init()
         {
-            this._localAddresses.Add(new PhysicalAddress(new byte[] {1, 0, 1, 0, 0, 0}));
         }
 
         public void Add(NpcapDevice device)
@@ -63,12 +62,6 @@ namespace PortAbuse2.Core.Listener
             return this._captureDevices.GetEnumerator();
         }
 
-        public bool IsLocalDeviceAddress(PhysicalAddress address)
-        {
-            var ret = this._localAddresses.Contains(address);
-            return ret;
-        }
-
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
@@ -98,6 +91,12 @@ namespace PortAbuse2.Core.Listener
 
             if (!this.Any()) //no device found, let's make an assumption and pick first
                 this.Add(deviceList.OfType<NpcapDevice>().First()); // if we take all -> huge perf fckup
+        }
+
+        public bool IsVirtualMac(PhysicalAddress ethPacketSourceHardwareAddress)
+        {
+            var bytes = ethPacketSourceHardwareAddress.GetAddressBytes();
+            return bytes[1] == 0 && bytes[3] == 0 && bytes[4] == 0 && bytes[5] == 0;
         }
     }
 }

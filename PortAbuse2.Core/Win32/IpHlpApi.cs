@@ -27,7 +27,7 @@ namespace PortAbuse2.Core.Win32
             AF_INET6 = 23,
 
             /// <summary>
-            /// Unpecified. Includes both IPv4 and IPv4
+            /// Unpecified. Includes both IPv4 and IPv6
             /// </summary>
             AF_UNSPEC = 0
         }

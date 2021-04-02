@@ -264,11 +264,12 @@ namespace PortAbuse2.Core.Listener
                     return this._captureDevices.IsSelectedDeviceAddress(ethPacket.SourceHardwareAddress);
                 }
 
-                return this._captureDevices.IsLocalDeviceAddress(ethPacket.SourceHardwareAddress) && ipPacket.TimeToLive % 64 == 0;
+                return this._captureDevices.IsVirtualMac(ethPacket.SourceHardwareAddress) && ipPacket.TimeToLive % 64 == 0;
             }
 
             return ipPacket.TimeToLive % 64 == 0;
         }
+
 
         private void AddToResult(ConnectionInformation ro)
         {

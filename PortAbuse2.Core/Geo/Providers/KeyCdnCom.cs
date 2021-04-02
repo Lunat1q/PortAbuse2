@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;   
 using PortAbuse2.Core.Result;
 using TiqUtils.Serialize;
@@ -36,7 +35,7 @@ namespace PortAbuse2.Core.Geo.Providers
                         : new StreamReader(responseStream, true))
                     {
                         var response2 = sr.ReadToEnd();
-                        var data = Json.DeserializeDataFromString<ProviderGeoData>(response2);
+                        var data = response2.DeserializeDataFromString<ProviderGeoData>();
                         if (data?.Data?.Geo != null)
                         {
                             var geoData = data.Data.Geo;
@@ -46,7 +45,7 @@ namespace PortAbuse2.Core.Geo.Providers
                                 ? "Unknown"
                                 : $"{geoData.City}";
                             loc.Country = string.IsNullOrWhiteSpace(geoData.Country_Name) ? "Unknown" : geoData.Country_Name;
-                            loc.Index = geoData.PostalCode == "" ? "" : geoData.PostalCode;
+                            loc.Index = string.IsNullOrWhiteSpace(geoData.Postal_Code) ? "" : geoData.Postal_Code;
                         }
                         else
                         {
@@ -83,7 +82,7 @@ namespace PortAbuse2.Core.Geo.Providers
             public string Country_Code { get; set; }
             public string Region { get; set; }
             public string City { get; set; }
-            public string PostalCode { get; set; }
+            public string Postal_Code { get; set; }
             public string ContinentCode { get; set; }
             public string Latitude { get; set; }
             public string Longitude { get; set; }

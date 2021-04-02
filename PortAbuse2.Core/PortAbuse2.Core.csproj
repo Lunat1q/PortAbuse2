@@ -68,8 +68,11 @@
     <Compile Include="Common\BytesParser.cs" />
     <Compile Include="Common\DateTimeExtensions.cs" />
     <Compile Include="Common\ExThread.cs" />
+    <Compile Include="Common\InstallationValidator.cs" />
     <Compile Include="Common\PaNotified.cs" />
     <Compile Include="Common\CustomSettings.cs" />
+    <Compile Include="Common\ResultType.cs" />
+    <Compile Include="Common\ValidationResult.cs" />
     <Compile Include="Files\FileAccess.cs" />
     <Compile Include="Geo\DnsHost.cs" />
     <Compile Include="Geo\GeoQueue.cs" />

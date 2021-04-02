@@ -1,9 +1,11 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
 using PortAbuse2.Annotations;
 using PortAbuse2.Controls;
+using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Ip;
 using PortAbuse2.Core.Listener;
 using PortAbuse2.Core.Result;
@@ -105,6 +107,12 @@ namespace PortAbuse2.ViewModels
             {
                 this.DetectedConnections.Add(result);
             }
+        }
+
+        public ValidationResult Validate()
+        {
+            var validator = new InstallationValidator();
+            return validator.Validate();
         }
     }
 }

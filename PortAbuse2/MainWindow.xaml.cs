@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -8,14 +9,13 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using MahApps.Metro.Controls.Dialogs;
 using PortAbuse2.Applications;
-using PortAbuse2.Controls;
 using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Ip;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
 using PortAbuse2.KeyCapture;
-using PortAbuse2.Listener;
 using PortAbuse2.ViewModels;
 using TiqUtils.TypeSpecific;
 using Admin = PortAbuse2.Common.Admin;
@@ -54,6 +54,8 @@ namespace PortAbuse2
 
             CustomSettings.Load(Properties.Settings.Default.CustomSettings);
 
+            this.Loaded += new RoutedEventHandler(this.PostLoad);
+
             this.LoadInterfaces();
 
             this.AppListComboBox.ItemsSource = this._allAppWithPorts;
@@ -69,6 +71,38 @@ namespace PortAbuse2
 #if DEBUG
             this.FillDummyData();
 #endif
+        }
+
+        private void PostLoad(object sender, RoutedEventArgs e)
+        {
+            Task.Run(this.Validate);
+        }
+
+        private async Task Validate()
+        {
+            var validationResult = this._vm.Validate();
+            if (validationResult.Result != ResultType.NoIssues && validationResult.Messages != null && validationResult.Messages.Any())
+            {
+                var dialogSettings = new MetroDialogSettings
+                {
+                    AffirmativeButtonText = "Download",
+                    NegativeButtonText = "Whatever",
+                    AnimateShow = true,
+                    AnimateHide = false
+                };
+                await this.Dispatcher.InvokeAsync(async () =>
+                {
+                    var result = await this.ShowMessageAsync(
+                        $"Validation failed with {validationResult.Result} message",
+                        string.Join("\r\n", validationResult.Messages),
+                        MessageDialogStyle.AffirmativeAndNegative,
+                        dialogSettings);
+                    if (result == MessageDialogResult.Affirmative)
+                    {
+                        Process.Start("https://nmap.org/npcap/");
+                    }
+                });
+            }
         }
 
         // ReSharper disable once UnusedMember.Local
