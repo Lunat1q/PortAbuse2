@@ -16,8 +16,8 @@ Well, sometimes you might need to track what connections are being established b
 - To reveal someone IP and extra geo information.
 
 ## Hotkeys
-`Ctrl` + `P` - Bring to the top and make it the topmost.
-`Ctrl` + `B` - Block all new connections for the current application.
+- `Ctrl` + `P` - Bring to the top and make it the topmost.
+- `Ctrl` + `B` - Block all new connections for the current application.
 
 #### Here are some examples of the interface:
 ![image](https://user-images.githubusercontent.com/16973172/113400407-70bba080-93aa-11eb-9838-675879b41aaa.png)
