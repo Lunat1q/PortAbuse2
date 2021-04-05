@@ -10,17 +10,16 @@ namespace PortAbuse2.Core.Port
     {
         public static IEnumerable<AppEntry> GetApplicationsWithPorts()
         {
-            var apps = new List<AppEntry>();
+            var apps = new Dictionary<int, AppEntry>();
             try
             {
                 var tcps = SocketConnectionsReader.GetAllTcpConnections();
                 foreach (var tcp in tcps)
                 {
-                    var app = apps.FirstOrDefault(x => x.InstancePid == tcp.ProcessId);
                     if (tcp.ProcessName == null && tcp.FullName == null) continue;
-                    if (app == null)
+                    if (!apps.TryGetValue(tcp.ProcessId, out var app))
                     {
-                        var newEntry = new AppEntry
+                        app = new AppEntry
                         {
                             InstancePid = tcp.ProcessId,
                             Name = tcp.ProcessName,
@@ -28,23 +27,23 @@ namespace PortAbuse2.Core.Port
                             FullName = tcp.FullName,
                             HiddenCount = CustomSettings.Instance.CountHiddenIpForApp(tcp.ProcessName)
                         };
-                        //newEntry.AddNewPort(tcp.RemotePort, tcp.Protocol);
-                        newEntry.AddNewPort(tcp.LocalPort, tcp.Protocol);
-                        apps.Add(newEntry);
+                        app.AddNewPort(tcp.LocalPort, tcp.Protocol);
+                        apps.Add(tcp.ProcessId, app);
                     }
                     else
                     {
-                        //app.AddNewPort(tcp.RemotePort, tcp.Protocol);
                         app.AddNewPort(tcp.LocalPort, tcp.Protocol);
                     }
+
+                    app.TcpConnections++;
                 }
+
                 var udps = SocketConnectionsReader.GetAllUdpConnections();
                 foreach (var udp in udps)
                 {
-                    var app = apps.FirstOrDefault(x => x.InstancePid == udp.ProcessId);
-                    if (app == null)
+                    if (!apps.TryGetValue(udp.ProcessId, out var app))
                     {
-                        var newEntry = new AppEntry
+                        app = new AppEntry
                         {
                             InstancePid = udp.ProcessId,
                             Name = udp.ProcessName,
@@ -52,20 +51,22 @@ namespace PortAbuse2.Core.Port
                             FullName = udp.FullName,
                             HiddenCount = CustomSettings.Instance.CountHiddenIpForApp(udp.ProcessName)
                         };
-                        newEntry.AddNewPort(udp.LocalPort, udp.Protocol);
-                        apps.Add(newEntry);
+                        app.AddNewPort(udp.LocalPort, udp.Protocol);
+                        apps.Add(udp.ProcessId, app);
                     }
                     else
                     {
                         app.AddNewPort(udp.LocalPort, udp.Protocol);
                     }
+
+                    app.UdpConnections++;
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
             }
-            return apps.OrderBy(x=>x.Name);
+            return apps.Values.OrderBy(x => x.Name);
         }
     }
 }

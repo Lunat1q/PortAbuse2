@@ -11,6 +11,7 @@ using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Geo;
 using PortAbuse2.Core.Ip;
 using PortAbuse2.Core.Parser;
+using PortAbuse2.Core.Port;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
 using SharpPcap;
@@ -26,8 +27,6 @@ namespace PortAbuse2.Core.Listener
         private readonly IResultReceiver _resultReceiver;
 
         private readonly ConcurrentDictionary<IPAddress, PushableInfo> _resultDictionary = new ConcurrentDictionary<IPAddress, PushableInfo>();
-        public bool ContinueCapturing { get; private set; } //A flag to check if packets are to be captured or not
-        public AppEntry SelectedAppEntry;
         private IEnumerable<IApplicationExtension> _currentExtensions;
         private readonly CaptureDevicesInfo _captureDevices = new CaptureDevicesInfo();
 
@@ -46,12 +45,32 @@ namespace PortAbuse2.Core.Listener
             ConnectionInformation connectionInformation,
             PortInformation portInfo
         );
+
         protected CoreReceiver(IResultReceiver receiver, bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false)
         {
             this._resultReceiver = receiver;
             this._minimizeHostname = minimizeHostname;
             this._hideOld = hideOld;
             this.HideSmallPackets = hideSmall;
+        }
+        /// <summary>
+        /// A flag to check if packets are to be captured or not
+        /// </summary>
+        public bool ContinueCapturing { get; private set; }
+
+        public AppEntry SelectedAppEntry
+        {
+            get => this._selectedAppEntry;
+            set
+            {
+                this._selectedAppEntry = value;
+                this.UpdatePortStorage();
+            }
+        }
+
+        private void UpdatePortStorage()
+        {
+            this._portStorage = new PortStorage(this._selectedAppEntry.AppPort);
         }
 
         public void Stop()
@@ -79,6 +98,8 @@ namespace PortAbuse2.Core.Listener
         public bool BlockNew = false;
         public bool HideSmallPackets;
         private bool _forceShowHiddenIps;
+        private AppEntry _selectedAppEntry;
+        private PortStorage _portStorage;
 
 
         public void HideOld()
@@ -190,6 +211,7 @@ namespace PortAbuse2.Core.Listener
             this.Clear();
             Task.Run(this.HideOldTask);
             Task.Run(this.PushNewToReceiver);
+            Task.Run(this.UpdateConnectionsNumber);
             this.InitExtensions();
 
 
@@ -202,6 +224,19 @@ namespace PortAbuse2.Core.Listener
                 device.StartCapture();
             }
 
+        }
+
+        private async Task UpdateConnectionsNumber()
+        {
+            var processIds = new HashSet<int> {this.SelectedAppEntry.InstancePid};
+            while (this.ContinueCapturing)
+            {
+                var tcpConnectionsForProcess = SocketConnectionsReader.GetActiveTcpConnectionsForProcess(processIds);
+                var udpConnectionsForProcess = SocketConnectionsReader.GetActiveUdpConnectionsForProcess(processIds);
+                this.SelectedAppEntry.TcpConnections = tcpConnectionsForProcess.Count();
+                this.SelectedAppEntry.UdpConnections = udpConnectionsForProcess.Count();
+                await Task.Delay(10000);
+            }
         }
 
         private void Receiver_OnPacketArrival(object sender, CaptureEventArgs e)
@@ -227,8 +262,7 @@ namespace PortAbuse2.Core.Listener
             var port = PackageHelper.GetPorts(packet, out var ipPacket, out var tcpPacket,
                 out var udpPacket);
 
-            var portsMatch = this.SelectedAppEntry.AppPort.Any(
-                    x => port.Protocol == x.Protocol && (port.SourcePort == x.UPortNumber || port.DestinationPort == x.UPortNumber));
+            var portsMatch = this._portStorage.Any(port);
             if (!portsMatch) return;
 
             var fromMe = this.IsPacketSentFromMe(packet, ipPacket);

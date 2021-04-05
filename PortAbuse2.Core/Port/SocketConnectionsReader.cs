@@ -50,7 +50,7 @@ namespace PortAbuse2.Core.Port
         /// This exception may be thrown by the function Marshal.AllocHGlobal when there
         /// is insufficient memory to satisfy the request.
         /// </exception>
-        public static List<TcpProcessRecord> GetAllTcpConnections()
+        public static IEnumerable<TcpProcessRecord> GetAllTcpConnections()
         {
             var bufferSize = 0;
             var tcpTableRecords = new List<TcpProcessRecord>();
@@ -82,29 +82,33 @@ namespace PortAbuse2.Core.Port
                 var tcpRecordsTable = (MIB_TCPTABLE_OWNER_PID)
                     Marshal.PtrToStructure(tcpTableRecordsPtr,
                         typeof(MIB_TCPTABLE_OWNER_PID));
-                var tableRowPtr = (IntPtr)((long)tcpTableRecordsPtr +
-                                              Marshal.SizeOf(tcpRecordsTable.dwNumEntries));
+                var tableRowPtr = (IntPtr) ((long) tcpTableRecordsPtr +
+                                            Marshal.SizeOf(tcpRecordsTable.dwNumEntries));
 
-                var processes = Process.GetProcesses();
+                var processes = new HashSet<int>(Process.GetProcesses().Select(x => x.Id));
 
                 // Reading and parsing the TCP records one by one from the table and
                 // storing them in a list of 'TcpProcessRecord' structure type objects.
                 for (var row = 0; row < tcpRecordsTable.dwNumEntries; row++)
                 {
-                    var tcpRow = (MIB_TCPROW_OWNER_PID)Marshal.
-                        PtrToStructure(tableRowPtr, typeof(MIB_TCPROW_OWNER_PID));
+                    var tcpRow =
+                        (MIB_TCPROW_OWNER_PID) Marshal.PtrToStructure(tableRowPtr, typeof(MIB_TCPROW_OWNER_PID));
                     tcpTableRecords.Add(new TcpProcessRecord(
                         new IPAddress(tcpRow.localAddr),
                         new IPAddress(tcpRow.remoteAddr),
-                        BitConverter.ToUInt16(new[] {
+                        BitConverter.ToUInt16(new[]
+                        {
                             tcpRow.localPort[1],
-                            tcpRow.localPort[0] }, 0),
-                        BitConverter.ToUInt16(new[] {
+                            tcpRow.localPort[0]
+                        }, 0),
+                        BitConverter.ToUInt16(new[]
+                        {
                             tcpRow.remotePort[1],
-                            tcpRow.remotePort[0] }, 0),
+                            tcpRow.remotePort[0]
+                        }, 0),
                         tcpRow.owningPid, tcpRow.state,
-                        processes));
-                    tableRowPtr = (IntPtr)((long)tableRowPtr + Marshal.SizeOf(tcpRow));
+                        processes.Any(x => x == tcpRow.owningPid)));
+                    tableRowPtr = (IntPtr) ((long) tableRowPtr + Marshal.SizeOf(tcpRow));
                 }
             }
             catch (OutOfMemoryException outOfMemoryException)
@@ -119,8 +123,79 @@ namespace PortAbuse2.Core.Port
             {
                 Marshal.FreeHGlobal(tcpTableRecordsPtr);
             }
+
             return tcpTableRecords.Distinct()
                 .ToList();
+        }
+
+        public static IEnumerable<TcpProcessRecord> GetActiveTcpConnectionsForProcess(IEnumerable<int> pIds)
+        {
+            var bufferSize = 0;
+            var tcpTableRecords = new List<TcpProcessRecord>();
+
+            var result = GetExtendedTcpTable(IntPtr.Zero, ref bufferSize, true, AF_INET,
+                TcpTableClass.TCP_TABLE_OWNER_PID_ALL);
+
+            var tcpTableRecordsPtr = Marshal.AllocHGlobal(bufferSize);
+
+            try
+            {
+                result = GetExtendedTcpTable(tcpTableRecordsPtr, ref bufferSize, true, AF_INET,
+                    TcpTableClass.TCP_TABLE_OWNER_PID_ALL);
+
+                if (result != 0 || pIds == null)
+                    return new List<TcpProcessRecord>();
+
+                var tcpRecordsTable = (MIB_TCPTABLE_OWNER_PID)
+                    Marshal.PtrToStructure(tcpTableRecordsPtr,
+                        typeof(MIB_TCPTABLE_OWNER_PID));
+                var tableRowPtr = (IntPtr) ((long) tcpTableRecordsPtr + Marshal.SizeOf(tcpRecordsTable.dwNumEntries));
+
+                var localPIds = new HashSet<int>(pIds);
+                for (var row = 0; row < tcpRecordsTable.dwNumEntries; row++)
+                {
+                    var tcpRow =
+                        (MIB_TCPROW_OWNER_PID) Marshal.PtrToStructure(tableRowPtr, typeof(MIB_TCPROW_OWNER_PID));
+                    if (localPIds.Contains(tcpRow.owningPid))
+                    {
+                        tcpTableRecords.Add(
+                            new TcpProcessRecord(
+                                new IPAddress(tcpRow.localAddr),
+                                new IPAddress(tcpRow.remoteAddr),
+                                BitConverter.ToUInt16(new[]
+                                {
+                                    tcpRow.localPort[1],
+                                    tcpRow.localPort[0]
+                                }, 0),
+                                BitConverter.ToUInt16(new[]
+                                {
+                                    tcpRow.remotePort[1],
+                                    tcpRow.remotePort[0]
+                                }, 0),
+                                tcpRow.owningPid,
+                                tcpRow.state,
+                                true
+                            )
+                        );
+                    }
+
+                    tableRowPtr = (IntPtr) ((long) tableRowPtr + Marshal.SizeOf(tcpRow));
+                }
+            }
+            catch (OutOfMemoryException outOfMemoryException)
+            {
+                Logging.ErrorLog("Out Of Memory: " + outOfMemoryException.Message);
+            }
+            catch (Exception exception)
+            {
+                Logging.ErrorLog("Exception: " + exception.Message);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(tcpTableRecordsPtr);
+            }
+
+            return tcpTableRecords;
         }
 
         /// <summary>
@@ -134,11 +209,11 @@ namespace PortAbuse2.Core.Port
         /// This exception may be thrown by the function Marshal.AllocHGlobal when there
         /// is insufficient memory to satisfy the request.
         /// </exception>
-        public static List<UdpProcessRecord> GetAllUdpConnections()
+        public static IEnumerable<UdpProcessRecord> GetAllUdpConnections()
         {
             var bufferSize = 0;
             var udpTableRecords = new List<UdpProcessRecord>();
-            
+
             // Getting the size of UDP table, that is returned in 'bufferSize' variable.
             var result = GetExtendedUdpTable(IntPtr.Zero, ref bufferSize, true,
                 AF_INET, UdpTableClass.UDP_TABLE_OWNER_PID);
@@ -165,10 +240,10 @@ namespace PortAbuse2.Core.Port
                 // to get number of entries of the specified TCP table structure.
                 var udpRecordsTable = (MIB_UDPTABLE_OWNER_PID)
                     Marshal.PtrToStructure(udpTableRecordPtr, typeof(MIB_UDPTABLE_OWNER_PID));
-                var tableRowPtr = (IntPtr)((long)udpTableRecordPtr +
-                                              Marshal.SizeOf(udpRecordsTable.dwNumEntries));
+                var tableRowPtr = (IntPtr) ((long) udpTableRecordPtr +
+                                            Marshal.SizeOf(udpRecordsTable.dwNumEntries));
 
-                var processes = Process.GetProcesses();
+                var processes = new HashSet<int>(Process.GetProcesses().Select(x => x.Id));
 
                 // Reading and parsing the UDP records one by one from the table and
                 // storing them in a list of 'UdpProcessRecord' structure type objects.
@@ -176,9 +251,13 @@ namespace PortAbuse2.Core.Port
                 {
                     var udpRow = (MIB_UDPROW_OWNER_PID)
                         Marshal.PtrToStructure(tableRowPtr, typeof(MIB_UDPROW_OWNER_PID));
-                    udpTableRecords.Add(new UdpProcessRecord(udpRow.LocalAddress,
-                        udpRow.LocalPort, udpRow.PID, processes));
-                    tableRowPtr = (IntPtr)((long)tableRowPtr + Marshal.SizeOf(udpRow));
+                    udpTableRecords.Add(
+                        new UdpProcessRecord(
+                            udpRow.LocalAddress,
+                            udpRow.LocalPort,
+                            udpRow.PID,
+                            processes.Any(x => x == udpRow.PID)));
+                    tableRowPtr = (IntPtr) ((long) tableRowPtr + Marshal.SizeOf(udpRow));
                 }
             }
             catch (OutOfMemoryException outOfMemoryException)
@@ -193,8 +272,67 @@ namespace PortAbuse2.Core.Port
             {
                 Marshal.FreeHGlobal(udpTableRecordPtr);
             }
+
             return udpTableRecords.Distinct()
                 .ToList();
+        }
+
+        public static IEnumerable<UdpProcessRecord> GetActiveUdpConnectionsForProcess(IEnumerable<int> pIds)
+        {
+            var bufferSize = 0;
+            var udpTableRecords = new List<UdpProcessRecord>();
+
+            var result = GetExtendedUdpTable(IntPtr.Zero, ref bufferSize, true,
+                AF_INET, UdpTableClass.UDP_TABLE_OWNER_PID);
+
+            var udpTableRecordPtr = Marshal.AllocHGlobal(bufferSize);
+
+            try
+            {
+                result = GetExtendedUdpTable(udpTableRecordPtr, ref bufferSize, true,
+                    AF_INET, UdpTableClass.UDP_TABLE_OWNER_PID);
+
+                if (result != 0 || pIds == null)
+                    return new List<UdpProcessRecord>();
+
+                var udpRecordsTable = (MIB_UDPTABLE_OWNER_PID)
+                    Marshal.PtrToStructure(udpTableRecordPtr, typeof(MIB_UDPTABLE_OWNER_PID));
+                var tableRowPtr = (IntPtr) ((long) udpTableRecordPtr +
+                                            Marshal.SizeOf(udpRecordsTable.dwNumEntries));
+
+                var localPIds = new HashSet<int>(pIds);
+                for (var i = 0; i < udpRecordsTable.dwNumEntries; i++)
+                {
+                    var udpRow =
+                        (MIB_UDPROW_OWNER_PID) Marshal.PtrToStructure(tableRowPtr, typeof(MIB_UDPROW_OWNER_PID));
+                    if (localPIds.Contains(udpRow.PID))
+                    {
+                        udpTableRecords.Add(
+                            new UdpProcessRecord(
+                                udpRow.LocalAddress,
+                                udpRow.LocalPort,
+                                udpRow.PID,
+                                true));
+                    }
+
+                    tableRowPtr = (IntPtr) ((long) tableRowPtr + Marshal.SizeOf(udpRow));
+                }
+            }
+
+            catch (OutOfMemoryException outOfMemoryException)
+            {
+                Logging.ErrorLog("Out Of Memory: " + outOfMemoryException.Message);
+            }
+            catch (Exception exception)
+            {
+                Logging.ErrorLog("Exception: " + exception.Message);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(udpTableRecordPtr);
+            }
+
+            return udpTableRecords;
         }
 
 
@@ -339,7 +477,7 @@ namespace PortAbuse2.Core.Port
         public MibTcpState State { get; }
         public override Protocol Protocol => Protocol.Tcp;
         public TcpProcessRecord(IPAddress localIp, IPAddress remoteIp, ushort localPort,
-            ushort remotePort, int pId, MibTcpState state, Process[] processList) : base(localIp, localPort, pId, processList)
+            ushort remotePort, int pId, MibTcpState state, bool isValidProcess) : base(localIp, localPort, pId, isValidProcess)
         {
             this.RemoteAddress = remoteIp;
             this.RemotePort = remotePort;
@@ -358,12 +496,14 @@ namespace PortAbuse2.Core.Port
 
         public abstract Protocol Protocol { get; }
 
-        protected ProcessRecordBase(IPAddress localAddress, uint localPort, int pId, IEnumerable<Process> processList)
+        protected ProcessRecordBase(IPAddress localAddress, uint localPort, int pId, bool isValidProcess)
         {
             this.LocalAddress = localAddress;
             this.LocalPort = localPort;
             this.ProcessId = pId;
-            if (processList.All(process => process.Id != pId)) return;
+
+            if (!isValidProcess) return;
+
             var proc = Process.GetProcessById(this.ProcessId);
             this.ProcessName = proc.ProcessName;
             if (SystemProcess(this.ProcessName)) return;
@@ -392,8 +532,8 @@ namespace PortAbuse2.Core.Port
     public class UdpProcessRecord : ProcessRecordBase
     {
         public override Protocol Protocol => Protocol.Udp;
-        public UdpProcessRecord(IPAddress localAddress, uint localPort, int pId, IEnumerable<Process> processList) : 
-            base(localAddress, localPort, pId, processList)
+        public UdpProcessRecord(IPAddress localAddress, uint localPort, int pId, bool isValidProcess) : 
+            base(localAddress, localPort, pId, isValidProcess)
         {
             
         }

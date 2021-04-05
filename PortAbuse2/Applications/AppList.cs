@@ -21,15 +21,19 @@ namespace PortAbuse2.Applications
                 {
                     if (item.AppPort.Any() || showAll)
                     {
-                        list.Add(new AppIconEntry
-                        {
-                            InstancePid = item.InstancePid,
-                            Name = item.Name,
-                            Title = item.Title,
-                            AppPort = item.AppPort,
-                            FullName = item.FullName,
-                            HiddenCount = CustomSettings.Instance.CountHiddenIpForApp(item.Name)
-                        });
+                        list.Add(
+                            new AppIconEntry
+                            {
+                                InstancePid = item.InstancePid,
+                                Name = item.Name,
+                                Title = item.Title,
+                                AppPort = item.AppPort,
+                                FullName = item.FullName,
+                                HiddenCount = CustomSettings.Instance.CountHiddenIpForApp(item.Name),
+                                TcpConnections = item.TcpConnections,
+                                UdpConnections = item.UdpConnections
+                            }
+                        );
                     }
                 }
                 catch (Exception)

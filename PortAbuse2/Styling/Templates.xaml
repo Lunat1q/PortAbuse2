@@ -5,23 +5,25 @@
                     xmlns:controls="clr-namespace:PortAbuse2.Controls"
                     x:Class="PortAbuse2.Styling.Templates">
     <DataTemplate x:Key="AppTemplate" DataType="applications:AppIconEntry">
-        <Grid Height="20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="30" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Image Source="{Binding Icon}" Grid.ColumnSpan="1" HorizontalAlignment="Stretch" Height="Auto"
+        <DockPanel Height="20" HorizontalAlignment="Stretch">
+            <Image Source="{Binding Icon}" HorizontalAlignment="Stretch" Height="Auto"
                    VerticalAlignment="Stretch" Width="Auto" />
-            <TextBlock Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,0" TextWrapping="Wrap"
+            <TextBlock HorizontalAlignment="Stretch" Margin="5,0" TextWrapping="Wrap"
                        Text="{Binding Name, FallbackValue=???}" VerticalAlignment="Center" />
-            <TextBlock Grid.Column="2" HorizontalAlignment="Stretch" Margin="5,0" TextWrapping="Wrap"
+            <TextBlock HorizontalAlignment="Stretch" Margin="5,0" TextWrapping="Wrap"
                        Text="{Binding TitleString}" VerticalAlignment="Center" />
-            <TextBlock x:Name="HiddenBlock" Grid.Column="3" HorizontalAlignment="Stretch" Margin="5,0"
+            <TextBlock x:Name="HiddenBlock" HorizontalAlignment="Stretch" Margin="5,0"
                        TextWrapping="Wrap" Text="{Binding HiddenCount, StringFormat=[Hidden IPs: \{0\}]}"
                        VerticalAlignment="Center" Visibility="Collapsed" />
-        </Grid>
+            <StackPanel HorizontalAlignment="Right" Width="Auto" Orientation="Horizontal" FlowDirection="RightToLeft">
+                <TextBlock HorizontalAlignment="Stretch" Margin="5,0"
+                           TextWrapping="Wrap" Text="{Binding UdpConnections, StringFormat=[T:\{0\}]}"
+                           VerticalAlignment="Center" />
+                <TextBlock HorizontalAlignment="Stretch" Margin="5,0"
+                       TextWrapping="Wrap" Text="{Binding TcpConnections, StringFormat=[U:\{0\}]}"
+                       VerticalAlignment="Center" />
+            </StackPanel>
+        </DockPanel>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding HaveHidden}" Value="True">
                 <Setter TargetName="HiddenBlock" Value="Visible" Property="Visibility" />

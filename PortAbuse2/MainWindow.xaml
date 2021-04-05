@@ -35,7 +35,14 @@
                     <ColumnDefinition Width="110"/>
                 </Grid.ColumnDefinitions>
                 <Button x:Name="RefreshButton" Content="Refresh" Grid.Column="1" Margin="5,0,0,0" VerticalAlignment="Center" Click="RefreshButton_Click"/>
-                <ComboBox Grid.Column="0" x:Name="AppListComboBox" Margin="5,0" VerticalAlignment="Center" ItemTemplate="{DynamicResource AppTemplate}" SelectionChanged="AppListComboBox_SelectionChanged"/>
+                <ComboBox Grid.Column="0" x:Name="AppListComboBox" Margin="5,0" VerticalAlignment="Center" 
+                          ItemTemplate="{DynamicResource AppTemplate}" SelectionChanged="AppListComboBox_SelectionChanged">
+                    <ComboBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ComboBoxItem}">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        </Style>
+                    </ComboBox.ItemContainerStyle>
+                </ComboBox>
             </Grid>
             <Grid Margin="105,4,80,5" Grid.Row="2" VerticalAlignment="Center" IsEnabled="{Binding IsRunning, Converter={StaticResource InverseBooleanConverter}}">
                 <Grid.ColumnDefinitions>

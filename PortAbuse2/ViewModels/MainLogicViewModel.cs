@@ -20,6 +20,8 @@ namespace PortAbuse2.ViewModels
         private ObservableCollection<IpInterface> _interfaces;
         private IpInterface _selectedInterface;
         private ObservableCollection<ConnectionInformation> _detectedConnections = new ObservableCollection<ConnectionInformation>();
+        private int _tcpConnections;
+        private int _udpConnections;
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]
@@ -71,7 +73,7 @@ namespace PortAbuse2.ViewModels
                 this.OnPropertyChanged();
             }
         }
-
+        
         public int BlockAmount
         {
             get => BlockTimeContainer.CurrentBlockTime;

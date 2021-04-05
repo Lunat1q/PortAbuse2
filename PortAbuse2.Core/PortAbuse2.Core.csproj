@@ -92,6 +92,7 @@
     <Compile Include="Listener\CaptureDevicesInfo.cs" />
     <Compile Include="Listener\CoreReceiver.cs" />
     <Compile Include="Listener\IResultReceiver.cs" />
+    <Compile Include="Listener\PortStorage.cs" />
     <Compile Include="Parser\Compressor.cs" />
     <Compile Include="Parser\PackageHelper.cs" />
     <Compile Include="Port\Port.cs" />

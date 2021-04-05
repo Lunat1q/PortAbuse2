@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using PortAbuse2.Core.Proto;
 
 // ReSharper disable ExplicitCallerInfoArgument
@@ -8,6 +9,8 @@ namespace PortAbuse2.Core.Common
     public class AppEntry : PaNotified
     {
         private int _hiddenCount;
+        private int _tcpConnections;
+        private int _udpConnections;
         public string Name { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public int InstancePid { get; set; }
@@ -21,6 +24,28 @@ namespace PortAbuse2.Core.Common
                 this._hiddenCount = value;
                 this.OnPropertyChanged();
                 this.OnPropertyChanged(@"HaveHidden");
+            }
+        }
+
+        public int TcpConnections
+        {
+            get => this._tcpConnections;
+            set
+            {
+                if (value == this._tcpConnections) return;
+                this._tcpConnections = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public int UdpConnections
+        {
+            get => this._udpConnections;
+            set
+            {
+                if (value == this._udpConnections) return;
+                this._udpConnections = value;
+                this.OnPropertyChanged();
             }
         }
 
