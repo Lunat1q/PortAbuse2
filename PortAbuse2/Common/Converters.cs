@@ -42,7 +42,7 @@ namespace PortAbuse2.Common
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var val = (bool)value;
-            var param = bool.Parse((string)parameter);
+            var param = parameter != null && bool.Parse((string)parameter);
 
             if (param) val = !val;
             return val ? Visibility.Visible : Visibility.Collapsed;

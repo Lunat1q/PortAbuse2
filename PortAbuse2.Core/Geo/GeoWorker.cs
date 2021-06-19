@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PortAbuse2.Core.Result;
+using PortAbuse2.Core.Trace;
 
 // ReSharper disable AssignNullToNotNullAttribute
 
@@ -12,7 +13,7 @@ namespace PortAbuse2.Core.Geo
 {
     public static class GeoWorker
     {
-        private static readonly ConcurrentQueue<GeoQueue> GeoQ = new ConcurrentQueue<GeoQueue>();
+        private static readonly ConcurrentQueue<GeoQueueBase> GeoQ = new ConcurrentQueue<GeoQueueBase>();
         private static int _geoRequests;
         private static bool _geoRunning;
         public static readonly List<IGeoService> GeoProviders = new List<IGeoService>();
@@ -62,12 +63,12 @@ namespace PortAbuse2.Core.Geo
                 while (GeoQ.Count > 0)
                 {
                     if (_geoRequests >= 5) continue;
-                    if (GeoQ.TryDequeue(out GeoQueue gq))
+                    if (GeoQ.TryDequeue(out GeoQueueBase gq))
                     {
                         if (gq != null)
                         {
                             _geoRequests++;
-                            GetGeoData(gq.Object, gq.GeoProvider);
+                            GetGeoData(gq, gq.GeoProvider);
                         }
                         await Task.Delay(200);
                     }
@@ -83,7 +84,7 @@ namespace PortAbuse2.Core.Geo
             }
         }
 
-        private static async void GetGeoData(ConnectionInformation obj, string providerName = "")
+        private static async void GetGeoData(GeoQueueBase geoData, string providerName = "")
         {
             IGeoService provider;
             if (providerName == string.Empty)
@@ -94,13 +95,13 @@ namespace PortAbuse2.Core.Geo
             {
                 provider = GeoProviders.FirstOrDefault(x => x.Name == providerName) ?? _selectedGeoService;
             }
-            var loc = await provider.GetLocationByIp(obj.ShowIp.ToString());
+            var loc = await provider.GetLocationByIp(geoData.Ip);
 
             if (loc == null)
             {
                 foreach (var prov in GeoProviders.Where(x => x != provider))
                 {
-                    loc = await prov.GetLocationByIp(obj.ShowIp.ToString());
+                    loc = await prov.GetLocationByIp(geoData.Ip);
                     if (loc != null) break;
                 }
             }
@@ -112,7 +113,7 @@ namespace PortAbuse2.Core.Geo
                     Country = "Error",
                     Index = "000000"
                 };
-            obj.Geo.Merge(loc);
+            geoData.Object.Geo.Merge(loc);
             _geoRequests--;
         }
 
@@ -130,6 +131,24 @@ namespace PortAbuse2.Core.Geo
             {
                 _selectedGeoService = item;
             }
+        }
+
+        public static void InsertGeoDataQueue(TraceEntry traceEntry)
+        {
+            if (traceEntry.Geo.GeoRequestEnqueued) return;
+            traceEntry.Geo.GeoRequestEnqueued = true;
+            var gq = new GeoQueueTrace(traceEntry, string.Empty);
+            GeoQ.Enqueue(gq);
+
+            Rwl.EnterWriteLock();
+
+            if (!_geoRunning || _geoTask == null || _geoTask.IsCanceled || _geoTask.IsCompleted || _geoTask.IsFaulted)
+            {
+                _geoRunning = true;
+                _geoTask = Task.Run(DoGeoDataQueue);
+            }
+
+            Rwl.ExitWriteLock();
         }
     }
 }

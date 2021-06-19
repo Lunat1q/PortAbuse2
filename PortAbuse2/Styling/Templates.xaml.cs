@@ -7,6 +7,7 @@ using PortAbuse2.Controls;
 using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
+using PortAbuse2.Tools;
 
 namespace PortAbuse2.Styling
 {
@@ -65,6 +66,20 @@ namespace PortAbuse2.Styling
                     ro.Application.HiddenCount = CustomSettings.Instance.CountHiddenIpForApp(ro.Application.Name);
                 }
                 ro.Hidden = !ro.Hidden;
+            }
+        }
+
+        private void TraceRtThisIpMenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var mi = sender as MenuItem;
+            var listBox = (mi?.Parent as ContextMenu)?.Tag as ListBox;
+            if (listBox?.SelectedIndex == -1) return;
+            var selectedItems = GetMultipleSelectedItem<ConnectionInformation>(listBox);
+            if (selectedItems == null) return;
+            foreach (var ro in selectedItems)
+            {
+                var trace = new TraceRoute(ro);
+                trace.Show();
             }
         }
 

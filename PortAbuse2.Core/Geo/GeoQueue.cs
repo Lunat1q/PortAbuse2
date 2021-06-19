@@ -2,19 +2,11 @@
 
 namespace PortAbuse2.Core.Geo
 {
-    public class GeoQueue
+    public class GeoQueue : GeoQueueBase
     {
-        public string Ip => this.Object.ShowIp.ToString();
-        public string GeoProvider { get; }
-        public bool RequestDone { get; }
-        public bool RequestInProgress { get; }
-        public ConnectionInformation Object { get; }
-        public GeoQueue(ConnectionInformation obj, string providerName)
+        public GeoQueue(ConnectionInformation obj, string providerName) : base(obj, providerName)
         {
-            this.Object = obj;
-            this.GeoProvider = providerName;
-            this.RequestInProgress = true;
-            this.RequestDone = false;
+            this.Ip = obj.ShowIp.ToString();
         }
     }
 }

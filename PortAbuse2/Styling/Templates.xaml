@@ -3,6 +3,7 @@
                     xmlns:applications="clr-namespace:PortAbuse2.Applications"
                     xmlns:result="clr-namespace:PortAbuse2.Core.Result;assembly=PortAbuse2.Core"
                     xmlns:controls="clr-namespace:PortAbuse2.Controls"
+                    xmlns:trace="clr-namespace:PortAbuse2.Core.Trace;assembly=PortAbuse2.Core"
                     x:Class="PortAbuse2.Styling.Templates">
     <DataTemplate x:Key="AppTemplate" DataType="applications:AppIconEntry">
         <DockPanel Height="20" HorizontalAlignment="Stretch">
@@ -34,6 +35,7 @@
     <ContextMenu x:Key="EntryContextMenu"
                  Tag="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}">
         <MenuItem x:Name="HideThisIpMenuItem" Header="Hide this IP for App" Click="HideThisIpMenuItem_OnClick" />
+        <MenuItem x:Name="TraceRtIpMenuItem" Header="Trace route for IP" Click="TraceRtThisIpMenuItem_OnClick" />
         <MenuItem Header="Block all connections for" Tag="0" HorizontalContentAlignment="Stretch">
             <controls:BlockInOutMenu SecondsToBlock="5" BlockButtonClicked="BlockClicked" />
             <controls:BlockInOutMenu SecondsToBlock="10" BlockButtonClicked="BlockClicked" />
@@ -44,6 +46,76 @@
         </MenuItem>
     </ContextMenu>
     <controls:BlockTimeContainer x:Key="BlockTimeContainerClass" />
+    <DataTemplate x:Key="TraceEntryTemplate" DataType="trace:TraceEntry">
+        <Grid Margin="2">
+            <Rectangle x:Name="ResultBg" Fill="Transparent" Stroke="#FFD1D0D0" />
+            <Grid Height="Auto" Width="Auto">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="30" />
+                    <ColumnDefinition Width="85" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock HorizontalAlignment="Left" Margin="5,2" TextWrapping="Wrap"
+                           Text="{Binding TraceStepNumber, FallbackValue=0}" VerticalAlignment="Center"
+                           Grid.Row="0" Grid.Column="0" FontSize="10" />
+                <Image Grid.Row="0"  Source="{Binding Geo.CountryCode, Converter={StaticResource CountryFlagConverter}}"
+                       Grid.Column="1" HorizontalAlignment="Left" Height="24" VerticalAlignment="Stretch" Width="24"
+                       Margin="3,0" />
+                <TextBlock HorizontalAlignment="Left" Margin="5,2" TextWrapping="Wrap"
+                           Text="{Binding Address, FallbackValue=100.100.100.100}" VerticalAlignment="Center"
+                           Grid.Row="0" Grid.Column="2" FontSize="10" />
+                <TextBlock HorizontalAlignment="Left" Margin="5,2" TextWrapping="Wrap"
+                           Text="{Binding Hostname, FallbackValue=NoHost}" VerticalAlignment="Center"
+                           Grid.Row="0" Grid.Column="4" FontSize="10" />
+                <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Margin="5,2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap"
+                               Text="{Binding Geo.Result, FallbackValue=Nowhere}" VerticalAlignment="Center"
+                               FontSize="9" Grid.Column="1" />
+                </Grid>
+                <Grid Grid.Row="0" Grid.Column="5" Visibility="{Binding Latency.Executed, Converter={StaticResource VisibilityConverter}}">
+                    <TextBlock Text="Pinging..." FontSize="10" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Visibility="{Binding Latency.InProgress, Converter={StaticResource VisibilityConverter}}"/>
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding Latency.InProgress, ConverterParameter=true, Converter={StaticResource VisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding Latency.Failed, ConverterParameter=true, Converter={StaticResource VisibilityConverter}}">
+                            <TextBlock Margin="5, 0" FontSize="10" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Text="{Binding Latency.Min, StringFormat=Min: \{\0\}ms}"/>
+                            <TextBlock Margin="5, 0" FontSize="10" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Text="{Binding Latency.Max, StringFormat=Max: \{\0\}ms}"/>
+                            <TextBlock Margin="5, 0" FontSize="10" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Text="{Binding Latency.Average, StringFormat=Avg: \{\0\}ms}"/>
+                        </StackPanel>
+                        <TextBlock Foreground="IndianRed" Text="Timeout" Margin="5 0" Visibility="{Binding Latency.Failed, Converter={StaticResource VisibilityConverter}}"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Value="True"
+                         Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}">
+                <Setter Property="Fill" TargetName="ResultBg">
+                    <Setter.Value>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#1900DCFF" />
+                            <GradientStop Color="#19008BFF" Offset="1" />
+                        </LinearGradientBrush>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Stroke" TargetName="ResultBg" Value="#7F008BFF" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
     <DataTemplate x:Key="ResultTemplate" DataType="result:ConnectionInformation">
         <Grid x:Name="ResultObjectTpl" Margin="2" ContextMenu="{DynamicResource EntryContextMenu}"
               Visibility="{Binding HiddenProp, ConverterParameter=true, Converter={StaticResource VisibilityConverter}}">
@@ -142,7 +214,7 @@
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
-    <Style x:Key="HiddenContainer" TargetType="{x:Type ListBoxItem}">
+    <Style x:Key="HiddenContainerBase" TargetType="{x:Type ListBoxItem}">
         <Style.Resources>
             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
             <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
@@ -156,6 +228,8 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+    <Style x:Key="HiddenContainer" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource HiddenContainerBase}">
         <Style.Triggers>
             <DataTrigger
                 Binding="{Binding Path=(result:ConnectionInformation.HiddenProp)}"

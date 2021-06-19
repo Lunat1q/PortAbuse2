@@ -5,7 +5,7 @@ using PortAbuse2.Core.Common;
 
 namespace PortAbuse2.Core.Result
 {
-    public class ConnectionInformation : PaNotified
+    public class ConnectionInformation : HostInformation
     {
         public IPAddress SourceAddress;
         public IPAddress DestinationAddress;
@@ -135,18 +135,6 @@ namespace PortAbuse2.Core.Result
         }
 
         public AppEntry Application { get; set; }
-
-        public GeoData Geo
-        {
-            get => this._geo ?? (this._geo = new GeoData());
-            set
-            {
-                this._geo = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-      
 
         public bool From
         {

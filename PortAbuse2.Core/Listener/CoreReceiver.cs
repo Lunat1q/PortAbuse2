@@ -320,7 +320,6 @@ namespace PortAbuse2.Core.Listener
             }
         }
 
-
         private ConnectionInformation GetExistedDetection(bool fromMe, IPPacket ipPacket)
         {
             var showIp = fromMe ? ipPacket.DestinationAddress : ipPacket.SourceAddress;

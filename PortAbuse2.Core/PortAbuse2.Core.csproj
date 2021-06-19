@@ -69,6 +69,9 @@
     <Compile Include="Common\DateTimeExtensions.cs" />
     <Compile Include="Common\ExThread.cs" />
     <Compile Include="Common\InstallationValidator.cs" />
+    <Compile Include="Geo\GeoQueueBase.cs" />
+    <Compile Include="Geo\GeoQueueTrace.cs" />
+    <Compile Include="Ip\Network.cs" />
     <Compile Include="Common\PaNotified.cs" />
     <Compile Include="Common\CustomSettings.cs" />
     <Compile Include="Common\ResultType.cs" />
@@ -89,6 +92,8 @@
     <Compile Include="Ip\IpInterface.cs" />
     <Compile Include="Common\AppEntry.cs" />
     <Compile Include="Common\LabelNameAttribute.cs" />
+    <Compile Include="Ip\PingWorker.cs" />
+    <Compile Include="Ip\TraceResponse.cs" />
     <Compile Include="Listener\CaptureDevicesInfo.cs" />
     <Compile Include="Listener\CoreReceiver.cs" />
     <Compile Include="Listener\IResultReceiver.cs" />
@@ -102,6 +107,9 @@
     <Compile Include="Proto\Protocol.cs" />
     <Compile Include="Result\GeoData.cs" />
     <Compile Include="Result\ConnectionInformation.cs" />
+    <Compile Include="Result\HostInformation.cs" />
+    <Compile Include="Trace\TraceContext.cs" />
+    <Compile Include="Trace\TraceEntry.cs" />
     <Compile Include="Win32\IpHlpApi.cs" />
     <Compile Include="WindowsFirewall\Block.cs" />
     <Compile Include="WindowsFirewall\BlockMode.cs" />

@@ -137,6 +137,13 @@ namespace PortAbuse2
                 Hostname = "Test1",
                 PackagesReceived = 3756412
             });
+            this._vm.Add(new ConnectionInformation
+            {
+                SourceAddress = new IPAddress(new byte[] { 8, 8, 8, 8 }),
+                DestinationAddress = new IPAddress(new byte[] { 8, 8, 8, 8 }),
+                Hostname = "Test Google DNS",
+                PackagesReceived = 888
+            });
         }
 
         private async Task RefreshLoadProcesses()
