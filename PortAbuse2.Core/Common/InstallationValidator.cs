@@ -22,10 +22,14 @@ namespace PortAbuse2.Core.Common
         private List<string> ValidateInstallation()
         {
             var nPCapFolder = Path.Combine(Environment.SystemDirectory, "Npcap");
-            var libs = Directory.GetFiles(nPCapFolder, "*.dll");
-            var packetLib = libs.FirstOrDefault(x => x.EndsWith("Packet.dll", StringComparison.OrdinalIgnoreCase));
-            var pcapLib = libs.FirstOrDefault(x => x.EndsWith("pcap.dll", StringComparison.OrdinalIgnoreCase));
-
+            string pcapLib = null;
+            string packetLib = null;
+            if (Directory.Exists(nPCapFolder))
+            {
+                var libs = Directory.GetFiles(nPCapFolder, "*.dll");
+                packetLib = libs.FirstOrDefault(x => x.EndsWith("Packet.dll", StringComparison.OrdinalIgnoreCase));
+                pcapLib = libs.FirstOrDefault(x => x.EndsWith("pcap.dll", StringComparison.OrdinalIgnoreCase));
+            }
             if (string.IsNullOrWhiteSpace(packetLib) || string.IsNullOrWhiteSpace(pcapLib))
             {
                 return new List<string>{ "NPcap is not installed, program may not operate properly!" };

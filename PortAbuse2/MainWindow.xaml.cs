@@ -170,9 +170,16 @@ namespace PortAbuse2
 
         private void LoadInterfaces()
         {
-            var interfaces = IpInterface.GetIpInterfaces();
+            try
+            {
+                var interfaces = IpInterface.GetIpInterfaces();
 
-            this._vm.Interfaces = new ObservableCollection<IpInterface>(interfaces);
+                this._vm.Interfaces = new ObservableCollection<IpInterface>(interfaces);
+            }
+            catch
+            {
+                this._vm.Interfaces = new ObservableCollection<IpInterface>();
+            }
         }
         
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
