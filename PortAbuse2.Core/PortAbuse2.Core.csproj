@@ -108,6 +108,8 @@
     <Compile Include="Result\GeoData.cs" />
     <Compile Include="Result\ConnectionInformation.cs" />
     <Compile Include="Result\HostInformation.cs" />
+    <Compile Include="Trace\PingContext.cs" />
+    <Compile Include="Trace\PingEntry.cs" />
     <Compile Include="Trace\TraceContext.cs" />
     <Compile Include="Trace\TraceEntry.cs" />
     <Compile Include="Win32\IpHlpApi.cs" />

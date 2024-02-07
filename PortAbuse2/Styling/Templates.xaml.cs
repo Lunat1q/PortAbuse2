@@ -82,6 +82,20 @@ namespace PortAbuse2.Styling
                 trace.Show();
             }
         }
+        
+        private void PingIpMenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var mi = sender as MenuItem;
+            var listBox = (mi?.Parent as ContextMenu)?.Tag as ListBox;
+            if (listBox?.SelectedIndex == -1) return;
+            var selectedItems = GetMultipleSelectedItem<ConnectionInformation>(listBox);
+            if (selectedItems == null) return;
+            foreach (var ro in selectedItems)
+            {
+                var trace = new PingForm(ro);
+                trace.Show();
+            }
+        }
 
         private static List<T> GetMultipleSelectedItem<T>(ListBox listBox)
         {

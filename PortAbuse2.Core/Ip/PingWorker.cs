@@ -1,5 +1,8 @@
 ﻿using PortAbuse2.Common;
 using PortAbuse2.Core.Trace;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace PortAbuse2.Core.Ip
 {
@@ -40,6 +43,32 @@ namespace PortAbuse2.Core.Ip
             traceEntry.Latency.Average = total / numberOfPings;
 
             traceEntry.Latency.InProgress = false;
+        }
+        public static async Task StartPing(IPAddress ipAddress, PingContext pingContext, Action<PingEntry> handleNewPing, int timeout = 10000)
+        {
+
+            var minValue = long.MaxValue;
+            var maxValue = long.MinValue;
+            var total = 0L;
+
+            while (pingContext.IsRunning)
+            {
+                var pingValue = await Network.GetPingAsync(ipAddress, timeout);
+                if (minValue > pingValue)
+                {
+                    minValue = pingValue;
+                }
+
+                if (maxValue < pingValue)
+                {
+                    maxValue = pingValue;
+                }
+
+                handleNewPing(new PingEntry(pingValue));
+
+                total += pingValue;
+            }
+
         }
     }
 }

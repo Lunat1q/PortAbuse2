@@ -120,6 +120,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Tools\PingForm.xaml.cs">
+      <DependentUpon>PingForm.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Tools\TraceRoute.xaml.cs">
       <DependentUpon>TraceRoute.xaml</DependentUpon>
     </Compile>
@@ -175,6 +178,10 @@
       <DependentUpon>Templates.xaml</DependentUpon>
       <Generator>MSBuild:Compile</Generator>
     </Compile>
+    <Page Include="Tools\PingForm.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Tools\TraceRoute.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
