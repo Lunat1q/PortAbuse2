@@ -4,12 +4,12 @@ namespace PortAbuse2.Core.Result
 {
     public abstract class HostInformation : PaNotified
     {
-        private GeoData _geo;
-        private LatencyStats _latency;
+        private GeoData? _geo;
+        private LatencyStats? _latency;
 
         public GeoData Geo
         {
-            get => this._geo ?? (this._geo = new GeoData());
+            get => this._geo ??= new GeoData();
             set
             {
                 this._geo = value;
@@ -19,7 +19,7 @@ namespace PortAbuse2.Core.Result
 
         public LatencyStats Latency
         {
-            get => this._latency ?? (this._latency = new LatencyStats());
+            get => this._latency ??= new LatencyStats();
             set
             {
                 this._latency = value; 

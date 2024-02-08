@@ -220,7 +220,11 @@ namespace PortAbuse2.Core.Listener
             foreach (var device in this._captureDevices)
             {
                 device.OnPacketArrival += this.Receiver_OnPacketArrival;
-                device.Open(DeviceMode.Normal, 1000);
+                device.Open(new DeviceConfiguration
+                {
+                    ReadTimeout = 1000,
+                    Mode = DeviceModes.None
+                });
                 device.StartCapture();
             }
 
@@ -239,11 +243,12 @@ namespace PortAbuse2.Core.Listener
             }
         }
 
-        private void Receiver_OnPacketArrival(object sender, CaptureEventArgs e)
+        private void Receiver_OnPacketArrival(object sender, PacketCapture e)
         {
             try
             {
-                var packet = Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
+                var raw = e.GetPacket();
+                var packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
                 Task.Run(() => this.ParsePacket(packet));
             }
             catch

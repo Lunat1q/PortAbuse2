@@ -10,7 +10,7 @@ namespace PortAbuse2.Core.Geo.Providers
     public class FreeGeoIpNet : IGeoService
     {
         public string Name { get; } = "freegeoip.net";
-        public async Task<GeoData> GetLocationByIp(string ip)
+        public async Task<GeoData?> GetLocationByIp(string ip)
         {
             var loc = new GeoData();
             var url = "http://freegeoip.net/xml/" + ip;
