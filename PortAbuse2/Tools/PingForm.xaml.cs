@@ -5,6 +5,7 @@ using PortAbuse2.Core.Geo;
 using PortAbuse2.Core.Ip;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Core.Trace;
+using PortAbuse2.Ping;
 
 namespace PortAbuse2.Tools
 {
@@ -38,11 +39,11 @@ namespace PortAbuse2.Tools
             await PingWorker.StartPing(this._connectionInformation.ShowIp, this._context, NewPingReceived, 2000);
         }
 
-        private void NewPingReceived(PingEntry pingEntry)
+        private void NewPingReceived(long pingValue)
         {
             this.Dispatcher.Invoke(() =>
             {
-                this._context.Items.Add(pingEntry);
+                this._context.Items.Add(pingValue);
             });
         }
     }

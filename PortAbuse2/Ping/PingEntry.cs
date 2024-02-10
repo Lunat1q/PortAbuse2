@@ -1,6 +1,6 @@
 ﻿using PortAbuse2.Core.Common;
 
-namespace PortAbuse2.Core.Trace
+namespace PortAbuse2.Ping
 {
     public class PingEntry : PaNotified
     {

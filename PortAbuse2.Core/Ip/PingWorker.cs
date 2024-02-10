@@ -1,4 +1,5 @@
 ﻿using PortAbuse2.Common;
+using PortAbuse2.Core.Common;
 using PortAbuse2.Core.Trace;
 using System;
 using System.Net;
@@ -44,14 +45,14 @@ namespace PortAbuse2.Core.Ip
 
             traceEntry.Latency.InProgress = false;
         }
-        public static async Task StartPing(IPAddress ipAddress, PingContext pingContext, Action<PingEntry> handleNewPing, int timeout = 10000)
+        public static async Task StartPing(IPAddress ipAddress, RunnableContext context, Action<long> handleNewPing, int timeout = 10000)
         {
 
             var minValue = long.MaxValue;
             var maxValue = long.MinValue;
             var total = 0L;
 
-            while (pingContext.IsRunning)
+            while (context.IsRunning)
             {
                 var pingValue = await Network.GetPingAsync(ipAddress, timeout);
                 if (minValue > pingValue)
@@ -64,7 +65,9 @@ namespace PortAbuse2.Core.Ip
                     maxValue = pingValue;
                 }
 
-                handleNewPing(new PingEntry(pingValue));
+                handleNewPing(pingValue);
+                var nextWait = 300 - (int) pingValue;
+                await Task.Delay(Math.Max(nextWait, 0));
 
                 total += pingValue;
             }
