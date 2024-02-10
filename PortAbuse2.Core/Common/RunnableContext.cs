@@ -2,7 +2,18 @@
 {
     public class RunnableContext : PaNotified
     {
-        public bool IsRunning { get; set; }
+        private bool _isRunning;
+
+        public bool IsRunning
+        {
+            get => _isRunning;
+            set
+            {
+                if (value == _isRunning) return;
+                _isRunning = value;
+                OnPropertyChanged();
+            }
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Windows;
+using LiveChartsCore.SkiaSharpView;
 using PortAbuse2.Common;
 using PortAbuse2.Core.Geo;
 using PortAbuse2.Core.Ip;
@@ -26,6 +27,14 @@ namespace PortAbuse2.Tools
             this._context.Target = connectionInformation.ShowIp;
             InitializeComponent();
             this.Loaded += this.OnLoaded;
+
+            Chart.XAxes =  new[]
+            {
+                new Axis
+                {
+                    IsVisible = false
+                }
+            };
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -45,6 +54,11 @@ namespace PortAbuse2.Tools
             {
                 this._context.Items.Add(pingValue);
             });
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            _context.IsRunning = false;
         }
     }
 }

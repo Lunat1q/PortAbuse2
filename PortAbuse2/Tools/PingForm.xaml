@@ -3,17 +3,30 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:d1="clr-namespace:PortAbuse2.Core.Trace;assembly=PortAbuse2.Core" xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF" xmlns:d11="clr-namespace:PortAbuse2.Ping" xmlns:lvc1="clr-namespace:LiveChartsCore.SkiaSharpView;assembly=LiveChartsCore.SkiaSharpView"
-        mc:Ignorable="d" d:DataContext="{d1:PingContext}" ResizeMode="CanResize"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+        xmlns:d11="clr-namespace:PortAbuse2.Ping"
+        xmlns:skiaSharpView="clr-namespace:LiveChartsCore.SkiaSharpView;assembly=LiveChartsCore.SkiaSharpView"
+        mc:Ignorable="d" d:DataContext="{d11:PingContext}" ResizeMode="CanResize"
         Title="{Binding Target, StringFormat=Ping for: \{0\}}" Height="450" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <lvc:CartesianChart
-            Series="{Binding Series}">
+        <lvc:CartesianChart Name="Chart"
+            Series="{Binding Series}" TooltipPosition="Hidden">
         </lvc:CartesianChart>
-        <TextBlock Grid.Row="1"  Text="DONE" FontSize="24" FontWeight="Bold" Background="LightGreen" TextAlignment="Center" Visibility="{Binding IsComplete, Converter={StaticResource VisibilityConverter}}"/>
+        <Grid Grid.Row="1" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock HorizontalAlignment="Center" Text="{Binding Min, StringFormat=Min: {0}, FallbackValue=Min: 0}"></TextBlock>
+            <TextBlock HorizontalAlignment="Center" Grid.Column="1" Text="{Binding Avg, StringFormat=Avg: {0}, FallbackValue=Avg: 0}"></TextBlock>
+            <TextBlock HorizontalAlignment="Center" Grid.Column="2" Text="{Binding Max, StringFormat=Max: {0}, FallbackValue=Max: 0}"></TextBlock>
+        </Grid>
+        <Button Grid.Row="2"  Content="STOP" FontSize="24" FontWeight="Bold" Background="LightCoral" Visibility="{Binding IsRunning, Converter={StaticResource VisibilityConverter}}" Click="Button_Click"/>
     </Grid>
 </Window>

@@ -1,63 +1,55 @@
 ﻿using System.Collections.ObjectModel;
 using System.Net;
-using LiveChartsCore.SkiaSharpView.Painting;
-using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore;
-using Newtonsoft.Json.Linq;
-using SkiaSharp;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
 using PortAbuse2.Core.Common;
+using SkiaSharp;
 
-namespace PortAbuse2.Ping
+namespace PortAbuse2.Ping;
+
+public class PingContext : RunnableContext
 {
-    public class PingContext : RunnableContext
+    private ObservableCollection<long> _items = new();
+    private IPAddress _target;
+
+    public PingContext()
     {
-        private ObservableCollection<long> _items = new ObservableCollection<long>();
-        private IPAddress _target;
-        private bool _isComplete;
-
-        public ObservableCollection<long> Items
+        // create a series with the data 
+        Series = new ISeries[]
         {
-            get => this._items;
-            set
-            {
-                this._items = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public IPAddress Target
-        {
-            get => this._target;
-            set
-            {
-                this._target = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        
-
-        public ISeries[] Series { get; set; }
-
-        public PingContext()
-        {
-            // create a series with the data 
-            Series = new ISeries[]
-            {
             new LineSeries<long>
             {
-                Values = this._items,
+                Values = _items,
                 GeometryFill = null,
                 GeometryStroke = null,
                 LineSmoothness = 0,
                 Stroke = null,
                 Fill = new SolidColorPaint(SKColors.LightBlue, 1)
             }
-            };
+        };
+    }
+
+    public ObservableCollection<long> Items
+    {
+        get => _items;
+        set
+        {
+            _items = value;
+            OnPropertyChanged();
         }
     }
+
+    public IPAddress Target
+    {
+        get => _target;
+        set
+        {
+            _target = value;
+            OnPropertyChanged();
+        }
+    }
+
+
+    public ISeries[] Series { get; set; }
 }
-
-
-
-
