@@ -48,11 +48,14 @@ namespace PortAbuse2.Tools
             await PingWorker.StartPing(this._connectionInformation.ShowIp, this._context, NewPingReceived, 2000);
         }
 
-        private void NewPingReceived(long pingValue)
+        private void NewPingReceived(long pingValue, long minValue, long maxValue, double avgValue)
         {
             this.Dispatcher.Invoke(() =>
             {
                 this._context.Items.Add(pingValue);
+                this._context.Min = minValue;
+                this._context.Max = maxValue;
+                this._context.Avg = avgValue;
             });
         }
 

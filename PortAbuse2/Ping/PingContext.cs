@@ -12,6 +12,9 @@ public class PingContext : RunnableContext
 {
     private ObservableCollection<long> _items = new();
     private IPAddress _target;
+    private long _min;
+    private long _max;
+    private double _avg;
 
     public PingContext()
     {
@@ -49,6 +52,38 @@ public class PingContext : RunnableContext
             OnPropertyChanged();
         }
     }
+
+    public long Min
+    {
+        get => _min;
+        set
+        {
+            _min = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public long Max
+    {
+        get => _max;
+        set
+        {
+            _max = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public double Avg
+    {
+        get => _avg;
+        set
+        {
+            _avg = value;
+            OnPropertyChanged();
+        }
+    }
+
+
 
 
     public ISeries[] Series { get; set; }
