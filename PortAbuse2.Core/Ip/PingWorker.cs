@@ -60,6 +60,7 @@ namespace PortAbuse2.Core.Ip
             while (context.IsRunning)
             {
                 totalCount++;
+
                 var pingValue = await Network.GetPingAsync(ipAddress, timeout);
                 if (pingValue == -1)
                 {
@@ -78,8 +79,8 @@ namespace PortAbuse2.Core.Ip
                         maxValue = pingValue;
                     }
                 }
-                avgValue = Math.Round((double)total / totalCount, 1);
-                timeoutPercent = Math.Round((double) timeoutCount * 100 / totalCount, 1);
+                avgValue = (double)total / totalCount;
+                timeoutPercent = (double) timeoutCount * 100 / totalCount;
 
                 if (valueReceived)
                 {
@@ -89,6 +90,7 @@ namespace PortAbuse2.Core.Ip
                 {
                     handleNewPing(pingValue, 0L, 0L, 0.0, timeoutPercent);
                 }
+
                 var nextWait = 300 - (int) pingValue;
                 await Task.Delay(Math.Max(nextWait, 0));
 
