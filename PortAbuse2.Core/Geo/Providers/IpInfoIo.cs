@@ -10,7 +10,7 @@ namespace PortAbuse2.Core.Geo.Providers
     public class IpInfoIo : IGeoService
     {
         public string Name { get; } = "IpInfo.IO";
-        public async Task<GeoData> GetLocationByIp(string ip)
+        public async Task<GeoData?> GetLocationByIp(string ip)
         {
             var loc = new GeoData();
             var url = "https://ipinfo.io/" + ip + "/json";

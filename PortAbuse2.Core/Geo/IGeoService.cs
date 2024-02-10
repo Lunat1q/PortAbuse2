@@ -6,6 +6,6 @@ namespace PortAbuse2.Core.Geo
     public interface IGeoService
     {
         string Name { get;}
-        Task<GeoData> GetLocationByIp(string ip);
+        Task<GeoData?> GetLocationByIp(string ip);
     }
 }

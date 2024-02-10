@@ -4,7 +4,6 @@ using System.Linq;
 using PortAbuse2.Core.Win32;
 using SharpPcap;
 using SharpPcap.LibPcap;
-using SharpPcap.Npcap;
 
 namespace PortAbuse2.Core.Ip
 {
@@ -19,7 +18,7 @@ namespace PortAbuse2.Core.Ip
         public static IEnumerable<IpInterface> GetIpInterfaces()
         {
             var adapters = IpHlpApi.GetIPAdapters(IpHlpApi.FAMILY.AF_UNSPEC);
-            var devices = CaptureDeviceList.Instance.OfType<NpcapDevice>();
+            var devices = CaptureDeviceList.Instance.OfType<LibPcapLiveDevice>();
             return devices.Where(x => !x.Loopback).Select(x => new IpInterface(x.Name, GetFriendlyName(x, adapters)));
         }
 

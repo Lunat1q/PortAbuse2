@@ -10,7 +10,7 @@ namespace PortAbuse2.Core.Geo.Providers
     public class TwoIpComUa : IGeoService
     {
         public string Name { get; } = "2ip.com.ua";
-        public async Task<GeoData> GetLocationByIp(string ip)
+        public async Task<GeoData?> GetLocationByIp(string ip)
         {
             var loc = new GeoData();
             var url = "http://api.2ip.com.ua/geo.xml?ip=" + ip;

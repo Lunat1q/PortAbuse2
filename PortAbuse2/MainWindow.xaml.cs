@@ -12,6 +12,7 @@ using System.Windows.Media;
 using MahApps.Metro.Controls.Dialogs;
 using PortAbuse2.Applications;
 using PortAbuse2.Core.Common;
+using PortAbuse2.Core.Geo;
 using PortAbuse2.Core.Ip;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Core.WindowsFirewall;
@@ -137,13 +138,18 @@ namespace PortAbuse2
                 Hostname = "Test1",
                 PackagesReceived = 3756412
             });
-            this._vm.Add(new ConnectionInformation
+
+            var googleDns = new ConnectionInformation
             {
                 SourceAddress = new IPAddress(new byte[] { 8, 8, 8, 8 }),
                 DestinationAddress = new IPAddress(new byte[] { 8, 8, 8, 8 }),
                 Hostname = "Test Google DNS",
                 PackagesReceived = 888
-            });
+            };
+
+            this._vm.Add(googleDns);
+
+            GeoWorker.InsertGeoDataQueue(googleDns);
         }
 
         private async Task RefreshLoadProcesses()

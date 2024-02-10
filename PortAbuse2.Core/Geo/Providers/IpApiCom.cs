@@ -10,7 +10,7 @@ namespace PortAbuse2.Core.Geo.Providers
     public class IpApiCom : IGeoService
     {
         public string Name { get; } = "ip-api.com";
-        public async Task<GeoData> GetLocationByIp(string ip)
+        public async Task<GeoData?> GetLocationByIp(string ip)
         {
             var loc = new GeoData();
             var url = "http://ip-api.com/xml/" + ip;

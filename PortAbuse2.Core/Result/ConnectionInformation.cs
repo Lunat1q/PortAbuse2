@@ -16,7 +16,6 @@ namespace PortAbuse2.Core.Result
         private bool _hidden;
         private bool _old;
         private long _dataTransfered;
-        private GeoData _geo;
         private bool _from;
         
         public bool Resolved { get; set; } = false;

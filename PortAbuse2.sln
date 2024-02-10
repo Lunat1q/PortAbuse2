@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29503.13
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortAbuse2", "PortAbuse2\PortAbuse2.csproj", "{D9FFFE0E-7667-4229-B8FA-4DC72F81346D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PortAbuse2", "PortAbuse2\PortAbuse2.csproj", "{D9FFFE0E-7667-4229-B8FA-4DC72F81346D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortAbuse2.Core", "PortAbuse2.Core\PortAbuse2.Core.csproj", "{6AADCAD8-1D3E-41EF-934E-AEC5DA231057}"
 EndProject
@@ -13,9 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PortAbuse2.Tests", "PortAbu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TiqUtils", "TiqUtils\TiqUtils\TiqUtils.csproj", "{ADD36AFD-5E81-40E7-93F8-381CF03C5FD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TiqUtils.Wpf", "TiQWpfUtils\TiqUtils.Wpf\TiqUtils.Wpf.csproj", "{B03903AE-CB73-4DAB-91D8-439F4AAD4806}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpPcap", "sharppcap\SharpPcap\SharpPcap.csproj", "{14588404-B65D-495A-A2A8-EB39BF5251EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TiqUtils.Wpf", "TiQWpfUtils\TiqUtils.Wpf\TiqUtils.Wpf.csproj", "{B03903AE-CB73-4DAB-91D8-439F4AAD4806}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,10 +45,6 @@ Global
 		{B03903AE-CB73-4DAB-91D8-439F4AAD4806}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B03903AE-CB73-4DAB-91D8-439F4AAD4806}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B03903AE-CB73-4DAB-91D8-439F4AAD4806}.Release|Any CPU.Build.0 = Release|Any CPU
-		{14588404-B65D-495A-A2A8-EB39BF5251EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{14588404-B65D-495A-A2A8-EB39BF5251EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{14588404-B65D-495A-A2A8-EB39BF5251EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{14588404-B65D-495A-A2A8-EB39BF5251EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

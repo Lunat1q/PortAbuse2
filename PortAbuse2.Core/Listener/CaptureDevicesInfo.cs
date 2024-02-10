@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using PortAbuse2.Core.Ip;
 using SharpPcap;
-using SharpPcap.Npcap;
+using SharpPcap.LibPcap;
 
 namespace PortAbuse2.Core.Listener
 {
@@ -31,7 +31,7 @@ namespace PortAbuse2.Core.Listener
         {
         }
 
-        public void Add(NpcapDevice device)
+        public void Add(LibPcapLiveDevice device)
         {
             if (device.Interface.Addresses.Count > 0 && !Equals(device.Interface.MacAddress, PhysicalAddress.None))
             {
@@ -76,7 +76,7 @@ namespace PortAbuse2.Core.Listener
         {
             this.Clear();
             CaptureDeviceList deviceList = CaptureDeviceList.Instance;
-            foreach (var device in deviceList.OfType<NpcapDevice>())
+            foreach (var device in deviceList.OfType<LibPcapLiveDevice>())
             {
                 if (device.Name == selectedIpInterface?.HwName)
                 {
@@ -90,7 +90,7 @@ namespace PortAbuse2.Core.Listener
             }
 
             if (!this.Any()) //no device found, let's make an assumption and pick first
-                this.Add(deviceList.OfType<NpcapDevice>().First()); // if we take all -> huge perf fckup
+                this.Add(deviceList.OfType<LibPcapLiveDevice>().First()); // if we take all -> huge perf fckup
         }
 
         public bool IsVirtualMac(PhysicalAddress ethPacketSourceHardwareAddress)
