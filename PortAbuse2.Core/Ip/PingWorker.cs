@@ -51,10 +51,11 @@ namespace PortAbuse2.Core.Ip
             var minValue = long.MaxValue;
             var maxValue = long.MinValue;
             var avgValue = 0.0;
-            var failedPercent = 0.0;
+            var timeoutPercent = 0.0;
             var total = 0L;
             var totalCount = 0L;
-            var failedCount = 0L;
+            var timeoutCount = 0L;
+            bool valueReceived = false;
 
             while (context.IsRunning)
             {
@@ -62,10 +63,11 @@ namespace PortAbuse2.Core.Ip
                 var pingValue = await Network.GetPingAsync(ipAddress, timeout);
                 if (pingValue == -1)
                 {
-                    failedCount++;
+                    timeoutCount++;
                 }
                 else
                 {
+                    valueReceived = true;
                     if (minValue > pingValue)
                     {
                         minValue = pingValue;
@@ -77,9 +79,16 @@ namespace PortAbuse2.Core.Ip
                     }
                 }
                 avgValue = Math.Round((double)total / totalCount, 1);
-                failedPercent = Math.Round((double) failedCount * 100 / totalCount, 1);
+                timeoutPercent = Math.Round((double) timeoutCount * 100 / totalCount, 1);
 
-                handleNewPing(pingValue, minValue, maxValue, avgValue, failedPercent);
+                if (valueReceived)
+                {
+                    handleNewPing(pingValue, minValue, maxValue, avgValue, timeoutPercent);
+                }
+                else
+                {
+                    handleNewPing(pingValue, 0L, 0L, 0.0, timeoutPercent);
+                }
                 var nextWait = 300 - (int) pingValue;
                 await Task.Delay(Math.Max(nextWait, 0));
 

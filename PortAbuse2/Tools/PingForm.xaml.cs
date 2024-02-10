@@ -48,7 +48,7 @@ namespace PortAbuse2.Tools
             await PingWorker.StartPing(this._connectionInformation.ShowIp, this._context, NewPingReceived, 2000);
         }
 
-        private void NewPingReceived(long pingValue, long minValue, long maxValue, double avgValue, double failedPercent)
+        private void NewPingReceived(long pingValue, long minValue, long maxValue, double avgValue, double timeoutPercent)
         {
             this.Dispatcher.Invoke(() =>
             {
@@ -56,7 +56,7 @@ namespace PortAbuse2.Tools
                 this._context.Min = minValue;
                 this._context.Max = maxValue;
                 this._context.Avg = avgValue;
-                this._context.FailedPercent = failedPercent;
+                this._context.TimeoutPercent = timeoutPercent;
             });
         }
 
