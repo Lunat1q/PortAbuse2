@@ -15,6 +15,7 @@ public class PingContext : RunnableContext
     private long _min;
     private long _max;
     private double _avg;
+    private double _failedPercent;
 
     public PingContext()
     {
@@ -83,6 +84,15 @@ public class PingContext : RunnableContext
         }
     }
 
+    public double FailedPercent
+    {
+        get => _failedPercent;
+        set
+        {
+            _failedPercent = value;
+            OnPropertyChanged();
+        }
+    }
 
 
 
