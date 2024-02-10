@@ -25,9 +25,9 @@
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
             <TextBlock HorizontalAlignment="Center" Text="{Binding Min, StringFormat=Min: {0}, FallbackValue=Min: 0}" Height="16" VerticalAlignment="Top"></TextBlock>
-            <TextBlock HorizontalAlignment="Center" Grid.Column="1" Text="{Binding Avg, StringFormat=Avg: {0:N1}, FallbackValue=Avg: 0}"></TextBlock>
+            <TextBlock HorizontalAlignment="Center" Grid.Column="1" Text="{Binding Avg, StringFormat=Avg: {0:F1}, FallbackValue=Avg: 0}"></TextBlock>
             <TextBlock HorizontalAlignment="Center" Grid.Column="2" Text="{Binding Max, StringFormat=Max: {0}, FallbackValue=Max: 0}"></TextBlock>
-            <TextBlock HorizontalAlignment="Center" Grid.Column="3" Text="{Binding TimeoutPercent, StringFormat=Timeout: {0:N1}%, FallbackValue=Timeout: 0.0%}"></TextBlock>
+            <TextBlock HorizontalAlignment="Center" Grid.Column="3" Text="{Binding TimeoutPercent, StringFormat=Timeout: {0:F1}%, FallbackValue=Timeout: 0.0%}"></TextBlock>
         </Grid>
         <Button Grid.Row="2"  Content="STOP" FontSize="24" FontWeight="Bold" Background="LightCoral" Visibility="{Binding IsRunning, Converter={StaticResource VisibilityConverter}}" Click="Button_Click"/>
     </Grid>
