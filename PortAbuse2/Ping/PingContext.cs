@@ -15,7 +15,7 @@ public class PingContext : RunnableContext
     private long _min;
     private long _max;
     private double _avg;
-    private double _timeoutPercent;
+    private double _lossPercentage;
 
     public PingContext()
     {
@@ -84,12 +84,12 @@ public class PingContext : RunnableContext
         }
     }
 
-    public double TimeoutPercent
+    public double LossPercentage
     {
-        get => _timeoutPercent;
+        get => _lossPercentage;
         set
         {
-            _timeoutPercent = value;
+            _lossPercentage = value;
             OnPropertyChanged();
         }
     }

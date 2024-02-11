@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Threading;
 using System.Threading.Tasks;
+using PortAbuse2.Common;
 
-namespace PortAbuse2.Common
+namespace PortAbuse2.Core.Ip
 {
     public class Network
     {
