@@ -6,11 +6,11 @@ namespace PortAbuse2.Core.Trace
 {
     public class TraceContext : PaNotified
     {
-        private ObservableCollection<TraceEntry> _items = new ObservableCollection<TraceEntry>();
+        private ObservableCollection<TraceEntry?> _items = new ObservableCollection<TraceEntry?>();
         private IPAddress _target;
         private bool _isComplete;
 
-        public ObservableCollection<TraceEntry> Items
+        public ObservableCollection<TraceEntry?> Items
         {
             get => this._items;
             set

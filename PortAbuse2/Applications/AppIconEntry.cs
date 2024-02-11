@@ -6,17 +6,12 @@ namespace PortAbuse2.Applications
 {
     public class AppIconEntry : AppEntry
     {
-        private ImageSource _icon;
+        private ImageSource? _icon;
 
         public ImageSource Icon
         {
-            get => this._icon ?? Images.LoadImageSourceFromResource("empty.png");
+            get => (this._icon ?? Images.LoadImageSourceFromResource("empty.png"))!;
             set => this._icon = value;
-        }
-
-        public override string ToString()
-        {
-            return base.ToString();
         }
     }
 }

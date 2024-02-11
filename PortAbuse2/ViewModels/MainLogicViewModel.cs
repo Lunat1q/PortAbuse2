@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
@@ -11,110 +10,138 @@ using PortAbuse2.Core.Listener;
 using PortAbuse2.Core.Result;
 using PortAbuse2.Listener;
 
-namespace PortAbuse2.ViewModels
+namespace PortAbuse2.ViewModels;
+
+public class MainLogicViewModel : INotifyPropertyChanged, IResultReceiver
 {
-    public class MainLogicViewModel : INotifyPropertyChanged, IResultReceiver
+    private readonly object _detectionLock = new();
+    private ObservableCollection<ConnectionInformation?> _detectedConnections = new();
+    private ObservableCollection<IpInterface>? _interfaces;
+    private bool _isRunning;
+    private IpInterface? _selectedInterface;
+
+    public MainLogicViewModel(Dispatcher dispatcher,
+                              bool minimizeHostname = false,
+                              bool hideOld = false,
+                              bool hideSmall = false
+    )
     {
-        private bool _isRunning;
-        private readonly object _detectionLock = new object();
-        private ObservableCollection<IpInterface> _interfaces;
-        private IpInterface _selectedInterface;
-        private ObservableCollection<ConnectionInformation> _detectedConnections = new ObservableCollection<ConnectionInformation>();
-        private int _tcpConnections;
-        private int _udpConnections;
-        public event PropertyChangedEventHandler PropertyChanged;
+        Receiver = new Receiver(this, dispatcher, minimizeHostname, hideOld, hideSmall);
+    }
 
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    public bool IsRunning
+    {
+        get => _isRunning;
+        set
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        public bool IsRunning
-        {
-            get => this._isRunning;
-            set
+            if (value == _isRunning)
             {
-                if (value == this._isRunning) return;
-                this._isRunning = value;
-                this.OnPropertyChanged();
+                return;
             }
-        }
 
-        public ObservableCollection<IpInterface> Interfaces
+            _isRunning = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ObservableCollection<IpInterface>? Interfaces
+    {
+        get => _interfaces;
+        set
         {
-            get => this._interfaces;
-            set
+            if (Equals(value, _interfaces))
             {
-                if (Equals(value, this._interfaces)) return;
-                this._interfaces = value;
-                this.OnPropertyChanged();
+                return;
             }
-        }
 
-        public IpInterface SelectedInterface
+            _interfaces = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public IpInterface? SelectedInterface
+    {
+        get => _selectedInterface;
+        set
         {
-            get => this._selectedInterface;
-            set
+            if (Equals(value, _selectedInterface))
             {
-                if (Equals(value, this._selectedInterface)) return;
-                this._selectedInterface = value;
-                this.OnPropertyChanged();
+                return;
             }
-        }
 
-        public ObservableCollection<ConnectionInformation> DetectedConnections
+            _selectedInterface = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ObservableCollection<ConnectionInformation?> DetectedConnections
+    {
+        get => _detectedConnections;
+        set
         {
-            get => this._detectedConnections;
-            set
+            if (Equals(value, _detectedConnections))
             {
-                if (Equals(value, this._detectedConnections)) return;
-                this._detectedConnections = value;
-                this.OnPropertyChanged();
+                return;
             }
+
+            _detectedConnections = value;
+            OnPropertyChanged();
         }
-        
-        public int BlockAmount
+    }
+
+    public int BlockAmount
+    {
+        get => BlockTimeContainer.CurrentBlockTime;
+        set
         {
-            get => BlockTimeContainer.CurrentBlockTime;
-            set
+            if (value == BlockTimeContainer.CurrentBlockTime)
             {
-                if (value == BlockTimeContainer.CurrentBlockTime) return;
-                BlockTimeContainer.CurrentBlockTime = value;
-                this.OnPropertyChanged();
+                return;
             }
+
+            BlockTimeContainer.CurrentBlockTime = value;
+            OnPropertyChanged();
         }
+    }
 
-        public CoreReceiver Receiver { get; set; }
+    public CoreReceiver Receiver { get; }
+    public event PropertyChangedEventHandler? PropertyChanged;
 
+    public void Reset()
+    {
+        DetectedConnections.Clear();
+    }
 
-        public void InitNewReceiver(Dispatcher dispatcher, bool minimizeHostname = false, bool hideOld = false, bool hideSmall = false)
+    public void Add(ConnectionInformation? result)
+    {
+        DetectedConnections.Add(result);
+    }
+
+    public void AddAsync(ConnectionInformation result)
+    {
+        lock (_detectionLock)
         {
-            this.Receiver = new Receiver(this, dispatcher, minimizeHostname, hideOld, hideSmall);
+            DetectedConnections.Add(result);
         }
+    }
 
-        public void Reset()
-        {
-            this.DetectedConnections.Clear();
-        }
+    [NotifyPropertyChangedInvocator]
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 
-        public void Add(ConnectionInformation result)
-        {
-            this.DetectedConnections.Add(result);
-        }
 
-        public void AddAsync(ConnectionInformation result)
-        {
-            lock (this._detectionLock)
-            {
-                this.DetectedConnections.Add(result);
-            }
-        }
+    public void InitNewReceiver(Dispatcher dispatcher,
+                                bool minimizeHostname = false,
+                                bool hideOld = false,
+                                bool hideSmall = false)
+    {
+    }
 
-        public ValidationResult Validate()
-        {
-            var validator = new InstallationValidator();
-            return validator.Validate();
-        }
+    public ValidationResult Validate()
+    {
+        var validator = new InstallationValidator();
+        return validator.Validate();
     }
 }

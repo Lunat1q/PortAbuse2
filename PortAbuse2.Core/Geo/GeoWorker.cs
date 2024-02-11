@@ -9,146 +9,169 @@ using PortAbuse2.Core.Trace;
 
 // ReSharper disable AssignNullToNotNullAttribute
 
-namespace PortAbuse2.Core.Geo
+namespace PortAbuse2.Core.Geo;
+
+public static class GeoWorker
 {
-    public static class GeoWorker
+    private static readonly ConcurrentQueue<GeoQueueBase?> GeoQ = new();
+    private static int _geoRequests;
+    private static bool _geoRunning;
+    public static readonly List<IGeoService> GeoProviders = new();
+    private static IGeoService _selectedGeoService;
+    private static Task? _geoTask;
+    private static readonly ReaderWriterLockSlim Rwl = new();
+
+    static GeoWorker()
     {
-        private static readonly ConcurrentQueue<GeoQueueBase> GeoQ = new ConcurrentQueue<GeoQueueBase>();
-        private static int _geoRequests;
-        private static bool _geoRunning;
-        public static readonly List<IGeoService> GeoProviders = new List<IGeoService>();
-        private static IGeoService _selectedGeoService;
-        private static Task _geoTask;
-        private static readonly ReaderWriterLockSlim Rwl = new ReaderWriterLockSlim();
-
-        static GeoWorker()
+        var iExtension = typeof(IGeoService);
+        var types = AppDomain.CurrentDomain.GetAssemblies()
+                             .SelectMany(s => s.GetTypes())
+                             .Where(p => iExtension.IsAssignableFrom(p) && !p.IsInterface);
+        foreach (var type in types)
         {
-            var iExtension = typeof(IGeoService);
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => iExtension.IsAssignableFrom(p) && !p.IsInterface);
-            foreach (var type in types)
+            if (Activator.CreateInstance(type) is IGeoService instance)
             {
-                if (Activator.CreateInstance(type) is IGeoService instance)
-                    GeoProviders.Add(instance);
+                GeoProviders.Add(instance);
             }
-            _selectedGeoService = GeoProviders.First();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="item">result item</param>
-        /// <param name="providerName">empty for current selected geo provider</param>
-        public static void InsertGeoDataQueue(ConnectionInformation item, string providerName = "")
-        {
-            if (item.Geo.GeoRequestEnqueued) return;
-            item.Geo.GeoRequestEnqueued = true;
-            var gq = new GeoQueue(item, providerName);
-            GeoQ.Enqueue(gq);
+        _selectedGeoService = GeoProviders.First();
+    }
 
-            Rwl.EnterWriteLock();
-            if (!_geoRunning || _geoTask == null || _geoTask.IsCanceled || _geoTask.IsCompleted || _geoTask.IsFaulted)
-            {
-                _geoRunning = true;
-                _geoTask = Task.Run(DoGeoDataQueue);
-            }
-            Rwl.ExitWriteLock();
+    /// <summary>
+    /// </summary>
+    /// <param name="item">result item</param>
+    /// <param name="providerName">empty for current selected geo provider</param>
+    public static void InsertGeoDataQueue(ConnectionInformation? item, string providerName = "")
+    {
+        if (item.Geo.GeoRequestEnqueued)
+        {
+            return;
         }
 
-        private static async Task DoGeoDataQueue()
+        item.Geo.GeoRequestEnqueued = true;
+        var gq = new GeoQueue(item, providerName);
+        GeoQ.Enqueue(gq);
+
+        Rwl.EnterWriteLock();
+        if (!_geoRunning || _geoTask == null || _geoTask.IsCanceled || _geoTask.IsCompleted || _geoTask.IsFaulted)
         {
-            try
+            _geoRunning = true;
+            _geoTask = Task.Run(DoGeoDataQueue);
+        }
+
+        Rwl.ExitWriteLock();
+    }
+
+    private static async Task DoGeoDataQueue()
+    {
+        try
+        {
+            while (!GeoQ.IsEmpty)
             {
-                while (GeoQ.Count > 0)
+                if (_geoRequests >= 5)
                 {
-                    if (_geoRequests >= 5) continue;
-                    if (GeoQ.TryDequeue(out GeoQueueBase gq))
+                    continue;
+                }
+
+                if (GeoQ.TryDequeue(out var gq))
+                {
+                    if (gq != null)
                     {
-                        if (gq != null)
-                        {
-                            _geoRequests++;
-                            GetGeoData(gq, gq.GeoProvider);
-                        }
-                        await Task.Delay(200);
+                        _geoRequests++;
+                        GetGeoData(gq, gq.GeoProvider);
                     }
+
+                    await Task.Delay(200);
                 }
             }
-            catch (Exception)
-            {
-                //ignore
-            }
-            finally
-            {
-                _geoRunning = false;
-            }
+        }
+        catch (Exception)
+        {
+            //ignore
+        }
+        finally
+        {
+            _geoRunning = false;
+        }
+    }
+
+    private static async void GetGeoData(GeoQueueBase? geoData, string providerName = "")
+    {
+        if (geoData == null)
+        {
+            return;
         }
 
-        private static async void GetGeoData(GeoQueueBase geoData, string providerName = "")
+        IGeoService provider;
+        if (providerName == string.Empty)
         {
-            IGeoService provider;
-            if (providerName == string.Empty)
-            {
-                provider = _selectedGeoService;
-            }
-            else
-            {
-                provider = GeoProviders.FirstOrDefault(x => x.Name == providerName) ?? _selectedGeoService;
-            }
-            var loc = await provider.GetLocationByIp(geoData.Ip);
+            provider = _selectedGeoService;
+        }
+        else
+        {
+            provider = GeoProviders.FirstOrDefault(x => x.Name == providerName) ?? _selectedGeoService;
+        }
 
-            if (loc == null)
+        var loc = await provider.GetLocationByIp(geoData.Ip);
+
+        if (loc == null)
+        {
+            foreach (var prov in GeoProviders.Where(x => x != provider))
             {
-                foreach (var prov in GeoProviders.Where(x => x != provider))
+                loc = await prov.GetLocationByIp(geoData.Ip);
+                if (loc != null)
                 {
-                    loc = await prov.GetLocationByIp(geoData.Ip);
-                    if (loc != null) break;
+                    break;
                 }
             }
-
-            if (loc == null)
-                loc = new GeoData
-                {
-                    City = "Unknown",
-                    Country = "Error",
-                    Index = "000000"
-                };
-            geoData.Object.Geo.Merge(loc);
-            _geoRequests--;
         }
 
-        public static IGeoService SelectProviderByName(string defaultGeoProvider)
+        loc ??= new GeoData
         {
-            _selectedGeoService = string.IsNullOrWhiteSpace(defaultGeoProvider)
-                ? GeoProviders.FirstOrDefault()
-                : GeoProviders.FirstOrDefault(x => x.Name == defaultGeoProvider);
-            return _selectedGeoService;
-        }
+            City = "Unknown",
+            Country = "Error",
+            Index = "000000"
+        };
+        geoData.Object.Geo.Merge(loc);
+        _geoRequests--;
+    }
 
-        public static void SelectProviderByObject(IGeoService item)
+    public static IGeoService? SelectProviderByName(string defaultGeoProvider)
+    {
+        _selectedGeoService = string.IsNullOrWhiteSpace(defaultGeoProvider)
+            ? GeoProviders.First()
+            : GeoProviders.First(x => x.Name == defaultGeoProvider);
+        return _selectedGeoService;
+    }
+
+    public static void SelectProviderByObject(IGeoService item)
+    {
+        if (GeoProviders.Contains(item))
         {
-            if (GeoProviders.Contains(item))
-            {
-                _selectedGeoService = item;
-            }
+            _selectedGeoService = item;
         }
+    }
 
-        public static void InsertGeoDataQueue(TraceEntry traceEntry)
+    public static void InsertGeoDataQueue(TraceEntry? traceEntry)
+    {
+        if (traceEntry.Geo.GeoRequestEnqueued)
         {
-            if (traceEntry.Geo.GeoRequestEnqueued) return;
-            traceEntry.Geo.GeoRequestEnqueued = true;
-            var gq = new GeoQueueTrace(traceEntry, string.Empty);
-            GeoQ.Enqueue(gq);
-
-            Rwl.EnterWriteLock();
-
-            if (!_geoRunning || _geoTask == null || _geoTask.IsCanceled || _geoTask.IsCompleted || _geoTask.IsFaulted)
-            {
-                _geoRunning = true;
-                _geoTask = Task.Run(DoGeoDataQueue);
-            }
-
-            Rwl.ExitWriteLock();
+            return;
         }
+
+        traceEntry.Geo.GeoRequestEnqueued = true;
+        var gq = new GeoQueueTrace(traceEntry, string.Empty);
+        GeoQ.Enqueue(gq);
+
+        Rwl.EnterWriteLock();
+
+        if (!_geoRunning || _geoTask == null || _geoTask.IsCanceled || _geoTask.IsCompleted || _geoTask.IsFaulted)
+        {
+            _geoRunning = true;
+            _geoTask = Task.Run(DoGeoDataQueue);
+        }
+
+        Rwl.ExitWriteLock();
     }
 }

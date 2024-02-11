@@ -72,7 +72,7 @@ namespace PortAbuse2.Core.Listener
             this._localAddresses.Add(interfaceMacAddress);
         }
 
-        public void SelectedCaptureDevice(IpInterface selectedIpInterface)
+        public void SelectedCaptureDevice(IpInterface? selectedIpInterface)
         {
             this.Clear();
             CaptureDeviceList deviceList = CaptureDeviceList.Instance;

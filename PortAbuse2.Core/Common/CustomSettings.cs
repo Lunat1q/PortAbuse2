@@ -7,7 +7,7 @@ namespace PortAbuse2.Core.Common
     {
         public static CustomSettings Instance { get; set; }
         public Dictionary<string, List<string>> HiddenIps { get; }
-        public string PreviousInterface { get; set; }
+        public string? PreviousInterface { get; set; }
 
         public CustomSettings()
         {

@@ -179,7 +179,7 @@ namespace PortAbuse2.Core.Result
         }
 
 
-        public static ConnectionInformation CreateNewResultObject(IPPacket ipPacket, bool fromMe, AppEntry selectedApp, bool forceShow)
+        public static ConnectionInformation? CreateNewResultObject(IPPacket ipPacket, bool fromMe, AppEntry selectedApp, bool forceShow)
         {
             var ro = new ConnectionInformation
             {

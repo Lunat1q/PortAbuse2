@@ -10,172 +10,213 @@ using MahApps.Metro.Controls;
 using PortAbuse2.Annotations;
 using PortAbuse2.Core.Geo;
 using PortAbuse2.Core.WindowsFirewall;
+using PortAbuse2.Properties;
 using PortAbuse2.ViewModels;
-using TiqUtils.Conversion;
 using TiqUtils.Events.Controls;
 using TiqUtils.Wpf.Helpers;
 
-namespace PortAbuse2.Controls
+namespace PortAbuse2.Controls;
+
+/// <summary>
+///     Interaction logic for SettingsPage.xaml
+/// </summary>
+public partial class SettingsPage : INotifyPropertyChanged
 {
-    /// <summary>
-    /// Interaction logic for SettingsPage.xaml
-    /// </summary>
-    public partial class SettingsPage : INotifyPropertyChanged
+    private MainLogicViewModel? _vm;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    public SettingsPage()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
-        private MainLogicViewModel _vm;
-        public BlockMode SelectedBlockSate => Block.DefaultBlockMode;
+        InitializeComponent();
+        GeoProviderBox.ItemsSource = GeoWorker.GeoProviders;
+    }
 
-        public bool BlockNew
+    public BlockMode SelectedBlockSate => Block.DefaultBlockMode;
+
+    public bool BlockNew
+    {
+        get => _vm?.Receiver.BlockNew ?? false;
+        set
         {
-            get => this._vm?.Receiver.BlockNew ?? false;
-            set
-            {
-                if (this._vm != null && value != null)
-                {
-                    this._vm.Receiver.BlockNew = (bool)value;
-                    this.OnPropertyChanged();
-                    UpdateThemeForBlock();
-                }
-            }
-        }
-
-        public SettingsPage()
-        {
-            this.InitializeComponent();
-            this.GeoProviderBox.ItemsSource = GeoWorker.GeoProviders;
-        }
-
-        public void SetViewModel(MainLogicViewModel vm)
-        {
-            this._vm = vm;
-            this.LoadSettings();
-        }
-
-        private void LoadSettings()
-        {
-            this.MinimizeHostnames.IsOn = Properties.Settings.Default.MinimizeHostname;
-            this.HideOldRecords.IsOn = Properties.Settings.Default.HideOldConnections;
-            this.HideSmallPackets.IsOn = Properties.Settings.Default.HideSmallPackets;
-            this.SecondsBlockBox.Text = Properties.Settings.Default.BlockSeconds.ToString();
-
-            this.GeoProviderBox.SelectedItem = GeoWorker.SelectProviderByName(Properties.Settings.Default.GeoProvider);
-            this.BlockDirectionBox.SelectedValue = (BlockMode)Properties.Settings.Default.BlockType;
-            Block.DefaultBlockMode = (BlockMode)Properties.Settings.Default.BlockType;
-
-            BlockTimeContainer.CurrentBlockTime = Properties.Settings.Default.BlockSeconds;
-
-            this.VersionNumberBlock.Text = $"Lunatiq© - v{Assembly.GetExecutingAssembly().GetName().Version}";
-        }
-
-        public void ToggleBlock()
-        {
-            this.BlockNew = !this.BlockNew;
+            _vm!.Receiver.BlockNew = value;
+            OnPropertyChanged();
             UpdateThemeForBlock();
         }
+    }
 
-        private void UpdateThemeForBlock()
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void SetViewModel(MainLogicViewModel vm)
+    {
+        _vm = vm;
+        LoadSettings();
+    }
+
+    private void LoadSettings()
+    {
+        MinimizeHostnames.IsOn = Settings.Default.MinimizeHostname;
+        HideOldRecords.IsOn = Settings.Default.HideOldConnections;
+        HideSmallPackets.IsOn = Settings.Default.HideSmallPackets;
+        SecondsBlockBox.Text = Settings.Default.BlockSeconds.ToString();
+
+        GeoProviderBox.SelectedItem = GeoWorker.SelectProviderByName(Settings.Default.GeoProvider);
+        BlockDirectionBox.SelectedValue = (BlockMode)Settings.Default.BlockType;
+        Block.DefaultBlockMode = (BlockMode)Settings.Default.BlockType;
+
+        BlockTimeContainer.CurrentBlockTime = Settings.Default.BlockSeconds;
+
+        VersionNumberBlock.Text = $"Lunatiq© - v{Assembly.GetExecutingAssembly().GetName().Version}";
+    }
+
+    public void ToggleBlock()
+    {
+        BlockNew = !BlockNew;
+        UpdateThemeForBlock();
+    }
+
+    private void UpdateThemeForBlock()
+    {
+        ThemeManager.Current.ChangeTheme(Application.Current,
+            (BlockNew
+                ? ThemeManager.Current.GetTheme("Light.Red")
+                : ThemeManager.Current.GetTheme("Light.Steel"))!);
+    }
+
+    private void HideOldRecords_OnClickSwitch_Click(object sender, RoutedEventArgs e)
+    {
+        var tgl = sender as ToggleSwitch;
+        if (tgl?.IsOn == null)
         {
-            ThemeManager.Current.ChangeTheme(Application.Current,
-                (bool)this.BlockNew
-                    ? ThemeManager.Current.GetTheme("Light.Red")
-                    : ThemeManager.Current.GetTheme("Light.Steel"));
+            return;
         }
 
-        private void HideOldRecords_OnClickSwitch_Click(object sender, RoutedEventArgs e)
+        Settings.Default.HideOldConnections = tgl.IsOn;
+        Settings.Default.Save();
+
+        if (tgl.IsOn)
         {
-            var tgl = sender as ToggleSwitch;
-            if (tgl?.IsOn == null) return;
+            _vm!.Receiver.HideOld();
+        }
+        else
+        {
+            _vm!.Receiver.ShowOld();
+        }
+    }
 
-            Properties.Settings.Default.HideOldConnections = (bool)tgl.IsOn;
-            Properties.Settings.Default.Save();
-
-            if ((bool)tgl.IsOn)
-                this._vm.Receiver.HideOld();
-            else
-                this._vm.Receiver.ShowOld();
+    private void MinimizeHostnames_OnClickSwitch_Click(object sender, RoutedEventArgs e)
+    {
+        var tgl = sender as ToggleSwitch;
+        if (tgl?.IsOn == null)
+        {
+            return;
         }
 
-        private void MinimizeHostnames_OnClickSwitch_Click(object sender, RoutedEventArgs e)
+        Settings.Default.MinimizeHostname = tgl.IsOn;
+        Settings.Default.Save();
+
+        if (tgl.IsOn)
         {
-            var tgl = sender as ToggleSwitch;
-            if (tgl?.IsOn == null) return;
+            _vm!.Receiver.MinimizeHostnames();
+        }
+        else
+        {
+            _vm!.Receiver.MaximizeHostnames();
+        }
+    }
 
-            Properties.Settings.Default.MinimizeHostname = (bool)tgl.IsOn;
-            Properties.Settings.Default.Save();
-
-            if ((bool)tgl.IsOn)
-                this._vm.Receiver.MinimizeHostnames();
-            else
-                this._vm.Receiver.MaximizeHostnames();
+    private void HideSmallPackets_OnClickSwitch_Click(object sender, RoutedEventArgs e)
+    {
+        var tgl = sender as ToggleSwitch;
+        if (tgl?.IsOn == null)
+        {
+            return;
         }
 
-        private void HideSmallPackets_OnClickSwitch_Click(object sender, RoutedEventArgs e)
+        Settings.Default.HideSmallPackets = tgl.IsOn;
+        Settings.Default.Save();
+
+        _vm!.Receiver.HideSmallPackets = tgl.IsOn;
+    }
+
+    private void ShowAllHiddenIps_OnClick(object sender, RoutedEventArgs e)
+    {
+        var tgl = sender as ToggleSwitch;
+        if (tgl?.IsOn == null)
         {
-            var tgl = sender as ToggleSwitch;
-            if (tgl?.IsOn == null) return;
-
-            Properties.Settings.Default.HideSmallPackets = (bool)tgl.IsOn;
-            Properties.Settings.Default.Save();
-
-            this._vm.Receiver.HideSmallPackets = (bool)tgl.IsOn;
+            return;
         }
 
-        private void ShowAllHiddenIps_OnClick(object sender, RoutedEventArgs e)
+        if (tgl.IsOn)
         {
-            var tgl = sender as ToggleSwitch;
-            if (tgl?.IsOn == null) return;
+            _vm!.Receiver.SetForceShowHiddenIps();
+        }
+        else
+        {
+            _vm!.Receiver.SetForceShowHiddenIps(false);
+        }
+    }
 
-            if ((bool)tgl.IsOn)
-                this._vm.Receiver.SetForceShowHiddenIps();
-            else
-                this._vm.Receiver.SetForceShowHiddenIps(false);
+    private void SecondsBlockBox_OnKeyDown(object sender, KeyEventArgs e)
+    {
+        KeyConverter kc = new();
+        var ch = kc.ConvertToString(e.Key);
+        e.Handled = ControlsInput.OnlyNum(ch![0]);
+    }
+
+    private void SecondsBlockBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        var tb = sender as TextBox;
+        if (string.IsNullOrEmpty(tb?.Text))
+        {
+            return;
         }
 
-        private void SecondsBlockBox_OnKeyDown(object sender, KeyEventArgs e)
+        if (!int.TryParse(tb.Text, out var amount))
         {
-            var ch = e.Key.GetCharFromKey();
-            e.Handled = ControlsInput.OnlyNum(ch);
+            return;
         }
 
-        private void SecondsBlockBox_TextChanged(object sender, TextChangedEventArgs e)
+        Settings.Default.BlockSeconds = amount;
+        Settings.Default.Save();
+        _vm!.BlockAmount = amount;
+    }
+
+    private void GeoProviderBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var cb = sender as ComboBox;
+        if (!(cb?.SelectedItem is IGeoService item))
         {
-            var tb = sender as TextBox;
-            if (string.IsNullOrEmpty(tb?.Text)) return;
-            if (!int.TryParse(tb.Text, out int amount)) return;
-            Properties.Settings.Default.BlockSeconds = amount;
-            Properties.Settings.Default.Save();
-            this._vm.BlockAmount = amount;
+            return;
         }
 
-        private void GeoProviderBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        GeoWorker.SelectProviderByObject(item);
+        foreach (var ro in _vm!.DetectedConnections)
         {
-            var cb = sender as ComboBox;
-            if (!(cb?.SelectedItem is IGeoService item)) return;
-            GeoWorker.SelectProviderByObject(item);
-            foreach (var ro in this._vm.DetectedConnections)
-            {
-                ro.Geo.Reset();
-                GeoWorker.InsertGeoDataQueue(ro);
-            }
-            Properties.Settings.Default.GeoProvider = item.Name;
-            Properties.Settings.Default.Save();
+            ro?.Geo.Reset();
+            GeoWorker.InsertGeoDataQueue(ro);
         }
 
-        private void BlockDirectionBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        Settings.Default.GeoProvider = item.Name;
+        Settings.Default.Save();
+    }
+
+    private void BlockDirectionBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var cb = sender as ComboBox;
+        if (!(cb?.SelectedItem is ValueDescription item))
         {
-            var cb = sender as ComboBox;
-            if (!(cb?.SelectedItem is ValueDescription item)) return;
-            Properties.Settings.Default.BlockType = Convert.ToInt32(item.Value);
-            Block.DefaultBlockMode = (BlockMode)item.Value;
-            Properties.Settings.Default.Save();
+            return;
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        Settings.Default.BlockType = Convert.ToInt32(item.Value);
+        Block.DefaultBlockMode = (BlockMode)item.Value;
+        Settings.Default.Save();
+    }
 
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+    [NotifyPropertyChangedInvocator]
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

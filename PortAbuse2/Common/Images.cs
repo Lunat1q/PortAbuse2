@@ -10,7 +10,7 @@ namespace PortAbuse2.Common
 {
     internal static class Images
     {
-        public static ImageSource LoadImageSourceFromResource(string name)
+        public static ImageSource? LoadImageSourceFromResource(string name)
         {
             var bm = Properties.Resources.ResourceManager.GetObject(name, Properties.Resources.Culture) as Bitmap;
             return bm?.LoadBitmap();

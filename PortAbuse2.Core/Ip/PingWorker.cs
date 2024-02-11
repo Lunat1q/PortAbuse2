@@ -10,7 +10,7 @@ public sealed class PingWorker
 {
     private const int TimeBetweenPings = 300;
 
-    public static async void GetPingStats(TraceEntry traceEntry, int numberOfPings = 10, int timeout = 10000)
+    public static async void GetPingStats(TraceEntry? traceEntry, int numberOfPings = 10, int timeout = 10000)
     {
         traceEntry.Latency.InProgress = true;
         traceEntry.Latency.Executed = true;

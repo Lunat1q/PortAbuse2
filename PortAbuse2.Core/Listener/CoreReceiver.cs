@@ -42,7 +42,7 @@ namespace PortAbuse2.Core.Listener
             IPAddress ipSource,
             byte[] data,
             bool direction,
-            ConnectionInformation connectionInformation,
+            ConnectionInformation? connectionInformation,
             PortInformation portInfo
         );
 
@@ -58,7 +58,7 @@ namespace PortAbuse2.Core.Listener
         /// </summary>
         public bool ContinueCapturing { get; private set; }
 
-        public AppEntry SelectedAppEntry
+        public AppEntry? SelectedAppEntry
         {
             get => this._selectedAppEntry;
             set
@@ -205,7 +205,7 @@ namespace PortAbuse2.Core.Listener
             }
         }
 
-        public void StartListener(IpInterface selectedIpInterface)
+        public void StartListener(IpInterface? selectedIpInterface)
         {
             this.ContinueCapturing = true;
             this.Clear();
@@ -310,12 +310,12 @@ namespace PortAbuse2.Core.Listener
         }
 
 
-        private void AddToResult(ConnectionInformation ro)
+        private void AddToResult(ConnectionInformation? ro)
         {
             this._resultDictionary.TryAdd(ro.ShowIp, new PushableInfo(ro));
         }
 
-        private void PostProcess(ConnectionInformation ro)
+        private void PostProcess(ConnectionInformation? ro)
         {
             GeoWorker.InsertGeoDataQueue(ro);
             DnsHost.FillIpHost(ro, this._minimizeHostname);
@@ -325,7 +325,7 @@ namespace PortAbuse2.Core.Listener
             }
         }
 
-        private ConnectionInformation GetExistedDetection(bool fromMe, IPPacket ipPacket)
+        private ConnectionInformation? GetExistedDetection(bool fromMe, IPPacket ipPacket)
         {
             var showIp = fromMe ? ipPacket.DestinationAddress : ipPacket.SourceAddress;
 
@@ -346,21 +346,21 @@ namespace PortAbuse2.Core.Listener
         }
 
         private void OnReceived(IPAddress ipDest, IPAddress ipSource, byte[] data, bool direction,
-            ConnectionInformation resultObject, PortInformation portInfo)
+            ConnectionInformation? resultObject, PortInformation portInfo)
         {
             this.Received?.Invoke(ipDest, ipSource, data, direction, resultObject, portInfo);
         }
 
         private class PushableInfo
         {
-            public PushableInfo(ConnectionInformation ro)
+            public PushableInfo(ConnectionInformation? ro)
             {
                 this.Data = ro;
             }
 
             public bool IsPushed { get; set; }
 
-            public ConnectionInformation Data { get; }
+            public ConnectionInformation? Data { get; }
         }
     }
 }
