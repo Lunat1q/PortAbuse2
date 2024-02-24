@@ -14,13 +14,22 @@
     <PackageIcon>portAbuseLogo.ico</PackageIcon>
     <AssemblyVersion>2.5.0.0</AssemblyVersion>
     <FileVersion>2.5.0.0</FileVersion>
+    <ApplicationIcon>portAbuseLogo.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="portAbuseLogo.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <Resource Include="portAbuseLogo.ico" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Costura.Fody" Version="5.8.0-alpha0098">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-rc2" />
     <PackageReference Include="MahApps.Metro" Version="2.4.10" />
   </ItemGroup>
