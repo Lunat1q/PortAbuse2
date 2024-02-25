@@ -97,8 +97,18 @@ namespace PortAbuse2.Styling
                 trace.Show();
             }
         }
+        
+        private void CopyIpMenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var mi = sender as MenuItem;
+            var listBox = (mi?.Parent as ContextMenu)?.Tag as ListBox;
+            if (listBox?.SelectedIndex == -1) return;
+            var selectedItems = GetMultipleSelectedItem<ConnectionInformation>(listBox);
+            if (selectedItems == null) return;
+            Clipboard.SetText(selectedItems.First().ShowIp.ToString());
+        }
 
-        private static List<T> GetMultipleSelectedItem<T>(ListBox? listBox)
+        private static List<T>? GetMultipleSelectedItem<T>(ListBox? listBox)
         {
             var resultList = new List<T>();
             if (listBox == null) return resultList;
