@@ -37,6 +37,7 @@
         <MenuItem x:Name="HideThisIpMenuItem" Header="Hide this IP for App" Click="HideThisIpMenuItem_OnClick" />
         <MenuItem x:Name="TraceRtIpMenuItem" Header="Trace route for IP" Click="TraceRtThisIpMenuItem_OnClick" />
         <MenuItem x:Name="PingIpMenuItem" Header="Ping IP" Click="PingIpMenuItem_OnClick" />
+        <MenuItem x:Name="CopyIpMenuItem" Header="Copy IP" Click="CopyIpMenuItem_OnClick" />
         <MenuItem Header="Block all connections for" Tag="0" HorizontalContentAlignment="Stretch">
             <controls:BlockInOutMenu SecondsToBlock="5" BlockButtonClicked="BlockClicked" />
             <controls:BlockInOutMenu SecondsToBlock="10" BlockButtonClicked="BlockClicked" />
