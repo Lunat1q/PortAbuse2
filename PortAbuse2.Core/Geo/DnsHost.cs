@@ -10,7 +10,7 @@ namespace PortAbuse2.Core.Geo
 {
     public static class DnsHost
     {
-        public static async void FillIpHost(ConnectionInformation obj, bool minimize)
+        public static async void FillIpHost(ConnectionInformation? obj, bool minimize)
         {
             var hostName = await GetHostName(obj.ShowIp);
             obj.DetectedHostname = hostName;
@@ -39,7 +39,7 @@ namespace PortAbuse2.Core.Geo
             return hostName;
         }
 
-        public static async void FillIpHost(TraceEntry traceEntry)
+        public static async void FillIpHost(TraceEntry? traceEntry)
         {
             var hostName = await GetHostName(traceEntry.Address);
             traceEntry.Hostname = hostName;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -27,7 +28,7 @@ namespace PortAbuse2.Styling
             else
             {
                 btn.Content = "B";
-                Block.DoUnBlock(obj, true);
+                Block.DoUnBlock(obj, CancellationToken.None, true);
                 var blockColor = btn.FindResource("BlockColor") as SolidColorBrush;
                 btn.Background = blockColor;
             }
@@ -40,7 +41,7 @@ namespace PortAbuse2.Styling
 
         private static void BlockFromControl(object sender, int sec, BlockMode mode)
         {
-            if (!TryGetResultObject(sender, out ConnectionInformation obj)) return;
+            if (!TryGetResultObject(sender, out ConnectionInformation? obj)) return;
             Block.DoInSecBlock(obj, sec, mode);
         }
 
@@ -82,8 +83,22 @@ namespace PortAbuse2.Styling
                 trace.Show();
             }
         }
+        
+        private void PingIpMenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var mi = sender as MenuItem;
+            var listBox = (mi?.Parent as ContextMenu)?.Tag as ListBox;
+            if (listBox?.SelectedIndex == -1) return;
+            var selectedItems = GetMultipleSelectedItem<ConnectionInformation>(listBox);
+            if (selectedItems == null) return;
+            foreach (var ro in selectedItems)
+            {
+                var trace = new PingForm(ro);
+                trace.Show();
+            }
+        }
 
-        private static List<T> GetMultipleSelectedItem<T>(ListBox listBox)
+        private static List<T> GetMultipleSelectedItem<T>(ListBox? listBox)
         {
             var resultList = new List<T>();
             if (listBox == null) return resultList;
@@ -91,7 +106,7 @@ namespace PortAbuse2.Styling
             return resultList;
         }
 
-        private static bool TryGetResultObject(object sender, out ConnectionInformation obj)
+        private static bool TryGetResultObject(object sender, out ConnectionInformation? obj)
         {
             var control = sender as Control;
             obj = null;

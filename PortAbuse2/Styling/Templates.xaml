@@ -36,6 +36,7 @@
                  Tag="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}">
         <MenuItem x:Name="HideThisIpMenuItem" Header="Hide this IP for App" Click="HideThisIpMenuItem_OnClick" />
         <MenuItem x:Name="TraceRtIpMenuItem" Header="Trace route for IP" Click="TraceRtThisIpMenuItem_OnClick" />
+        <MenuItem x:Name="PingIpMenuItem" Header="Ping IP" Click="PingIpMenuItem_OnClick" />
         <MenuItem Header="Block all connections for" Tag="0" HorizontalContentAlignment="Stretch">
             <controls:BlockInOutMenu SecondsToBlock="5" BlockButtonClicked="BlockClicked" />
             <controls:BlockInOutMenu SecondsToBlock="10" BlockButtonClicked="BlockClicked" />
@@ -99,6 +100,33 @@
                         <TextBlock Foreground="IndianRed" Text="Timeout" Margin="5 0" Visibility="{Binding Latency.Failed, Converter={StaticResource VisibilityConverter}}"/>
                     </StackPanel>
                 </Grid>
+            </Grid>
+        </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Value="True"
+                         Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}">
+                <Setter Property="Fill" TargetName="ResultBg">
+                    <Setter.Value>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#1900DCFF" />
+                            <GradientStop Color="#19008BFF" Offset="1" />
+                        </LinearGradientBrush>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Stroke" TargetName="ResultBg" Value="#7F008BFF" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+    <DataTemplate x:Key="PingEntryTemplate" DataType="trace:PingEntry">
+        <Grid Margin="2">
+            <Rectangle x:Name="ResultBg" Fill="Transparent" Stroke="#FFD1D0D0" />
+            <Grid Height="Auto" Width="Auto">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock HorizontalAlignment="Center" Margin="5,2" TextWrapping="Wrap"
+                           Text="{Binding PingTime, FallbackValue=0}" VerticalAlignment="Center"
+                           Grid.Row="0" Grid.Column="0" FontSize="10" />
             </Grid>
         </Grid>
         <DataTemplate.Triggers>

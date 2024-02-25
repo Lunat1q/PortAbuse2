@@ -1,12 +1,3 @@
 [submodule "GlobalHook"]
 	path = GlobalHook
 	url = https://github.com/Lunat1q/GlobalHook
-[submodule "TiqUtils"]
-	path = TiqUtils
-	url = https://github.com/Lunat1q/TiqUtils
-[submodule "TiQWpfUtils"]
-	path = TiQWpfUtils
-	url = https://github.com/Lunat1q/TiQWpfUtils
-[submodule "sharppcap"]
-	path = sharppcap
-	url = https://github.com/chmorgan/sharppcap

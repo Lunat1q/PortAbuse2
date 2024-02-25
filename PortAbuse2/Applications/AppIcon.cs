@@ -11,7 +11,7 @@ namespace PortAbuse2.Applications
 {
     internal static class AppIcon
     {
-        public static ImageSource GetIcon(string path, bool smallIcon = true, bool isDirectory = false)
+        public static ImageSource? GetIcon(string path, bool smallIcon = true, bool isDirectory = false)
         {
             // SHGFI_USEFILEATTRIBUTES takes the file name and attributes into account if it doesn't exist
             uint flags = SHGFI_ICON | SHGFI_USEFILEATTRIBUTES;

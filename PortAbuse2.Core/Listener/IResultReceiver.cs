@@ -7,7 +7,7 @@ namespace PortAbuse2.Core.Listener
     {
         void Reset();
 
-        void Add(ConnectionInformation result);
+        void Add(ConnectionInformation? result);
 
         void AddAsync(ConnectionInformation result);
     }

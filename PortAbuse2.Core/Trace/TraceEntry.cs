@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using PortAbuse2.Core.Result;
 
 namespace PortAbuse2.Core.Trace
