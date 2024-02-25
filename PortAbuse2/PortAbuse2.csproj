@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="portAbuseLogo.ico" />
+    <EmbeddedResource Include="portAbuseLogo.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,12 +32,12 @@
     </PackageReference>
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-rc2" />
     <PackageReference Include="MahApps.Metro" Version="2.4.10" />
+    <PackageReference Include="TiqUtils.Wpf" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\GlobalHook\GlobalHook\GlobalHook.csproj" />
     <ProjectReference Include="..\PortAbuse2.Core\PortAbuse2.Core.csproj" />
-    <ProjectReference Include="..\TiQWpfUtils\TiqUtils.Wpf\TiqUtils.Wpf.csproj" />
   </ItemGroup>
 
   <ItemGroup>
