@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Net;
 using LiveChartsCore;
+using LiveChartsCore.ConditionalDraw;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using PortAbuse2.Core.Common;
@@ -25,15 +26,25 @@ public class PingContext : RunnableContext
             new LineSeries<long>
             {
                 Values = _items,
-                GeometryFill = null,
+                GeometryFill =  new SolidColorPaint(SKColors.Red, 0),
                 GeometryStroke = null,
+                GeometrySize = 0,
                 LineSmoothness = 0,
                 Stroke = null,
                 Fill = new SolidColorPaint(SKColors.LightBlue, 1)
             }
+            .OnPointMeasured(point =>
+            {
+                if (point.PrimaryValue == -1)
+                {
+                    point.Visual.Fill = new SolidColorPaint(SKColors.Red, 1);
+                    point.Visual.Width = 10;
+                    point.Visual.Height = 10;
+                }
+            })
         };
     }
-
+     
     public ObservableCollection<long> Items
     {
         get => _items;
